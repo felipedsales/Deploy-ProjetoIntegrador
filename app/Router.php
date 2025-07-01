@@ -25,6 +25,16 @@ class Router
         $this->addRoute('POST', $path, $handler);
     }
 
+    public function put($path, $handler)
+    {
+        $this->addRoute('PUT', $path, $handler);
+    }
+
+    public function delete($path, $handler)
+    {
+        $this->addRoute('DELETE', $path, $handler);
+    }
+
     public function dispatch($method, $uri)
     {
         try {

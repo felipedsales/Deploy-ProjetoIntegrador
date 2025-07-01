@@ -40,6 +40,7 @@ No painel do Render, vá em "Environment" e adicione:
 **Variáveis da Aplicação:**
 - `APP_URL`: https://seu-app.onrender.com
 - `APP_DEBUG`: false
+- `DB_TYPE`: postgresql
 
 **Variáveis do Banco de Dados:**
 - `DB_HOST`: (será preenchido automaticamente)
@@ -67,6 +68,39 @@ No painel do Render, vá em "Environment" e adicione:
 2. O Render começará o build automaticamente
 3. Aguarde o deploy (pode levar alguns minutos)
 
+### 🔧 Resolução de Problemas
+
+#### Erro de Conexão com Banco de Dados
+Se aparecer o erro "No such file or directory" na conexão com banco:
+
+1. **Verificar se o banco foi criado:**
+   - No painel do Render, confirme se o PostgreSQL foi criado
+   - Verifique se está conectado ao Web Service
+
+2. **Verificar variáveis de ambiente:**
+   - Acesse seu app + `/debug.php` (ex: https://seu-app.onrender.com/debug.php)
+   - Confirme se as variáveis DB_* estão preenchidas
+
+3. **Configurações importantes:**
+   - `DB_TYPE` deve ser `postgresql`
+   - Todas as variáveis DB_* devem estar configuradas
+
+4. **Re-deploy se necessário:**
+   - No painel do Render, vá em "Manual Deploy"
+   - Clique em "Deploy latest commit"
+
+#### Debug da Aplicação
+Para verificar as configurações, acesse:
+```
+https://seu-app.onrender.com/debug.php
+```
+
+Este arquivo mostrará:
+- Variáveis de ambiente
+- Configuração do banco
+- Status da conexão
+- Extensões PHP instaladas
+
 ### 📁 Estrutura do Projeto
 
 ```
@@ -88,13 +122,13 @@ Deploy-ProjetoIntegrador/
 
 #### Dockerfile
 - Usa PHP 8.1 com Apache
-- Instala todas as extensões necessárias
+- Instala extensões MySQL e PostgreSQL
 - Configura o Apache para usar a pasta `public/` como DocumentRoot
 - Cria arquivo `.htaccess` para URL rewriting
 
 #### Banco de Dados
-- Configurado para usar variáveis de ambiente
-- Suporte a MySQL/PostgreSQL
+- Configurado para usar PostgreSQL (padrão do Render)
+- Suporte a variáveis de ambiente
 - Conexão automática via Render
 
 ### 🐛 Troubleshooting
@@ -107,7 +141,8 @@ Deploy-ProjetoIntegrador/
 #### Erro de Conexão com Banco
 - Confirme se as variáveis de ambiente estão configuradas
 - Verifique se o banco está criado e conectado
-- Teste a conexão localmente primeiro
+- Use o arquivo `/debug.php` para diagnosticar
+- Confirme se `DB_TYPE=postgresql` está configurado
 
 #### Erro 404
 - Verifique se o `.htaccess` foi criado corretamente
