@@ -2,6 +2,120 @@
 
 Sistema de vagas e candidatos para Ferraz de Vasconcelos, desenvolvido com arquitetura MVC e Composer.
 
+## 🚀 Deploy no Render
+
+### Pré-requisitos
+- Conta no Render (https://render.com)
+- Repositório Git (GitHub, GitLab, Bitbucket)
+- Projeto subido para o repositório
+
+### Passo a Passo para Deploy
+
+#### 1. Preparar o Repositório
+Certifique-se de que todos os arquivos estão commitados e pushados para o repositório:
+```bash
+git add .
+git commit -m "Preparando para deploy no Render"
+git push origin main
+```
+
+#### 2. Criar Conta no Render
+- Acesse https://render.com
+- Faça login com sua conta GitHub/GitLab/Bitbucket
+
+#### 3. Criar Novo Web Service
+1. Clique em "New +" > "Web Service"
+2. Conecte seu repositório
+3. Configure o serviço:
+   - **Name**: ferraz-conecta
+   - **Environment**: Docker
+   - **Branch**: main
+   - **Root Directory**: (deixe vazio)
+   - **Build Command**: (deixe vazio - o Dockerfile cuida)
+   - **Start Command**: (deixe vazio - o Dockerfile cuida)
+
+#### 4. Configurar Variáveis de Ambiente
+No painel do Render, vá em "Environment" e adicione:
+
+**Variáveis da Aplicação:**
+- `APP_URL`: https://seu-app.onrender.com
+- `APP_DEBUG`: false
+
+**Variáveis do Banco de Dados:**
+- `DB_HOST`: (será preenchido automaticamente)
+- `DB_USERNAME`: (será preenchido automaticamente)
+- `DB_PASSWORD`: (será preenchido automaticamente)
+- `DB_DATABASE`: (será preenchido automaticamente)
+- `DB_PORT`: (será preenchido automaticamente)
+
+#### 5. Criar Banco de Dados
+1. No painel do Render, clique em "New +" > "PostgreSQL"
+2. Configure:
+   - **Name**: ferraz-conecta-db
+   - **Database**: ferraz_conecta
+   - **User**: ferraz_conecta_user
+   - **Plan**: Starter (gratuito)
+
+#### 6. Conectar Banco ao App
+1. No seu Web Service, vá em "Environment"
+2. Clique em "Link Database"
+3. Selecione o banco criado
+4. As variáveis de ambiente do banco serão preenchidas automaticamente
+
+#### 7. Deploy
+1. Clique em "Create Web Service"
+2. O Render começará o build automaticamente
+3. Aguarde o deploy (pode levar alguns minutos)
+
+### 📁 Estrutura do Projeto
+
+```
+Deploy-ProjetoIntegrador/
+├── app/
+│   ├── Controllers/     # Controladores da aplicação
+│   ├── Models/         # Modelos de dados
+│   └── Views/          # Views/templates
+├── config/             # Configurações
+├── public/             # Arquivos públicos (CSS, JS, imagens)
+├── uploads/            # Uploads de arquivos
+├── vendor/             # Dependências do Composer
+├── Dockerfile          # Configuração do Docker
+├── composer.json       # Dependências PHP
+└── render.yaml         # Configuração do Render
+```
+
+### 🔧 Configurações Importantes
+
+#### Dockerfile
+- Usa PHP 8.1 com Apache
+- Instala todas as extensões necessárias
+- Configura o Apache para usar a pasta `public/` como DocumentRoot
+- Cria arquivo `.htaccess` para URL rewriting
+
+#### Banco de Dados
+- Configurado para usar variáveis de ambiente
+- Suporte a MySQL/PostgreSQL
+- Conexão automática via Render
+
+### 🐛 Troubleshooting
+
+#### Erro de Build
+- Verifique se o `Dockerfile` está na raiz do projeto
+- Confirme se o `composer.json` está correto
+- Verifique os logs no painel do Render
+
+#### Erro de Conexão com Banco
+- Confirme se as variáveis de ambiente estão configuradas
+- Verifique se o banco está criado e conectado
+- Teste a conexão localmente primeiro
+
+#### Erro 404
+- Verifique se o `.htaccess` foi criado corretamente
+- Confirme se o Apache está configurado para usar a pasta `public/`
+
+### 📞 Suporte
+Para problemas específicos do Render, consulte a documentação oficial: https://render.com/docs
+
 ## Estrutura do Projeto
 
 ```
