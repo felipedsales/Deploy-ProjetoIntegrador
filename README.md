@@ -1,9 +1,9 @@
 # Ferraz Conecta - Sistema de Vagas
 ### Integrantes
-Felipe Santos de Sales
-Felipe Schueller Araujo
-Nayara Porto Bastos
-Yuri Soares Sales
+- Felipe Santos de Sales
+- Felipe Schueller Araujo
+- Nayara Porto Bastos
+- Yuri Soares Sales
 
 Sistema de vagas e candidatos para Ferraz de Vasconcelos, desenvolvido com arquitetura MVC e Composer.
 
