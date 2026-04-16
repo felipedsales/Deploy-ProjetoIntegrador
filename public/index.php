@@ -11,53 +11,6 @@ session_start();
 // Cria o roteador
 $router = new Router();
 
-// --- ROTA DE SETUP DO BANCO DE DADOS (TEMPORÁRIA) ---
-$router->get('/setup-database-agora-vai', function() {
-    try {
-        echo "<h1>Iniciando setup do banco de dados...</h1>";
-        
-        $pdo = Database::getInstance()->getConnection();
-        $sqlFile = __DIR__ . '/../database/schema.sql';
-
-        if (!file_exists($sqlFile)) {
-            throw new \Exception("Arquivo schema.sql não encontrado em {$sqlFile}");
-        }
-
-        $sql = file_get_contents($sqlFile);
-        
-        // Executa o script SQL
-        $pdo->exec($sql);
-
-        echo "<h2>SUCESSO!</h2>";
-        echo "<p>O banco de dados foi configurado e as tabelas foram criadas.</p>";
-        echo "<p><strong>IMPORTANTE:</strong> Agora remova esta rota do arquivo 'public/index.php' por segurança!</p>";
-
-    } catch (\Exception $e) {
-        echo "<h2>ERRO DURANTE O SETUP:</h2>";
-        echo "<pre style='background-color: #f0f0f0; padding: 10px; border: 1px solid red;'>";
-        echo "Erro: " . $e->getMessage() . "\n";
-        echo "Arquivo: " . $e->getFile() . "\n";
-        echo "Linha: " . $e->getLine() . "\n";
-        echo "</pre>";
-    }
-    return null;
-});
-
-
-// Rota de depuração temporária
-$router->get('/debug-env', function() {
-    header('Content-Type: text/plain');
-    echo "--- Debugging Environment Variables ---\n\n";
-    echo "DB_TYPE: " . (getenv('DB_TYPE') ?: 'NOT SET') . "\n";
-    echo "DB_HOST: " . (getenv('DB_HOST') ?: 'NOT SET') . "\n";
-    echo "DB_PORT: " . (getenv('DB_PORT') ?: 'NOT SET') . "\n";
-    echo "DB_DATABASE: " . (getenv('DB_DATABASE') ?: 'NOT SET') . "\n";
-    echo "DB_USERNAME: " . (getenv('DB_USERNAME') ?: 'NOT SET') . "\n";
-    echo "DB_PASSWORD: " . (getenv('DB_PASSWORD') ? 'SET (hidden)' : 'NOT SET') . "\n";
-    return null;
-});
-
-
 // Rota de teste
 $router->get('/test', 'HomeController@test');
 $router->get('/test-footer', 'HomeController@testFooter');
