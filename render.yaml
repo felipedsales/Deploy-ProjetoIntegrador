@@ -28,7 +28,7 @@ services:
       - key: DB_USERNAME
         fromDatabase:
           name: ferraz-conecta-db
-          property: username
+          property: user # Corrigido de 'username' para 'user'
       - key: DB_PASSWORD
         fromDatabase:
           name: ferraz-conecta-db
