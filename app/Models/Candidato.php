@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Candidato extends Model
 {
-    protected $table = 'cadastro';
+    protected $table = 'candidatos';
 
     public function autenticar($email, $senha)
     {
