@@ -10,6 +10,20 @@ session_start();
 // Cria o roteador
 $router = new Router();
 
+// Rota de depuração temporária
+$router->get('/debug-env', function() {
+    header('Content-Type: text/plain');
+    echo "--- Debugging Environment Variables ---\n\n";
+    echo "DB_TYPE: " . (getenv('DB_TYPE') ?: 'NOT SET') . "\n";
+    echo "DB_HOST: " . (getenv('DB_HOST') ?: 'NOT SET') . "\n";
+    echo "DB_PORT: " . (getenv('DB_PORT') ?: 'NOT SET') . "\n";
+    echo "DB_DATABASE: " . (getenv('DB_DATABASE') ?: 'NOT SET') . "\n";
+    echo "DB_USERNAME: " . (getenv('DB_USERNAME') ?: 'NOT SET') . "\n";
+    echo "DB_PASSWORD: " . (getenv('DB_PASSWORD') ? 'SET (hidden)' : 'NOT SET') . "\n";
+    return null;
+});
+
+
 // Rota de teste
 $router->get('/test', 'HomeController@test');
 $router->get('/test-footer', 'HomeController@testFooter');
