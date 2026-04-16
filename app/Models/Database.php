@@ -20,10 +20,10 @@ class Database
         $config = require __DIR__ . '/../../config/database.php';
         
         try {
-            // Detectar se é PostgreSQL ou MySQL baseado na variável de ambiente
-            $dbType = $_ENV['DB_TYPE'] ?? 'mysql';
+            // Detectar se é PostgreSQL ou MySQL baseado na configuração carregada
+            $dbType = $config['type'] ?? 'mysql';
             
-            if ($dbType === 'postgresql') {
+            if ($dbType === 'pgsql' || $dbType === 'postgresql') { // Aceita ambos os nomes
                 $dsn = "pgsql:host={$config['host']};port={$config['port']};dbname={$config['database']}";
                 $options = [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -119,6 +119,7 @@ class Database
 
     public function getDbType()
     {
-        return $_ENV['DB_TYPE'] ?? 'mysql';
+        $config = require __DIR__ . '/../../config/database.php';
+        return $config['type'] ?? 'mysql';
     }
-} 
+}
