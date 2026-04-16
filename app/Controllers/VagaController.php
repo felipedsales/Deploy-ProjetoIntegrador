@@ -16,6 +16,24 @@ class VagaController extends Controller
         $this->candidatoModel = new Candidato();
     }
 
+    /**
+     * Retorna uma lista de vagas em formato JSON para a API.
+     */
+    public function apiIndex()
+    {
+        header('Content-Type: application/json');
+        $busca = $this->getQuery('busca');
+        
+        if ($busca) {
+            $vagas = $this->vagaModel->buscarVagas($busca);
+        } else {
+            $vagas = $this->vagaModel->findAll();
+        }
+
+        echo json_encode($vagas);
+        return null; // Retorna nulo para que o dispatcher não tente imprimir nada a mais
+    }
+
     public function index()
     {
         $busca = $this->getQuery('busca');
@@ -68,7 +86,7 @@ class VagaController extends Controller
     public function desistir()
     {
         if (!$this->isLoggedIn()) {
-            $this->redirect('/login');
+            $this->redirect('/minhas-candidaturas');
         }
 
         if (!$this->isPost()) {
@@ -215,4 +233,4 @@ class VagaController extends Controller
             $this->redirect("/vagas/{$vagaId}?error=erro_denuncia");
         }
     }
-} 
+}
