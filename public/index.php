@@ -3,12 +3,46 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Router;
+use App\Models\Database;
 
 // Inicia a sessão
 session_start();
 
 // Cria o roteador
 $router = new Router();
+
+// --- ROTA DE SETUP DO BANCO DE DADOS (TEMPORÁRIA) ---
+$router->get('/setup-database-agora-vai', function() {
+    try {
+        echo "<h1>Iniciando setup do banco de dados...</h1>";
+        
+        $pdo = Database::getInstance()->getConnection();
+        $sqlFile = __DIR__ . '/../database/schema.sql';
+
+        if (!file_exists($sqlFile)) {
+            throw new \Exception("Arquivo schema.sql não encontrado em {$sqlFile}");
+        }
+
+        $sql = file_get_contents($sqlFile);
+        
+        // Executa o script SQL
+        $pdo->exec($sql);
+
+        echo "<h2>SUCESSO!</h2>";
+        echo "<p>O banco de dados foi configurado e as tabelas foram criadas.</p>";
+        echo "<p><strong>IMPORTANTE:</strong> Agora remova esta rota do arquivo 'public/index.php' por segurança!</p>";
+
+    } catch (\Exception $e) {
+        echo "<h2>ERRO DURANTE O SETUP:</h2>";
+        echo "<pre style='background-color: #f0f0f0; padding: 10px; border: 1px solid red;'>";
+        echo "Erro: " . $e->getMessage() . "\n";
+        echo "Arquivo: " . $e->getFile() . "\n";
+        echo "Linha: " . $e->getLine() . "\n";
+        echo "</pre>";
+    }
+    return null;
+});
+
 
 // Rota de depuração temporária
 $router->get('/debug-env', function() {
