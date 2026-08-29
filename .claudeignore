@@ -1,0 +1,190 @@
+# .claudeignore — Ferraz Conecta
+# Mantém fora do contexto do Claude Code o que é segredo, pesado ou irrelevante.
+# Sintaxe igual à do .gitignore (a última regra que casa vence; "!" re-inclui).
+
+# ─────────────────────────────────────────────────────────────
+# Segredos e variáveis de ambiente
+# ─────────────────────────────────────────────────────────────
+.env
+.env.*
+*.env
+env.php
+config/secrets.php
+
+# ─────────────────────────────────────────────────────────────
+# Chaves e certificados
+# ─────────────────────────────────────────────────────────────
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+*.keystore
+*.jks
+google-services.json
+GoogleService-Info.plist
+
+# ─────────────────────────────────────────────────────────────
+# Credenciais de ferramentas
+# ─────────────────────────────────────────────────────────────
+auth.json
+.npmrc
+.netrc
+.railway/
+
+# ─────────────────────────────────────────────────────────────
+# Dependências
+# ─────────────────────────────────────────────────────────────
+vendor/
+node_modules/
+.pnp/
+.yarn/
+
+# ─────────────────────────────────────────────────────────────
+# Arquivos de lock
+# ─────────────────────────────────────────────────────────────
+composer.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+Podfile.lock
+Gemfile.lock
+
+# ─────────────────────────────────────────────────────────────
+# Uploads de usuários (currículos, cartas de apresentação, logos)
+# ─────────────────────────────────────────────────────────────
+uploads/
+storage/curriculos/
+storage/cartas/
+public/uploads/
+
+# ─────────────────────────────────────────────────────────────
+# Documentos soltos (PDF/DOC/etc.) — os de docs/ ficam visíveis
+# (re-inclusão no fim do arquivo)
+# ─────────────────────────────────────────────────────────────
+*.pdf
+*.doc
+*.docx
+*.odt
+*.rtf
+*.ppt
+*.pptx
+*.xls
+*.xlsx
+
+# ─────────────────────────────────────────────────────────────
+# Build, cache e temporários
+# ─────────────────────────────────────────────────────────────
+dist/
+build/
+.expo/
+.expo-shared/
+.cache/
+tmp/
+temp/
+logs/
+*.log
+web-build/
+.parcel-cache/
+coverage/
+
+# ─────────────────────────────────────────────────────────────
+# Dumps e backups de banco (schema.sql NÃO é afetado)
+# ─────────────────────────────────────────────────────────────
+*.dump
+*.sql.gz
+*.sql.bz2
+*.sql.zip
+*.sql.tar
+*.bak
+*.backup
+*dump*.sql
+*backup*.sql
+dump.sql
+backups/
+database/backups/
+
+# ─────────────────────────────────────────────────────────────
+# Metadados de VCS e IDE / SO
+# ─────────────────────────────────────────────────────────────
+.git/
+.idea/
+.vscode/
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ─────────────────────────────────────────────────────────────
+# Assets binários pesados
+# ─────────────────────────────────────────────────────────────
+# Imagens
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tif
+*.tiff
+*.webp
+*.ico
+*.icns
+*.heic
+# Arquivos de design
+*.psd
+*.ai
+*.sketch
+*.fig
+*.xd
+*.eps
+# Fontes
+*.ttf
+*.otf
+*.woff
+*.woff2
+*.eot
+# Áudio e vídeo
+*.mp3
+*.wav
+*.ogg
+*.flac
+*.m4a
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+# Compactados
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.gz
+*.bz2
+*.xz
+*.rar
+*.7z
+# Binários e pacotes de app
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+*.apk
+*.aab
+*.ipa
+*.jar
+*.phar
+
+# ─────────────────────────────────────────────────────────────
+# Re-inclusões (mantêm visível o que importa para a disciplina)
+# ─────────────────────────────────────────────────────────────
+!.env.example
+!docs/
+!docs/**
+!database/schema.sql
