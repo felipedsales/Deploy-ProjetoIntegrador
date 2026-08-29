@@ -1,0 +1,23 @@
+# =============================================================
+# Ferraz Conecta - arquivos que NAO vao para o repositorio
+# =============================================================
+
+# Variaveis de ambiente / credenciais (RNF03) - nunca versionar.
+# O .env.example (modelo, sem segredos) continua versionado.
+.env
+.env.*
+!.env.example
+
+# Dependencias instalaveis
+/node_modules/
+
+# Logs e temporarios
+*.log
+/logs/
+/tmp/
+
+# Configuracoes de IDE / sistema operacional
+/.idea/
+/.vscode/
+.DS_Store
+Thumbs.db
