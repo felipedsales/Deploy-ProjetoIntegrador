@@ -32,6 +32,11 @@ RUN a2dismod mpm_event || true \
     && a2dismod mpm_worker || true \
     && a2enmod mpm_prefork
 
+# Verificação em build-time: se sobrar mais de um MPM habilitado, o build
+# falha AQUI, com a mensagem exata do Apache no log de build — em vez de só
+# descobrir em runtime (crash-loop + 502) depois do deploy no Railway.
+RUN apache2ctl -M
+
 WORKDIR /var/www/html
 
 # Instala as dependências do PHP antes de copiar o restante do código, para
