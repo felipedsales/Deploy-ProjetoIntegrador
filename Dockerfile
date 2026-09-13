@@ -20,22 +20,24 @@ RUN apt-get update && apt-get install -y \
 RUN a2enmod rewrite
 
 # Garante um único MPM ativo. mod_php (usado aqui, não é PHP-FPM) exige o MPM
-# prefork — não é thread-safe — e é o que a imagem php:8.2-apache habilita por
-# padrão. Mas o pacote apache2 do Debian traz mpm_event como padrão do
-# distro, e instalações/upgrades de pacote nesta camada podem reabilitá-lo
-# junto com o prefork já ativo. Dois MPMs carregados ao mesmo tempo derrubam
-# o Apache no start ("AH00534: More than one MPM loaded"), o container entra
-# em crash-loop e o Railway responde 502. Por isso desabilita os outros
-# explicitamente antes de (re)habilitar só o prefork — idempotente mesmo que
-# algum já esteja desabilitado.
-RUN a2dismod mpm_event || true \
-    && a2dismod mpm_worker || true \
+# prefork — não é thread-safe. Mexe direto nos symlinks de mods-enabled em vez
+# de confiar no exit code do a2dismod/a2enmod: "a2dismod x || true" pode
+# mascarar uma falha real do a2dismod tanto quanto "apache2ctl -M" mascarava
+# uma falha real do Apache (o -M do Debian passa a saída por pipe/sort/grep,
+# e o exit code do RUN acaba sendo o do filtro, não o do httpd — por isso a
+# checagem anterior "passou" no build mesmo com dois MPMs habilitados).
+# "find -delete" e "wc -l" abaixo são fatos do sistema de arquivos, não
+# interpretação de mensagem de programa.
+RUN find /etc/apache2/mods-enabled/ -name 'mpm_*' ! -name 'mpm_prefork*' -delete \
     && a2enmod mpm_prefork
 
-# Verificação em build-time: se sobrar mais de um MPM habilitado, o build
-# falha AQUI, com a mensagem exata do Apache no log de build — em vez de só
-# descobrir em runtime (crash-loop + 502) depois do deploy no Railway.
-RUN apache2ctl -M
+# Verificação em build-time: conta os mpm_*.load habilitados via substituição
+# de comando (não pipe) e falha o build se não for exatamente 1, imprimindo
+# a lista real no log — para não repetir o falso-positivo do apache2ctl -M.
+RUN n=$(find /etc/apache2/mods-enabled/ -name 'mpm_*.load' | wc -l); \
+    echo "MPMs habilitados em mods-enabled/: $n"; \
+    find /etc/apache2/mods-enabled/ -name 'mpm_*' -exec ls -la {} \; ; \
+    [ "$n" -eq 1 ]
 
 WORKDIR /var/www/html
 
