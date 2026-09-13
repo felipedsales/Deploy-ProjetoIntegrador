@@ -19,6 +19,19 @@ RUN apt-get update && apt-get install -y \
 # Habilita mod_rewrite (necessário para o roteamento via public/.htaccess)
 RUN a2enmod rewrite
 
+# Garante um único MPM ativo. mod_php (usado aqui, não é PHP-FPM) exige o MPM
+# prefork — não é thread-safe — e é o que a imagem php:8.2-apache habilita por
+# padrão. Mas o pacote apache2 do Debian traz mpm_event como padrão do
+# distro, e instalações/upgrades de pacote nesta camada podem reabilitá-lo
+# junto com o prefork já ativo. Dois MPMs carregados ao mesmo tempo derrubam
+# o Apache no start ("AH00534: More than one MPM loaded"), o container entra
+# em crash-loop e o Railway responde 502. Por isso desabilita os outros
+# explicitamente antes de (re)habilitar só o prefork — idempotente mesmo que
+# algum já esteja desabilitado.
+RUN a2dismod mpm_event || true \
+    && a2dismod mpm_worker || true \
+    && a2enmod mpm_prefork
+
 WORKDIR /var/www/html
 
 # Instala as dependências do PHP antes de copiar o restante do código, para
