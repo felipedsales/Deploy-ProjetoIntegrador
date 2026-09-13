@@ -105,8 +105,11 @@ Deploy-ProjetoIntegrador/
 ### Dockerfile
 - Usa PHP 8.2 com Apache
 - Instala a extensão `pdo_mysql`
-- Configura Apache para usar pasta `public/`
-- Cria `.htaccess` para URL rewriting
+- Configura Apache para usar pasta `public/` (o `.htaccess` de URL rewriting já
+  vem versionado em `public/.htaccess`, o Dockerfile não recria esse arquivo)
+- O Apache escuta na porta definida pela variável `PORT` (injetada
+  automaticamente pelo Railway em tempo de execução), via
+  `docker/entrypoint.sh` — não há porta fixa no Dockerfile
 
 ### railway.json
 - Configura o build usando Dockerfile
@@ -141,11 +144,13 @@ O projeto mantém sua estrutura MVC original:
 3. Filtre por erro, info, etc.
 
 ### Testar Conexão com Banco
-Não há endpoint `/debug.php` neste projeto. Se a home responder "Erro de
-configuração do servidor. Contate o administrador do sistema.", vá em "Logs" no
-Railway: `config/database.php` grava no log exatamente quais variáveis
-(`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`) estão ausentes antes de lançar essa
-mensagem genérica.
+Acesse `GET /health`: responde 200 com `{"success":true,"data":{"status":"ok","banco":"conectado"|"indisponivel"}}`.
+É esse endpoint que o `railway.json` usa como `healthcheckPath`. Se
+`banco` vier `"indisponivel"` (ou a home responder "Erro de configuração do
+servidor. Contate o administrador do sistema."), vá em "Logs" no Railway:
+`config/database.php` grava no log exatamente quais variáveis (`DB_HOST`,
+`DB_NAME`, `DB_USER`, `DB_PASS`) estão ausentes antes de lançar essa mensagem
+genérica.
 
 ### Variáveis de Ambiente
 1. No app, vá em "Variables"
