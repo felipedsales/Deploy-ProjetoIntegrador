@@ -12,58 +12,42 @@ class Database
 
     private function __construct()
     {
-        // Carregar variáveis de ambiente se não estiverem carregadas
-        if (!function_exists('getenv') || empty($_ENV)) {
-            $this->loadEnv();
-        }
-        
+        // As variáveis de ambiente já foram carregadas uma única vez em
+        // app/bootstrap.php (via vlucas/phpdotenv). Aqui só lemos a config.
         $config = require __DIR__ . '/../../config/database.php';
-        
-        try {
-            // Detectar se é PostgreSQL ou MySQL baseado na configuração carregada
-            $dbType = $config['type'] ?? 'mysql';
-            
-            if ($dbType === 'pgsql' || $dbType === 'postgresql') { // Aceita ambos os nomes
-                $dsn = "pgsql:host={$config['host']};port={$config['port']};dbname={$config['database']}";
-                $options = [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false,
-                ];
-            } else {
-                // MySQL (padrão)
-                $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset={$config['charset']}";
-                $options = [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false,
-                    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
-                    PDO::MYSQL_ATTR_SSL_CA => false,
-                    PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
-                    PDO::MYSQL_ATTR_FOUND_ROWS => true,
-                    PDO::ATTR_PERSISTENT => false,
-                ];
-            }
-            
-            $this->connection = new PDO($dsn, $config['username'], $config['password'], $options);
-            
-        } catch (PDOException $e) {
-            throw new \Exception("Erro na conexão com o banco de dados: " . $e->getMessage());
-        }
-    }
 
-    private function loadEnv()
-    {
-        // Carregar variáveis de ambiente do arquivo .env se existir
-        $envFile = __DIR__ . '/../../.env';
-        if (file_exists($envFile)) {
-            $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-            foreach ($lines as $line) {
-                if (strpos($line, '=') !== false && strpos($line, '#') !== 0) {
-                    list($key, $value) = explode('=', $line, 2);
-                    $_ENV[trim($key)] = trim($value);
+        try {
+            $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset={$config['charset']}";
+            $options = [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
+                PDO::MYSQL_ATTR_FOUND_ROWS => true,
+                PDO::ATTR_PERSISTENT => false,
+            ];
+
+            // RNF03 exige comunicação criptografada com o banco. Em produção
+            // (Railway) isso é atendido pela rede privada entre os serviços;
+            // se o MySQL de destino exigir TLS explícito, aponte DB_SSL_CA
+            // para o certificado da CA. Sem essa variável — caso do MySQL
+            // local — conecta sem TLS: ativar MYSQL_ATTR_SSL_CA sem um
+            // certificado válido faz o servidor derrubar a conexão (era a
+            // causa do "SQLSTATE[HY000] [2006] MySQL server has gone away").
+            $sslCa = $config['ssl_ca'] ?? null;
+            if ($sslCa !== null && $sslCa !== '') {
+                if (is_file($sslCa)) {
+                    $options[PDO::MYSQL_ATTR_SSL_CA] = $sslCa;
+                    $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = true;
+                } else {
+                    error_log("[Ferraz Conecta] DB_SSL_CA definida mas o arquivo nao existe: {$sslCa}. Conectando sem TLS.");
                 }
             }
+
+            $this->connection = new PDO($dsn, $config['username'], $config['password'], $options);
+
+        } catch (PDOException $e) {
+            throw new \Exception("Erro na conexão com o banco de dados: " . $e->getMessage());
         }
     }
 
@@ -115,11 +99,5 @@ class Database
     public function rollback()
     {
         return $this->connection->rollback();
-    }
-
-    public function getDbType()
-    {
-        $config = require __DIR__ . '/../../config/database.php';
-        return $config['type'] ?? 'mysql';
     }
 }

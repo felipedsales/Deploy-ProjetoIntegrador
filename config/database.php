@@ -9,12 +9,13 @@
  * do serviço no Railway.
  *
  * Variáveis lidas:
- *   DB_CONNECTION  driver PDO      (opcional, padrão: mysql)
  *   DB_HOST        host do banco   (obrigatória)
  *   DB_PORT        porta           (opcional, padrão: 3306)
  *   DB_NAME        nome do banco   (obrigatória)
  *   DB_USER        usuário         (obrigatória)
  *   DB_PASS        senha           (obrigatória; o valor pode ser vazio)
+ *   DB_SSL_CA      caminho do certificado CA para TLS (opcional; vazia = sem TLS,
+ *                  caso do MySQL local — ver RNF03 em App\Models\Database)
  *
  * O objeto PDO propriamente dito — com prepared statements (ATTR_EMULATE_PREPARES
  * = false) e charset utf8mb4 — é montado em App\Models\Database a partir deste
@@ -50,11 +51,11 @@ if ($faltando !== []) {
 }
 
 return [
-    'type'     => strtolower((string) ferraz_env('DB_CONNECTION', 'mysql')),
     'host'     => $valores['DB_HOST'],
     'port'     => (int) ferraz_env('DB_PORT', 3306),
     'database' => $valores['DB_NAME'],
     'username' => $valores['DB_USER'],
     'password' => $valores['DB_PASS'],
     'charset'  => 'utf8mb4',
+    'ssl_ca'   => ferraz_env('DB_SSL_CA'),
 ];

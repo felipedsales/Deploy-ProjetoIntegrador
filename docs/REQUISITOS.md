@@ -185,5 +185,8 @@ Requisitos e regras que **ainda não têm suporte no `schema.sql`**. Cada item e
 3. **Planilha RN08 (carta = +30%)** — confirmar o descarte ou reescrever como regra
    verificável.
 4. **RF25 / RN13 (IA de currículos)** — permanecem como opcionais e fora da v1?
-5. **Banco de dados** — MySQL (documentação) × PostgreSQL (código atual). Ver decisão
-   registrada no `CLAUDE.md`.
+5. **Banco de dados** — ~~MySQL (documentação) × PostgreSQL (código atual)~~.
+   **Resolvido em 2026-08-29:** padronizado em **MySQL 8** (Projeto Integrador e
+   Documento de Visão). `database/schema.sql` convertido para o dialeto MySQL,
+   dados de exemplo movidos para `database/seed.sql`, e removidos o driver
+   `pdo_pgsql` (Dockerfile) e o ramo `pgsql` de `app/Models/Database.php`.
