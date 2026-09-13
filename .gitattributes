@@ -1,0 +1,5 @@
+# Scripts que rodam dentro do container Linux precisam de quebra de linha LF
+# mesmo quando o checkout acontece no Windows (core.autocrlf=true por padrão
+# aqui) — CRLF num shebang quebra o container com "bad interpreter".
+docker/entrypoint.sh text eol=lf
+*.sh text eol=lf

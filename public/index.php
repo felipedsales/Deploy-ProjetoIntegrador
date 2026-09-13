@@ -15,6 +15,9 @@ $router = new Router();
 $router->get('/test', 'HomeController@test');
 $router->get('/test-footer', 'HomeController@testFooter');
 
+// Healthcheck de infraestrutura (Railway) — não é RF/RN, ver HealthController
+$router->get('/health', 'HealthController@index');
+
 // Rotas da aplicação
 $router->get('/', 'HomeController@index');
 $router->get('/sobre', 'HomeController@sobre');

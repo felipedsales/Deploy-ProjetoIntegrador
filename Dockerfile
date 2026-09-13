@@ -1,7 +1,8 @@
-# Usar imagem oficial do PHP com Apache
+# Imagem oficial do PHP 8.2 com Apache
 FROM php:8.2-apache
 
-# Instalar dependências do sistema
+# Dependências de sistema e extensões PHP exigidas pela aplicação
+# (pdo_mysql é a que a camada de acesso a dados usa — ver app/Models/Database.php)
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -11,44 +12,44 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     libzip-dev \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Habilitar mod_rewrite para Apache
+# Habilita mod_rewrite (necessário para o roteamento via public/.htaccess)
 RUN a2enmod rewrite
 
-# Definir diretório de trabalho
 WORKDIR /var/www/html
 
-# Copiar arquivos do composer
+# Instala as dependências do PHP antes de copiar o restante do código, para
+# aproveitar o cache de camadas do Docker enquanto composer.lock não muda
 COPY composer.json composer.lock ./
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
-# Instalar Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Instalar dependências do PHP
-RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Copiar código da aplicação
+# Copia o restante do código da aplicação (vendor/, .env e .git ficam de fora
+# por causa do .dockerignore)
 COPY . .
 
-# Criar diretório de uploads e dar permissões
-RUN mkdir -p uploads && chmod 755 uploads
+# Reconstrói o autoloader agora que app/ já foi copiado, para o classmap
+# otimizado incluir de fato as classes do namespace App\
+RUN composer dump-autoload --no-dev --optimize --no-interaction
 
-# Configurar permissões
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+# Diretório de uploads e permissões
+RUN mkdir -p uploads \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html \
+    && chmod -R 775 uploads
 
-# Configurar Apache para usar a pasta public como DocumentRoot
+# DocumentRoot aponta para public/ (public/.htaccess já cuida do rewrite)
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 
-# Configurar .htaccess para redirecionar tudo para index.php
-RUN echo 'RewriteEngine On' > /var/www/html/public/.htaccess \
-    && echo 'RewriteCond %{REQUEST_FILENAME} !-f' >> /var/www/html/public/.htaccess \
-    && echo 'RewriteCond %{REQUEST_FILENAME} !-d' >> /var/www/html/public/.htaccess \
-    && echo 'RewriteRule ^(.*)$ index.php [QSA,L]' >> /var/www/html/public/.htaccess
+# Script de entrada: ajusta a porta do Apache para a que o Railway injetar em $PORT
+COPY docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Expor porta 80
-EXPOSE 80
+# Apenas documentação da porta padrão; quem decide a porta real é $PORT em runtime
+EXPOSE 8080
 
-# Comando para iniciar Apache
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]
