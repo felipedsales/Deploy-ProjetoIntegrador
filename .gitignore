@@ -10,6 +10,7 @@
 
 # Dependencias instalaveis
 /node_modules/
+/vendor/
 
 # Logs e temporarios
 *.log

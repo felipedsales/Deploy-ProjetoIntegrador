@@ -7,154 +7,11 @@
 
 Sistema de vagas e candidatos para Ferraz de Vasconcelos, desenvolvido com arquitetura MVC e Composer.
 
-## 🚀 Deploy no Render
+## 🚀 Deploy
 
-### Pré-requisitos
-- Conta no Render (https://render.com)
-- Repositório Git (GitHub, GitLab, Bitbucket)
-- Projeto subido para o repositório
-
-### Passo a Passo para Deploy
-
-#### 1. Preparar o Repositório
-Certifique-se de que todos os arquivos estão commitados e pushados para o repositório:
-```bash
-git add .
-git commit -m "Preparando para deploy no Render"
-git push origin main
-```
-
-#### 2. Criar Conta no Render
-- Acesse https://render.com
-- Faça login com sua conta GitHub/GitLab/Bitbucket
-
-#### 3. Criar Novo Web Service
-1. Clique em "New +" > "Web Service"
-2. Conecte seu repositório
-3. Configure o serviço:
-   - **Name**: ferraz-conecta
-   - **Environment**: Docker
-   - **Branch**: main
-   - **Root Directory**: (deixe vazio)
-   - **Build Command**: (deixe vazio - o Dockerfile cuida)
-   - **Start Command**: (deixe vazio - o Dockerfile cuida)
-
-#### 4. Configurar Variáveis de Ambiente
-No painel do Render, vá em "Environment" e adicione:
-
-**Variáveis da Aplicação:**
-- `APP_URL`: https://seu-app.onrender.com
-- `APP_DEBUG`: false
-- `DB_TYPE`: postgresql
-
-**Variáveis do Banco de Dados:**
-- `DB_HOST`: (será preenchido automaticamente)
-- `DB_USERNAME`: (será preenchido automaticamente)
-- `DB_PASSWORD`: (será preenchido automaticamente)
-- `DB_DATABASE`: (será preenchido automaticamente)
-- `DB_PORT`: (será preenchido automaticamente)
-
-#### 5. Criar Banco de Dados
-1. No painel do Render, clique em "New +" > "PostgreSQL"
-2. Configure:
-   - **Name**: ferraz-conecta-db
-   - **Database**: ferraz_conecta
-   - **User**: ferraz_conecta_user
-   - **Plan**: Starter (gratuito)
-
-#### 6. Conectar Banco ao App
-1. No seu Web Service, vá em "Environment"
-2. Clique em "Link Database"
-3. Selecione o banco criado
-4. As variáveis de ambiente do banco serão preenchidas automaticamente
-
-#### 7. Deploy
-1. Clique em "Create Web Service"
-2. O Render começará o build automaticamente
-3. Aguarde o deploy (pode levar alguns minutos)
-
-### 🔧 Resolução de Problemas
-
-#### Erro de Conexão com Banco de Dados
-Se aparecer o erro "No such file or directory" na conexão com banco:
-
-1. **Verificar se o banco foi criado:**
-   - No painel do Render, confirme se o PostgreSQL foi criado
-   - Verifique se está conectado ao Web Service
-
-2. **Verificar variáveis de ambiente:**
-   - Acesse seu app + `/debug.php` (ex: https://seu-app.onrender.com/debug.php)
-   - Confirme se as variáveis DB_* estão preenchidas
-
-3. **Configurações importantes:**
-   - `DB_TYPE` deve ser `postgresql`
-   - Todas as variáveis DB_* devem estar configuradas
-
-4. **Re-deploy se necessário:**
-   - No painel do Render, vá em "Manual Deploy"
-   - Clique em "Deploy latest commit"
-
-#### Debug da Aplicação
-Para verificar as configurações, acesse:
-```
-https://seu-app.onrender.com/debug.php
-```
-
-Este arquivo mostrará:
-- Variáveis de ambiente
-- Configuração do banco
-- Status da conexão
-- Extensões PHP instaladas
-
-### 📁 Estrutura do Projeto
-
-```
-Deploy-ProjetoIntegrador/
-├── app/
-│   ├── Controllers/     # Controladores da aplicação
-│   ├── Models/         # Modelos de dados
-│   └── Views/          # Views/templates
-├── config/             # Configurações
-├── public/             # Arquivos públicos (CSS, JS, imagens)
-├── uploads/            # Uploads de arquivos
-├── vendor/             # Dependências do Composer
-├── Dockerfile          # Configuração do Docker
-├── composer.json       # Dependências PHP
-└── render.yaml         # Configuração do Render
-```
-
-### 🔧 Configurações Importantes
-
-#### Dockerfile
-- Usa PHP 8.1 com Apache
-- Instala extensões MySQL e PostgreSQL
-- Configura o Apache para usar a pasta `public/` como DocumentRoot
-- Cria arquivo `.htaccess` para URL rewriting
-
-#### Banco de Dados
-- Configurado para usar PostgreSQL (padrão do Render)
-- Suporte a variáveis de ambiente
-- Conexão automática via Render
-
-### 🐛 Troubleshooting
-
-#### Erro de Build
-- Verifique se o `Dockerfile` está na raiz do projeto
-- Confirme se o `composer.json` está correto
-- Verifique os logs no painel do Render
-
-#### Erro de Conexão com Banco
-- Confirme se as variáveis de ambiente estão configuradas
-- Verifique se o banco está criado e conectado
-- Use o arquivo `/debug.php` para diagnosticar
-- Confirme se `DB_TYPE=postgresql` está configurado
-
-#### Erro 404
-- Verifique se o `.htaccess` foi criado corretamente
-- Confirme se o Apache está configurado para usar a pasta `public/`
-
-### 📞 Suporte
-Para problemas específicos do Render, consulte a documentação oficial: https://render.com/docs
+O deploy é feito no **Railway**, com **MySQL 8** como banco de dados. Passo a
+passo completo, variáveis de ambiente e troubleshooting específico do Railway
+estão em [README-RAILWAY.md](README-RAILWAY.md).
 
 ## Estrutura do Projeto
 
@@ -184,7 +41,11 @@ ProjetoIntegradorFerraz/
 │   │   └── empresa/              # Views de empresas
 │   └── Router.php                # Sistema de roteamento
 ├── config/                       # Configurações
-│   └── database.php              # Configuração do banco de dados
+│   ├── database.php              # Configuração do banco de dados (lê variáveis de ambiente)
+│   └── social_auth.php           # Configuração de login social (Google/LinkedIn)
+├── database/                     # Scripts SQL (MySQL 8)
+│   ├── schema.sql                # Estrutura das tabelas
+│   └── seed.sql                  # Dados de exemplo (opcional)
 ├── public/                       # Arquivos públicos
 │   ├── css/                      # Arquivos CSS
 │   ├── js/                       # Arquivos JavaScript
@@ -192,30 +53,45 @@ ProjetoIntegradorFerraz/
 │   ├── .htaccess                 # Configuração do Apache
 │   └── index.php                 # Ponto de entrada da aplicação
 ├── vendor/                       # Dependências do Composer
+├── .env.example                  # Modelo de variáveis de ambiente
 ├── composer.json                 # Configuração do Composer
 └── README.md                     # Este arquivo
 ```
 
-## Instalação
+## Como rodar localmente
 
-1. **Clone o repositório:**
+Pré-requisitos: **PHP 8.2**, **Composer** e um servidor **MySQL 8** acessível.
+
+1. **Clone o repositório e instale as dependências:**
    ```bash
    git clone [url-do-repositorio]
-   cd ProjetoIntegradorFerraz
-   ```
-
-2. **Instale as dependências do Composer:**
-   ```bash
+   cd Deploy-ProjetoIntegrador
    composer install
    ```
 
-3. **Configure o banco de dados:**
-   - Edite o arquivo `config/database.php` com suas credenciais
-   - Importe o banco de dados (estrutura disponível em `database.sql`)
+2. **Crie o `.env` a partir do modelo e preencha os valores locais:**
+   ```bash
+   cp .env.example .env
+   ```
+   No mínimo, ajuste `DB_HOST`, `DB_NAME`, `DB_USER` e `DB_PASS` para o seu
+   MySQL local (as demais chaves já têm um valor padrão sensato).
 
-4. **Configure o servidor web:**
-   - Configure o DocumentRoot para a pasta `public/`
-   - Certifique-se de que o mod_rewrite está habilitado
+3. **Crie o banco e importe a estrutura (e, opcionalmente, os dados de exemplo):**
+   ```bash
+   mysql -u root -p --default-character-set=utf8mb4 \
+     -e "CREATE DATABASE IF NOT EXISTS ferraz_conecta CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+   mysql -u root -p --default-character-set=utf8mb4 ferraz_conecta -e "source database/schema.sql"
+   mysql -u root -p --default-character-set=utf8mb4 ferraz_conecta -e "source database/seed.sql"
+   ```
+   Troque `ferraz_conecta` pelo valor que você usou em `DB_NAME` no `.env`.
+
+4. **Suba o servidor embutido do PHP a partir da raiz do projeto:**
+   ```bash
+   php -S localhost:8000 -t public
+   ```
+   Acesse http://localhost:8000.
+
+Para o deploy em Railway, veja [README-RAILWAY.md](README-RAILWAY.md).
 
 ## Funcionalidades
 
@@ -250,7 +126,7 @@ ProjetoIntegradorFerraz/
 
 ## Tecnologias Utilizadas
 
-- **PHP 7.4+** - Linguagem de programação
+- **PHP 8.2** - Linguagem de programação
 - **Composer** - Gerenciador de dependências
 - **PDO** - Acesso ao banco de dados
 - **Bootstrap 5** - Framework CSS

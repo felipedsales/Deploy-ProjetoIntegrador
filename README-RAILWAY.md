@@ -51,15 +51,31 @@ git push origin main
 4. As variáveis serão preenchidas automaticamente
 
 ### 6. Configurar Variáveis de Ambiente
-No painel do Railway, vá em "Variables" e adicione:
+No painel do Railway, vá em "Variables" do serviço PHP e adicione:
 
 ```
 APP_URL=https://seu-app.railway.app
 APP_DEBUG=false
-DB_TYPE=mysql
 ```
 
-**Nota**: As variáveis do banco (DB_HOST, DB_USERNAME, etc.) são preenchidas automaticamente quando você conecta o banco.
+**Banco de dados** — o código lê exatamente estes nomes (ver `config/database.php`):
+`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`. O plugin MySQL do Railway
+**não** cria variáveis com esses nomes — ele expõe as próprias (`MYSQLHOST`,
+`MYSQLPORT`, `MYSQLDATABASE`, `MYSQLUSER`, `MYSQLPASSWORD`, visíveis na aba
+"Variables" do serviço MySQL). Referencie-as explicitamente no serviço PHP:
+
+```
+DB_HOST=${{MySQL.MYSQLHOST}}
+DB_PORT=${{MySQL.MYSQLPORT}}
+DB_NAME=${{MySQL.MYSQLDATABASE}}
+DB_USER=${{MySQL.MYSQLUSER}}
+DB_PASS=${{MySQL.MYSQLPASSWORD}}
+```
+
+(troque `MySQL` pelo nome que você deu ao serviço de banco, se for diferente).
+Sem esse mapeamento, `DB_HOST`/`DB_NAME`/`DB_USER`/`DB_PASS` ficam ausentes e a
+aplicação responde "Erro de configuração do servidor. Contate o administrador
+do sistema." — a validação está em `config/database.php`.
 
 ### 7. Deploy
 1. O Railway detectará o Dockerfile automaticamente
@@ -87,8 +103,8 @@ Deploy-ProjetoIntegrador/
 ## 🔧 Configurações Importantes
 
 ### Dockerfile
-- Usa PHP 8.1 com Apache
-- Instala extensões MySQL e PostgreSQL
+- Usa PHP 8.2 com Apache
+- Instala a extensão `pdo_mysql`
 - Configura Apache para usar pasta `public/`
 - Cria `.htaccess` para URL rewriting
 
@@ -125,7 +141,11 @@ O projeto mantém sua estrutura MVC original:
 3. Filtre por erro, info, etc.
 
 ### Testar Conexão com Banco
-Acesse: `https://seu-app.railway.app/debug.php`
+Não há endpoint `/debug.php` neste projeto. Se a home responder "Erro de
+configuração do servidor. Contate o administrador do sistema.", vá em "Logs" no
+Railway: `config/database.php` grava no log exatamente quais variáveis
+(`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`) estão ausentes antes de lançar essa
+mensagem genérica.
 
 ### Variáveis de Ambiente
 1. No app, vá em "Variables"
@@ -184,21 +204,6 @@ railway logs
 # Abrir no navegador
 railway open
 ```
-
-## 📊 MySQL vs PostgreSQL
-
-### MySQL (Escolhido)
-- ✅ **Mais familiar** para desenvolvedores PHP
-- ✅ **Melhor performance** para aplicações web
-- ✅ **Compatibilidade total** com seu código
-- ✅ **Mais recursos** de hospedagem disponíveis
-- ✅ **Comunidade maior** para suporte
-
-### PostgreSQL
-- ✅ Mais robusto para dados complexos
-- ✅ Melhor para consultas complexas
-- ❌ Menos familiar para desenvolvedores PHP
-- ❌ Pode ser overkill para aplicações simples
 
 ## 📞 Suporte
 

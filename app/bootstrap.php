@@ -4,8 +4,7 @@
  * Bootstrap da aplicação Ferraz Conecta.
  *
  * Ponto único de inicialização, incluído no topo de todo ponto de entrada
- * (public/index.php, netlify/functions/api.php, scripts de linha de comando,
- * testes). Ele:
+ * (public/index.php, scripts de linha de comando, testes). Ele:
  *   - registra o autoload do Composer;
  *   - carrega os helpers de infraestrutura;
  *   - lê o arquivo .env UMA ÚNICA VEZ.
