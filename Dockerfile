@@ -34,9 +34,14 @@ RUN find /etc/apache2/mods-enabled/ -name 'mpm_*' ! -name 'mpm_prefork*' -delete
 # Verificação em build-time: conta os mpm_*.load habilitados via substituição
 # de comando (não pipe) e falha o build se não for exatamente 1, imprimindo
 # a lista real no log — para não repetir o falso-positivo do apache2ctl -M.
+# Também varre TODA a árvore /etc/apache2 por qualquer LoadModule de mpm fora
+# do padrão mods-enabled (ex.: hardcoded em apache2.conf ou conf-enabled),
+# que o find acima não pegaria.
 RUN n=$(find /etc/apache2/mods-enabled/ -name 'mpm_*.load' | wc -l); \
     echo "MPMs habilitados em mods-enabled/: $n"; \
     find /etc/apache2/mods-enabled/ -name 'mpm_*' -exec ls -la {} \; ; \
+    echo "--- LoadModule de mpm em toda a arvore /etc/apache2 ---"; \
+    grep -rn "LoadModule.*mpm" /etc/apache2/ || true; \
     [ "$n" -eq 1 ]
 
 WORKDIR /var/www/html
