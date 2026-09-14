@@ -36,32 +36,43 @@ class Candidato extends Model
 
     public function getMinhasCandidaturas($candidatoId)
     {
-        $sql = "SELECT v.*, v.id as vaga_id, e.razao_social, cv.data_candidatura, cv.status 
-                FROM candidatos_vagas cv 
-                JOIN vagas v ON cv.vaga_id = v.id 
-                JOIN empresas e ON v.empresa_id = e.id 
-                WHERE cv.candidato_id = ? 
+        $sql = "SELECT v.*, v.id as vaga_id, e.nome, cv.data_candidatura, cv.status
+                FROM candidaturas cv
+                JOIN vagas v ON cv.vaga_id = v.id
+                JOIN empresas e ON v.empresa_id = e.id
+                WHERE cv.candidato_id = ?
                 ORDER BY cv.data_candidatura DESC";
         return $this->db->fetchAll($sql, [$candidatoId]);
     }
 
     public function candidatarVaga($candidatoId, $vagaId)
     {
-        // Verifica se já se candidatou
-        $sql = "SELECT * FROM candidatos_vagas WHERE candidato_id = ? AND vaga_id = ?";
+        // Verifica se já se candidatou (RN04)
+        $sql = "SELECT id FROM candidaturas WHERE candidato_id = ? AND vaga_id = ?";
         $existente = $this->db->fetch($sql, [$candidatoId, $vagaId]);
-        
+
         if ($existente) {
             return false; // Já se candidatou
         }
 
-        $sql = "INSERT INTO candidatos_vagas (candidato_id, vaga_id, data_candidatura, status) VALUES (?, ?, NOW(), 'pendente')";
-        return $this->db->query($sql, [$candidatoId, $vagaId]);
+        try {
+            $sql = "INSERT INTO candidaturas (vaga_id, candidato_id, status, data_candidatura) VALUES (?, ?, 'Pendente', NOW())";
+            return $this->db->query($sql, [$vagaId, $candidatoId]);
+        } catch (\PDOException $e) {
+            // RN04: a UNIQUE (vaga_id, candidato_id) é a implementação física da regra.
+            // Não confiar só na checagem acima — outra requisição concorrente pode ter
+            // inserido a candidatura entre o SELECT e o INSERT.
+            $sqlstate = $e->errorInfo[0] ?? $e->getCode();
+            if ($sqlstate === '23000') {
+                return false;
+            }
+            throw $e;
+        }
     }
 
     public function desistirCandidatura($candidatoId, $vagaId)
     {
-        $sql = "DELETE FROM candidatos_vagas WHERE candidato_id = ? AND vaga_id = ?";
+        $sql = "DELETE FROM candidaturas WHERE candidato_id = ? AND vaga_id = ?";
         return $this->db->query($sql, [$candidatoId, $vagaId]);
     }
 

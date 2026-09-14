@@ -1,5 +1,5 @@
 <?php
-$title = htmlspecialchars($empresa['razao_social']) . ' - Ferraz Conecta';
+$title = htmlspecialchars($empresa['nome'] ?? '') . ' - Ferraz Conecta';
 
 
 ?>
@@ -9,7 +9,7 @@ $title = htmlspecialchars($empresa['razao_social']) . ' - Ferraz Conecta';
         <div class="col-lg-8">
             <div class="empresa-detalhes">
                 <div class="empresa-header">
-                    <h1><?= htmlspecialchars($empresa['razao_social']) ?></h1>
+                    <h1><?= htmlspecialchars($empresa['nome'] ?? '') ?></h1>
                     <span class="empresa-badge">
                         <i class="fas fa-building"></i> Empresa Parceira
                     </span>
@@ -19,23 +19,23 @@ $title = htmlspecialchars($empresa['razao_social']) . ' - Ferraz Conecta';
                     <div class="empresa-info-grid">
                         <div class="empresa-info-item">
                             <h5><i class="fas fa-envelope"></i> Contato</h5>
-                            <p><?= htmlspecialchars($empresa['email']) ?></p>
+                            <p><?= htmlspecialchars($empresa['email'] ?? '') ?></p>
                         </div>
                         <div class="empresa-info-item">
                             <h5><i class="fas fa-phone"></i> Telefone</h5>
-                            <p><?= htmlspecialchars($empresa['telefone']) ?></p>
+                            <p><?= htmlspecialchars($empresa['telefone'] ?? 'Não informado') ?></p>
                         </div>
                         <div class="empresa-info-item">
                             <h5><i class="fas fa-id-card"></i> CNPJ</h5>
-                            <p><?= htmlspecialchars($empresa['cnpj']) ?></p>
+                            <p><?= htmlspecialchars($empresa['cnpj'] ?? 'Não informado') ?></p>
                         </div>
                         <div class="empresa-info-item">
                             <h5><i class="fas fa-map-marker-alt"></i> Localização</h5>
-                            <p><?= htmlspecialchars($empresa['endereco']) ?></p>
+                            <p><?= htmlspecialchars($empresa['endereco'] ?? 'Não informado') ?></p>
                         </div>
                     </div>
 
-                    <?php if ($empresa['descricao']): ?>
+                    <?php if (!empty($empresa['descricao'])): ?>
                         <div class="empresa-descricao">
                             <h5><i class="fas fa-info-circle"></i> Sobre a Empresa</h5>
                             <?= nl2br(htmlspecialchars($empresa['descricao'])) ?>
@@ -56,7 +56,7 @@ $title = htmlspecialchars($empresa['razao_social']) . ' - Ferraz Conecta';
                     <h5 class="card-title">Ações</h5>
                     
                     <div class="d-grid gap-2">
-                        <a href="/vagas?empresa=<?= $empresa['id'] ?>" class="btn btn-primary">
+                        <a href="/vagas?empresa=<?= $empresa['id'] ?? '' ?>" class="btn btn-primary">
                             <i class="fas fa-briefcase"></i> Ver Vagas da Empresa
                         </a>
                         
@@ -81,12 +81,12 @@ $title = htmlspecialchars($empresa['razao_social']) . ' - Ferraz Conecta';
                 <?php if (!empty($vagas)): ?>
                     <?php foreach (array_slice($vagas, 0, 5) as $vaga): ?>
                         <div class="vaga-item">
-                            <h6><?= htmlspecialchars($vaga['titulo']) ?></h6>
+                            <h6><?= htmlspecialchars($vaga['titulo'] ?? '') ?></h6>
                             <div class="vaga-meta">
-                                <span class="vaga-salario"><?= $this->formatMoney($vaga['salario']) ?></span>
-                                <span class="vaga-localizacao"><?= htmlspecialchars($vaga['localizacao']) ?></span>
+                                <span class="vaga-salario"><?= $this->formatMoney($vaga['salario'] ?? null) ?></span>
+                                <span class="vaga-localizacao"><?= htmlspecialchars($vaga['localizacao'] ?? 'Não informado') ?></span>
                             </div>
-                            <a href="/vagas/<?= $vaga['id'] ?>" class="btn btn-sm btn-outline-primary mt-2">
+                            <a href="/vagas/<?= $vaga['id'] ?? '' ?>" class="btn btn-sm btn-outline-primary mt-2">
                                 Ver Vaga
                             </a>
                         </div>
@@ -94,7 +94,7 @@ $title = htmlspecialchars($empresa['razao_social']) . ' - Ferraz Conecta';
                     
                     <?php if (count($vagas) > 5): ?>
                         <div class="text-center p-3">
-                            <a href="/vagas?empresa=<?= $empresa['id'] ?>" class="btn btn-outline-primary btn-sm">
+                            <a href="/vagas?empresa=<?= $empresa['id'] ?? '' ?>" class="btn btn-outline-primary btn-sm">
                                 Ver todas as <?= count($vagas) ?> vagas
                             </a>
                         </div>

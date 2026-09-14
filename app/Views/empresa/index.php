@@ -23,27 +23,27 @@ $title = 'Empresas - Ferraz Conecta';
         <?php foreach ($empresas as $empresa): ?>
             <div class="empresa-card">
                 <div class="empresa-header">
-                    <h3><?= htmlspecialchars($empresa['razao_social']) ?></h3>
+                    <h3><?= htmlspecialchars($empresa['nome'] ?? '') ?></h3>
                     <span class="empresa-badge">
                         <i class="fas fa-building"></i> Empresa
                     </span>
                 </div>
 
                 <ul class="empresa-info">
-                    <li><strong>Email:</strong> <?= htmlspecialchars($empresa['email']) ?></li>
-                    <li><strong>Telefone:</strong> <?= htmlspecialchars($empresa['telefone']) ?></li>
-                    <li><strong>CNPJ:</strong> <?= htmlspecialchars($empresa['cnpj']) ?></li>
-                    <li><strong>Endereço:</strong> <?= htmlspecialchars($empresa['endereco']) ?></li>
+                    <li><strong>Email:</strong> <?= htmlspecialchars($empresa['email'] ?? '') ?></li>
+                    <li><strong>Telefone:</strong> <?= htmlspecialchars($empresa['telefone'] ?? 'Não informado') ?></li>
+                    <li><strong>CNPJ:</strong> <?= htmlspecialchars($empresa['cnpj'] ?? 'Não informado') ?></li>
+                    <li><strong>Endereço:</strong> <?= htmlspecialchars($empresa['endereco'] ?? 'Não informado') ?></li>
                 </ul>
 
-                <?php if ($empresa['descricao']): ?>
+                <?php if (!empty($empresa['descricao'])): ?>
                     <div class="empresa-descricao">
                         <?= htmlspecialchars(substr($empresa['descricao'], 0, 150)) ?><?= strlen($empresa['descricao']) > 150 ? '...' : '' ?>
                     </div>
                 <?php endif; ?>
 
                 <div class="mt-3">
-                    <a href="/empresas/<?= $empresa['id'] ?>" class="btn btn-primary">
+                    <a href="/empresas/<?= $empresa['id'] ?? '' ?>" class="btn btn-primary">
                         <i class="fas fa-eye"></i> Ver Detalhes
                     </a>
                 </div>
