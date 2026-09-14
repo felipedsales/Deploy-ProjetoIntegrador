@@ -31,3 +31,13 @@ if (class_exists(\Dotenv\Dotenv::class)) {
     // O pacote ainda não foi instalado, mas há um .env local esperando para ser lido.
     error_log('[Ferraz Conecta] vlucas/phpdotenv nao instalado: o arquivo .env NAO foi carregado. Rode "composer install".');
 }
+
+// Exibição de erros segue o ambiente (APP_ENV / APP_DEBUG via
+// ferraz_ambiente_desenvolvimento()), nunca o padrão do php.ini do container:
+// em produção o container sobe com display_errors ligado por padrão, o que
+// vazava warning/notice na página. Log de erro fica sempre ativo, nos dois
+// ambientes.
+error_reporting(E_ALL);
+ini_set('log_errors', '1');
+ini_set('display_errors', ferraz_ambiente_desenvolvimento() ? '1' : '0');
+ini_set('display_startup_errors', ferraz_ambiente_desenvolvimento() ? '1' : '0');
