@@ -7,8 +7,8 @@ $title = 'Painel Empresa - Ferraz Conecta';
         <div class="col-lg-4">
             <div class="card shadow mb-4">
                 <div class="card-body text-center">
-                    <h4 class="card-title"><?= htmlspecialchars($empresa['razao_social']) ?></h4>
-                    <p class="text-muted"><?= htmlspecialchars($empresa['email']) ?></p>
+                    <h4 class="card-title"><?= htmlspecialchars($empresa['nome'] ?? '') ?></h4>
+                    <p class="text-muted"><?= htmlspecialchars($empresa['email'] ?? '') ?></p>
                     
                     <div class="d-grid gap-2">
                         <a href="/vagas/criar" class="btn btn-primary">
@@ -25,12 +25,12 @@ $title = 'Painel Empresa - Ferraz Conecta';
                 <div class="card-body">
                     <h5 class="card-title">Informações da Empresa</h5>
                     <ul class="list-unstyled">
-                        <li><strong>Telefone:</strong> <?= htmlspecialchars($empresa['telefone']) ?></li>
-                        <li><strong>CNPJ:</strong> <?= htmlspecialchars($empresa['cnpj']) ?></li>
-                        <li><strong>Endereço:</strong> <?= htmlspecialchars($empresa['endereco']) ?></li>
+                        <li><strong>Telefone:</strong> <?= htmlspecialchars($empresa['telefone'] ?? 'Não informado') ?></li>
+                        <li><strong>CNPJ:</strong> <?= htmlspecialchars($empresa['cnpj'] ?? 'Não informado') ?></li>
+                        <li><strong>Endereço:</strong> <?= htmlspecialchars($empresa['endereco'] ?? 'Não informado') ?></li>
                     </ul>
-                    
-                    <?php if ($empresa['descricao']): ?>
+
+                    <?php if (!empty($empresa['descricao'])): ?>
                         <h6>Descrição:</h6>
                         <p class="text-muted"><?= htmlspecialchars($empresa['descricao']) ?></p>
                     <?php endif; ?>
@@ -81,27 +81,27 @@ $title = 'Painel Empresa - Ferraz Conecta';
                                     <?php foreach ($vagas as $vaga): ?>
                                         <tr>
                                             <td>
-                                                <strong><?= htmlspecialchars($vaga['titulo']) ?></strong>
+                                                <strong><?= htmlspecialchars($vaga['titulo'] ?? '') ?></strong>
                                                 <br>
-                                                <small class="text-muted"><?= htmlspecialchars($vaga['localizacao']) ?></small>
+                                                <small class="text-muted"><?= htmlspecialchars($vaga['localizacao'] ?? 'Não informado') ?></small>
                                             </td>
-                                            <td><?= $this->formatMoney($vaga['salario']) ?></td>
+                                            <td><?= $this->formatMoney($vaga['salario'] ?? null) ?></td>
                                             <td>
                                                 <span class="badge bg-primary"><?= $vaga['total_candidatos'] ?? 0 ?></span>
                                             </td>
-                                            <td><?= date('d/m/Y', strtotime($vaga['data_postagem'])) ?></td>
+                                            <td><?= !empty($vaga['created_at']) ? date('d/m/Y', strtotime($vaga['created_at'])) : 'Não informado' ?></td>
                                             <td>
                                                 <div class="btn-group btn-group-sm">
-                                                    <a href="/vagas/<?= $vaga['id'] ?>" class="btn btn-outline-primary" title="Ver">
+                                                    <a href="/vagas/<?= $vaga['id'] ?? '' ?>" class="btn btn-outline-primary" title="Ver">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <a href="/vagas/<?= $vaga['id'] ?>/editar" class="btn btn-outline-warning" title="Editar">
+                                                    <a href="/vagas/<?= $vaga['id'] ?? '' ?>/editar" class="btn btn-outline-warning" title="Editar">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <a href="/empresa/vagas/<?= $vaga['id'] ?>/candidatos" class="btn btn-outline-info" title="Candidatos">
+                                                    <a href="/empresa/vagas/<?= $vaga['id'] ?? '' ?>/candidatos" class="btn btn-outline-info" title="Candidatos">
                                                         <i class="fas fa-users"></i>
                                                     </a>
-                                                    <form method="POST" action="/vagas/<?= $vaga['id'] ?>/excluir" class="d-inline" 
+                                                    <form method="POST" action="/vagas/<?= $vaga['id'] ?? '' ?>/excluir" class="d-inline"
                                                         onsubmit="return confirm('Tem certeza que deseja excluir esta vaga?')">
                                                         <button type="submit" class="btn btn-outline-danger" title="Excluir">
                                                             <i class="fas fa-trash"></i>

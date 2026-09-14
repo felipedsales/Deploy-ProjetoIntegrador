@@ -1,12 +1,12 @@
 <?php
-$title = 'Candidatos - ' . htmlspecialchars($vaga['titulo']) . ' - Ferraz Conecta';
+$title = 'Candidatos - ' . htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz Conecta';
 ?>
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2><i class="fas fa-users text-primary"></i> Candidatos da Vaga</h2>
-            <h5 class="text-muted"><?= htmlspecialchars($vaga['titulo']) ?></h5>
+            <h5 class="text-muted"><?= htmlspecialchars($vaga['titulo'] ?? '') ?></h5>
         </div>
         <a href="/empresa/vagas" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left"></i> Voltar às Vagas
@@ -32,8 +32,8 @@ $title = 'Candidatos - ' . htmlspecialchars($vaga['titulo']) . ' - Ferraz Conect
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <h3><?= htmlspecialchars($candidato['nome']) ?></h3>
-                            <span class="badge bg-<?= $candidato['status'] === 'aprovada' ? 'success' : ($candidato['status'] === 'reprovada' ? 'danger' : 'warning') ?>">
-                                <?= ucfirst(htmlspecialchars($candidato['status'])) ?>
+                            <span class="badge bg-<?= ($candidato['status'] ?? '') === 'Aprovada' ? 'success' : (($candidato['status'] ?? '') === 'Rejeitada' ? 'danger' : 'warning') ?>">
+                                <?= htmlspecialchars($candidato['status'] ?? 'Pendente') ?>
                             </span>
                         </div>
 
@@ -51,8 +51,8 @@ $title = 'Candidatos - ' . htmlspecialchars($vaga['titulo']) . ' - Ferraz Conect
                                 <form method="POST" action="/empresa/candidatos/status" class="d-inline">
                                     <input type="hidden" name="candidato_id" value="<?= $candidato['id'] ?>">
                                     <input type="hidden" name="vaga_id" value="<?= $vaga['id'] ?>">
-                                    <input type="hidden" name="status" value="aprovada">
-                                    <button type="submit" class="btn btn-success btn-sm" 
+                                    <input type="hidden" name="status" value="Aprovada">
+                                    <button type="submit" class="btn btn-success btn-sm"
                                         onclick="return confirm('Aprovar este candidato?')">
                                         <i class="fas fa-check"></i> Aprovar
                                     </button>
@@ -61,8 +61,8 @@ $title = 'Candidatos - ' . htmlspecialchars($vaga['titulo']) . ' - Ferraz Conect
                                 <form method="POST" action="/empresa/candidatos/status" class="d-inline">
                                     <input type="hidden" name="candidato_id" value="<?= $candidato['id'] ?>">
                                     <input type="hidden" name="vaga_id" value="<?= $vaga['id'] ?>">
-                                    <input type="hidden" name="status" value="reprovada">
-                                    <button type="submit" class="btn btn-danger btn-sm" 
+                                    <input type="hidden" name="status" value="Rejeitada">
+                                    <button type="submit" class="btn btn-danger btn-sm"
                                         onclick="return confirm('Reprovar este candidato?')">
                                         <i class="fas fa-times"></i> Reprovar
                                     </button>

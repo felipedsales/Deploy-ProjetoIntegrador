@@ -47,10 +47,10 @@
                 
                 <ul class="navbar-nav ms-auto">
                     <?php if (isset($_SESSION['user_id'])): ?>
-                        <?php if ($_SESSION['user_type'] === 'empresa'): ?>
+                        <?php if (($_SESSION['user_type'] ?? '') === 'empresa'): ?>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="empresaDropdown" role="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-building"></i> <?= htmlspecialchars($_SESSION['user_name']) ?>
+                                    <i class="fas fa-building"></i> <?= htmlspecialchars($_SESSION['user_name'] ?? '') ?>
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="/painel-empresa">Painel</a></li>
@@ -63,7 +63,7 @@
                         <?php else: ?>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="candidatoDropdown" role="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-user"></i> <?= htmlspecialchars($_SESSION['user_name']) ?>
+                                    <i class="fas fa-user"></i> <?= htmlspecialchars($_SESSION['user_name'] ?? '') ?>
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="/perfil">Meu Perfil</a></li>

@@ -16,18 +16,18 @@ $title = 'Minhas Vagas - Ferraz Conecta';
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-3">
-                            <h3><?= htmlspecialchars($vaga['titulo']) ?></h3>
+                            <h3><?= htmlspecialchars($vaga['titulo'] ?? '') ?></h3>
                             <div class="btn-group btn-group-sm">
-                                <a href="/vagas/<?= $vaga['id'] ?>" class="btn btn-outline-primary" title="Ver">
+                                <a href="/vagas/<?= $vaga['id'] ?? '' ?>" class="btn btn-outline-primary" title="Ver">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="/vagas/<?= $vaga['id'] ?>/editar" class="btn btn-outline-warning" title="Editar">
+                                <a href="/vagas/<?= $vaga['id'] ?? '' ?>/editar" class="btn btn-outline-warning" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href="/empresa/vagas/<?= $vaga['id'] ?>/candidatos" class="btn btn-outline-info" title="Candidatos">
+                                <a href="/empresa/vagas/<?= $vaga['id'] ?? '' ?>/candidatos" class="btn btn-outline-info" title="Candidatos">
                                     <i class="fas fa-users"></i>
                                 </a>
-                                <form method="POST" action="/vagas/<?= $vaga['id'] ?>/excluir" class="d-inline" 
+                                <form method="POST" action="/vagas/<?= $vaga['id'] ?? '' ?>/excluir" class="d-inline"
                                     onsubmit="return confirm('Tem certeza que deseja excluir esta vaga?')">
                                     <button type="submit" class="btn btn-outline-danger" title="Excluir">
                                         <i class="fas fa-trash"></i>
@@ -37,19 +37,21 @@ $title = 'Minhas Vagas - Ferraz Conecta';
                         </div>
 
                         <ul class="details">
-                            <li><strong>Salário:</strong> <?= $this->formatMoney($vaga['salario']) ?></li>
-                            <li><strong>Localização:</strong> <?= htmlspecialchars($vaga['localizacao']) ?></li>
-                            <li><strong>Experiência:</strong> <?= htmlspecialchars($vaga['exp']) ?></li>
-                            <li><strong>Escolaridade:</strong> <?= htmlspecialchars($vaga['escolaridade']) ?></li>
-                            <li><strong>Sexo:</strong> <?= htmlspecialchars($vaga['sexo']) ?></li>
-                            <li><strong>Data de Publicação:</strong> <?= date('d/m/Y', strtotime($vaga['data_postagem'])) ?></li>
-                            <li><strong>Candidatos:</strong> 
+                            <li><strong>Salário:</strong> <?= $this->formatMoney($vaga['salario'] ?? null) ?></li>
+                            <li><strong>Localização:</strong> <?= htmlspecialchars($vaga['localizacao'] ?? 'Não informado') ?></li>
+                            <li><strong>Tipo de Contrato:</strong> <?= htmlspecialchars($vaga['tipo_contrato'] ?? 'Não informado') ?></li>
+                            <li><strong>Modalidade:</strong> <?= htmlspecialchars($vaga['modalidade'] ?? 'Não informado') ?></li>
+                            <li><strong>Status:</strong> <?= htmlspecialchars($vaga['status'] ?? 'Não informado') ?></li>
+                            <?php if (!empty($vaga['created_at'])): ?>
+                                <li><strong>Data de Publicação:</strong> <?= date('d/m/Y', strtotime($vaga['created_at'])) ?></li>
+                            <?php endif; ?>
+                            <li><strong>Candidatos:</strong>
                                 <span class="badge bg-primary"><?= $vaga['total_candidatos'] ?? 0 ?></span>
                             </li>
                         </ul>
 
                         <div class="mt-3">
-                            <a href="/empresa/vagas/<?= $vaga['id'] ?>/candidatos" class="btn btn-primary">
+                            <a href="/empresa/vagas/<?= $vaga['id'] ?? '' ?>/candidatos" class="btn btn-primary">
                                 <i class="fas fa-users"></i> Ver Candidatos
                             </a>
                         </div>

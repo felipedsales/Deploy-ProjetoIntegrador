@@ -39,7 +39,7 @@ class AuthController extends Controller
             if ($user) {
                 $this->setSession('user_id', $user['id']);
                 $this->setSession('user_type', $tipo);
-                $this->setSession('user_name', $user['nome'] ?? $user['razao_social']);
+                $this->setSession('user_name', $user['nome']);
                 
                 if ($tipo === 'empresa') {
                     $this->redirect('/painel-empresa');
@@ -71,7 +71,7 @@ class AuthController extends Controller
             if ($user) {
                 $this->setSession('user_id', $user['id']);
                 $this->setSession('user_type', 'empresa');
-                $this->setSession('user_name', $user['razao_social']);
+                $this->setSession('user_name', $user['nome']);
                 $this->redirect('/painel-empresa');
             } else {
                 return $this->render('auth/login_empresa', [
@@ -132,7 +132,7 @@ class AuthController extends Controller
 
         if ($this->isPost()) {
             $data = [
-                'razao_social' => $this->getPost('razao_social'),
+                'nome' => $this->getPost('razao_social'),
                 'email' => $this->getPost('email'),
                 'senha' => $this->getPost('senha'),
                 'telefone' => $this->getPost('telefone'),
@@ -153,7 +153,7 @@ class AuthController extends Controller
             if ($userId) {
                 $this->setSession('user_id', $userId);
                 $this->setSession('user_type', 'empresa');
-                $this->setSession('user_name', $data['razao_social']);
+                $this->setSession('user_name', $data['nome']);
                 $this->redirect('/painel-empresa?status=cadastro_sucesso');
             } else {
                 return $this->render('auth/register_empresa', [
