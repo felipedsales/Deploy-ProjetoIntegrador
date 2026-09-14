@@ -19,19 +19,19 @@ $title = 'Minhas Candidaturas - Ferraz Conecta';
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-3">
-                            <h3><?= htmlspecialchars($candidatura['titulo']) ?></h3>
-                            <span class="badge bg-<?= $candidatura['status'] === 'aprovada' ? 'success' : ($candidatura['status'] === 'reprovada' ? 'danger' : 'warning') ?>">
-                                <?= ucfirst(htmlspecialchars($candidatura['status'])) ?>
+                            <h3><?= htmlspecialchars($candidatura['titulo'] ?? '') ?></h3>
+                            <span class="badge bg-<?= ($candidatura['status'] ?? '') === 'Aprovada' ? 'success' : (($candidatura['status'] ?? '') === 'Rejeitada' ? 'danger' : 'warning') ?>">
+                                <?= htmlspecialchars($candidatura['status'] ?? 'Pendente') ?>
                             </span>
                         </div>
 
                         <ul class="details">
-                            <li><strong>Empresa:</strong> <?= htmlspecialchars($candidatura['razao_social'] ?? 'Não informado') ?></li>
-                            <li><strong>Salário:</strong> <?= $this->formatMoney($candidatura['salario']) ?></li>
+                            <li><strong>Empresa:</strong> <?= htmlspecialchars($candidatura['nome'] ?? 'Não informado') ?></li>
+                            <li><strong>Salário:</strong> <?= $this->formatMoney($candidatura['salario'] ?? null) ?></li>
                             <li><strong>Localização:</strong> <?= htmlspecialchars($candidatura['localizacao'] ?? 'Não informado') ?></li>
-                            <li><strong>Experiência:</strong> <?= htmlspecialchars($candidatura['exp'] ?? 'Não informado') ?></li>
-                            <li><strong>Escolaridade:</strong> <?= htmlspecialchars($candidatura['escolaridade'] ?? 'Não informado') ?></li>
-                            <li><strong>Data da Candidatura:</strong> <?= isset($candidatura['data_candidatura']) ? date('d/m/Y', strtotime($candidatura['data_candidatura'])) : 'Data não disponível' ?></li>
+                            <li><strong>Tipo de Contrato:</strong> <?= htmlspecialchars($candidatura['tipo_contrato'] ?? 'Não informado') ?></li>
+                            <li><strong>Modalidade:</strong> <?= htmlspecialchars($candidatura['modalidade'] ?? 'Não informado') ?></li>
+                            <li><strong>Data da Candidatura:</strong> <?= !empty($candidatura['data_candidatura']) ? date('d/m/Y', strtotime($candidatura['data_candidatura'])) : 'Data não disponível' ?></li>
                         </ul>
 
                         <div class="mt-3">
