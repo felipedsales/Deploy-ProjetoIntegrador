@@ -1,5 +1,5 @@
 <?php
-$title = htmlspecialchars($vaga['titulo']) . ' - Ferraz Conecta';
+$title = htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz Conecta';
 ?>
 
 <div class="container mt-4">
@@ -7,45 +7,61 @@ $title = htmlspecialchars($vaga['titulo']) . ' - Ferraz Conecta';
         <div class="col-lg-8">
             <div class="card shadow">
                 <div class="card-body">
-                    <h1 class="card-title mb-3"><?= htmlspecialchars($vaga['titulo']) ?></h1>
-                    
+                    <h1 class="card-title mb-3"><?= htmlspecialchars($vaga['titulo'] ?? '') ?></h1>
+
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <h5><i class="fas fa-money-bill-wave text-success"></i> Salário</h5>
-                            <p class="text-muted"><?= $this->formatMoney($vaga['salario']) ?></p>
+                            <p class="text-muted"><?= $this->formatMoney($vaga['salario'] ?? null) ?></p>
                         </div>
                         <div class="col-md-6">
                             <h5><i class="fas fa-map-marker-alt text-primary"></i> Localização</h5>
-                            <p class="text-muted"><?= htmlspecialchars($vaga['localizacao']) ?></p>
+                            <p class="text-muted"><?= htmlspecialchars($vaga['localizacao'] ?? 'Não informado') ?></p>
                         </div>
                     </div>
 
                     <div class="row mb-4">
-                        <div class="col-md-4">
-                            <h5><i class="fas fa-briefcase text-info"></i> Experiência</h5>
-                            <p class="text-muted"><?= htmlspecialchars($vaga['exp']) ?></p>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-briefcase text-info"></i> Tipo de Contrato</h5>
+                            <p class="text-muted"><?= htmlspecialchars($vaga['tipo_contrato'] ?? 'Não informado') ?></p>
                         </div>
-                        <div class="col-md-4">
-                            <h5><i class="fas fa-graduation-cap text-warning"></i> Escolaridade</h5>
-                            <p class="text-muted"><?= htmlspecialchars($vaga['escolaridade']) ?></p>
-                        </div>
-                        <div class="col-md-4">
-                            <h5><i class="fas fa-user text-secondary"></i> Sexo</h5>
-                            <p class="text-muted"><?= htmlspecialchars($vaga['sexo']) ?></p>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-building text-warning"></i> Modalidade</h5>
+                            <p class="text-muted"><?= htmlspecialchars($vaga['modalidade'] ?? 'Não informado') ?></p>
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <h5><i class="fas fa-file-alt text-dark"></i> Descrição Completa</h5>
                         <div class="bg-light p-3 rounded">
-                            <?= nl2br(htmlspecialchars($vaga['descricao_completa'])) ?>
+                            <?= nl2br(htmlspecialchars($vaga['descricao'] ?? '')) ?>
                         </div>
                     </div>
 
-                    <div class="text-muted small">
-                        <i class="fas fa-calendar"></i> 
-                        Publicada em: <?= date('d/m/Y', strtotime($vaga['data_postagem'])) ?>
-                    </div>
+                    <?php if (!empty($vaga['requisitos'])): ?>
+                        <div class="mb-4">
+                            <h5><i class="fas fa-list-check text-dark"></i> Requisitos</h5>
+                            <div class="bg-light p-3 rounded">
+                                <?= nl2br(htmlspecialchars($vaga['requisitos'])) ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($vaga['beneficios'])): ?>
+                        <div class="mb-4">
+                            <h5><i class="fas fa-gift text-dark"></i> Benefícios</h5>
+                            <div class="bg-light p-3 rounded">
+                                <?= nl2br(htmlspecialchars($vaga['beneficios'])) ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($vaga['created_at'])): ?>
+                        <div class="text-muted small">
+                            <i class="fas fa-calendar"></i>
+                            Publicada em: <?= date('d/m/Y', strtotime($vaga['created_at'])) ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -58,7 +74,7 @@ $title = htmlspecialchars($vaga['titulo']) . ' - Ferraz Conecta';
                     <?php if ($this->isLoggedIn()): ?>
                         <?php if ($this->getSession('user_type') === 'candidato'): ?>
                             <form method="POST" action="/vagas/candidatar" class="mb-3">
-                                <input type="hidden" name="vaga_id" value="<?= $vaga['id'] ?>">
+                                <input type="hidden" name="vaga_id" value="<?= $vaga['id'] ?? '' ?>">
                                 <button type="submit" class="btn btn-primary w-100">
                                     <i class="fas fa-paper-plane"></i> Candidatar-se
                                 </button>
@@ -106,7 +122,7 @@ $title = htmlspecialchars($vaga['titulo']) . ' - Ferraz Conecta';
             </div>
             <form method="POST" action="/vagas/denunciar">
                 <div class="modal-body">
-                    <input type="hidden" name="vaga_id" value="<?= $vaga['id'] ?>">
+                    <input type="hidden" name="vaga_id" value="<?= $vaga['id'] ?? '' ?>">
                     
                     <div class="mb-3">
                         <label for="motivo" class="form-label">Motivo da Denúncia *</label>
