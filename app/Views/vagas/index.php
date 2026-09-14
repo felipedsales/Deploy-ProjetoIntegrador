@@ -18,20 +18,32 @@ $title = 'Vagas - Ferraz Conecta';
     </div>
 </section>
 
+<?php if (isset($_GET['error']) && $_GET['error'] === 'ja_candidatado'): ?>
+    <div class="container">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            Você já se candidatou a esta vaga anteriormente.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+<?php endif; ?>
+
 <div class="cards-container">
     <?php if (!empty($vagas)): ?>
         <?php foreach ($vagas as $vaga): ?>
             <article class='card'>
-                <h3><?= htmlspecialchars($vaga['titulo']) ?></h3>
+                <h3><?= htmlspecialchars($vaga['titulo'] ?? '') ?></h3>
                 <ul class='details'>
                     <li><strong>Empresa:</strong> <?= htmlspecialchars($vaga['empresa_nome'] ?? 'Não informado') ?></li>
-                    <li><strong>Salário:</strong> <?= $this->formatMoney($vaga['salario']) ?></li>
-                    <li><strong>Localização:</strong> <?= htmlspecialchars($vaga['localizacao']) ?></li>
-                    <li><strong>Experiência:</strong> <?= htmlspecialchars($vaga['exp']) ?></li>
-                    <li><strong>Escolaridade:</strong> <?= htmlspecialchars($vaga['escolaridade']) ?></li>
-                    <li><strong>Data da Postagem:</strong> <?= date('d/m/Y', strtotime($vaga['data_postagem'])) ?></li>
+                    <li><strong>Salário:</strong> <?= $this->formatMoney($vaga['salario'] ?? null) ?></li>
+                    <li><strong>Localização:</strong> <?= htmlspecialchars($vaga['localizacao'] ?? 'Não informado') ?></li>
+                    <li><strong>Contrato:</strong> <?= htmlspecialchars($vaga['tipo_contrato'] ?? 'Não informado') ?></li>
+                    <li><strong>Modalidade:</strong> <?= htmlspecialchars($vaga['modalidade'] ?? 'Não informado') ?></li>
+                    <?php if (!empty($vaga['created_at'])): ?>
+                        <li><strong>Publicada em:</strong> <?= date('d/m/Y', strtotime($vaga['created_at'])) ?></li>
+                    <?php endif; ?>
                 </ul>
-                <a href='/vagas/<?= $vaga['id'] ?>' class='btn btn-primary'>Ver mais</a>
+                <a href='/vagas/<?= $vaga['id'] ?? '' ?>' class='btn btn-primary'>Ver mais</a>
             </article>
         <?php endforeach; ?>
     <?php else: ?>

@@ -124,14 +124,15 @@ class VagaController extends Controller
             
             $data = [
                 'titulo' => $this->getPost('titulo'),
-                'descricao_completa' => $this->getPost('descricao_completa'),
+                'descricao' => $this->getPost('descricao'),
+                'requisitos' => $this->getPost('requisitos'),
                 'salario' => $salario,
-                'exp' => $this->getPost('exp'),
-                'escolaridade' => $this->getPost('escolaridade'),
+                'tipo_contrato' => $this->getPost('tipo_contrato'),
+                'modalidade' => $this->getPost('modalidade'),
                 'localizacao' => $this->getPost('localizacao'),
-                'sexo' => $this->getPost('sexo'),
+                'beneficios' => $this->getPost('beneficios'),
+                'status' => 'Ativa',
                 'empresa_id' => $this->getSession('user_id'),
-                'data_postagem' => date('Y-m-d H:i:s')
             ];
 
             $this->vagaModel->create($data);
@@ -166,12 +167,14 @@ class VagaController extends Controller
             
             $data = [
                 'titulo' => $this->getPost('titulo'),
-                'descricao_completa' => $this->getPost('descricao_completa'),
+                'descricao' => $this->getPost('descricao'),
+                'requisitos' => $this->getPost('requisitos'),
                 'salario' => $salario,
-                'exp' => $this->getPost('exp'),
-                'escolaridade' => $this->getPost('escolaridade'),
+                'tipo_contrato' => $this->getPost('tipo_contrato'),
+                'modalidade' => $this->getPost('modalidade'),
                 'localizacao' => $this->getPost('localizacao'),
-                'sexo' => $this->getPost('sexo')
+                'beneficios' => $this->getPost('beneficios'),
+                'status' => $this->getPost('status', $vaga['status'])
             ];
 
             $this->vagaModel->update($id, $data);
