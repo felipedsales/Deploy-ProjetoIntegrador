@@ -1229,13 +1229,29 @@ input[type="password"]:focus {
 /* Navbar */
 .navbar {
   /* z-index:1030 = escala do .fixed-top/.sticky-top do Bootstrap; fica acima
-     do carrossel, que chega a z-index:1 durante a transicao dos slides. */
+     do carrossel, que chega a z-index:1 durante a transicao dos slides.
+     backdrop-filter NAO pode ir aqui: ele cria contexto de empilhamento no
+     proprio .navbar, e o .dropdown-menu (descendente) fica preso dentro
+     desse contexto sem conseguir competir com o carrossel usando o
+     z-index:1030 do pai -- o desfoque foi movido pro ::before abaixo. */
   position: sticky;
   top: 0;
   z-index: 1030;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  backdrop-filter: blur(10px);
   background: rgba(13, 110, 253, 0.95) !important;
+}
+
+.navbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+}
+
+.navbar .dropdown-menu {
+  z-index: 1035;
 }
 
 .navbar-brand {
