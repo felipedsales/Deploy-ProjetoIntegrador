@@ -68,6 +68,7 @@
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="/perfil">Meu Perfil</a></li>
                                     <li><a class="dropdown-item" href="/minhas-candidaturas">Minhas Candidaturas</a></li>
+                                    <li><a class="dropdown-item" href="/vagas-favoritas">Vagas Favoritas</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="/logout">Sair</a></li>
                                 </ul>

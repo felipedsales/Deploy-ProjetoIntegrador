@@ -7,7 +7,7 @@
 -- Faça backup antes de aplicar. Aplicar UMA vez; o passo 1 falha se a coluna
 -- já existir.
 --
--- Atende: RN14, RF03, RF16, RN09, RN18, RN21, RF19, RF26, RN07.
+-- Atende: RN14, RF03, RF16, RN09, RN18, RN21, RF19, RF21, RF26, RN07.
 
 -- 1) RN14 — prazo de candidatura da vaga.
 --    As vagas que já existem recebem 30 dias a partir de hoje; depois disso a
@@ -22,7 +22,11 @@ ALTER TABLE vagas
 ALTER TABLE sessoes
     MODIFY COLUMN tipo_usuario ENUM('candidato', 'empresa', 'administrador') NOT NULL;
 
--- 3) Tabelas novas (mesma definição de database/schema.sql).
+-- 3) RF21 — descrição da denúncia (atributo que o MER e o Diagrama de Classe
+--    já previam e o código já enviava).
+ALTER TABLE denuncias ADD COLUMN descricao TEXT NULL AFTER motivo;
+
+-- 4) Tabelas novas (mesma definição de database/schema.sql).
 CREATE TABLE IF NOT EXISTS administradores (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,

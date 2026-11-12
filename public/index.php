@@ -38,10 +38,9 @@ $router->post('/cadastro-empresa', 'AuthController@registerEmpresa');
 $router->get('/logout', 'AuthController@logout');
 
 // Rotas de autenticação social
-$router->get('/auth/google', 'AuthController@googleAuth');
-$router->get('/auth/google/callback', 'AuthController@googleCallback');
-$router->get('/auth/linkedin', 'AuthController@linkedinAuth');
-$router->get('/auth/linkedin/callback', 'AuthController@linkedinCallback');
+// RF20 (login externo) está fora da v1 — ver docs/IMPLEMENTACOES_FUTURAS.md.
+// As rotas /auth/google e /auth/linkedin ficam desligadas até o requisito
+// entrar no escopo e as colunas provider/provider_id existirem no schema.
 
 // Rotas de vagas
 $router->get('/vagas', 'VagaController@index');
@@ -50,6 +49,8 @@ $router->post('/vagas/criar', 'VagaController@create');
 $router->post('/vagas/candidatar', 'VagaController@candidatar');
 $router->post('/vagas/desistir', 'VagaController@desistir');
 $router->post('/vagas/denunciar', 'VagaController@denunciar');
+$router->post('/vagas/favoritar', 'VagaController@favoritar');
+$router->post('/vagas/desfavoritar', 'VagaController@desfavoritar');
 $router->get('/vagas/{id}', 'VagaController@show');
 $router->get('/vagas/{id}/editar', 'VagaController@edit');
 $router->post('/vagas/{id}/editar', 'VagaController@edit');
@@ -57,6 +58,7 @@ $router->post('/vagas/{id}/excluir', 'VagaController@delete');
 
 // Rotas de candidatos
 $router->get('/minhas-candidaturas', 'CandidatoController@minhasCandidaturas');
+$router->get('/vagas-favoritas', 'CandidatoController@vagasFavoritas');
 $router->get('/perfil', 'CandidatoController@perfil');
 $router->post('/perfil/atualizar', 'CandidatoController@atualizarPerfil');
 

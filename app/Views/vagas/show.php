@@ -87,6 +87,18 @@ $title = htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz Conecta';
                                 </button>
                             </form>
                             
+                            <!-- Favoritar (RF19) -->
+                            <form method="POST" action="/vagas/<?= !empty($favoritada) ? 'desfavoritar' : 'favoritar' ?>" class="mb-3">
+                                <input type="hidden" name="vaga_id" value="<?= $vaga['id'] ?? '' ?>">
+                                <button type="submit" class="btn btn-outline-warning w-100">
+                                    <?php if (!empty($favoritada)): ?>
+                                        <i class="fas fa-star"></i> Remover dos favoritos
+                                    <?php else: ?>
+                                        <i class="far fa-star"></i> Favoritar
+                                    <?php endif; ?>
+                                </button>
+                            </form>
+
                             <!-- Botão de Denúncia -->
                             <button type="button" class="btn btn-outline-danger w-100 mb-3" data-bs-toggle="modal" data-bs-target="#denunciaModal">
                                 <i class="fas fa-flag"></i> Denunciar Vaga
@@ -166,6 +178,14 @@ $title = htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz Conecta';
 </div>
 
 <!-- Mensagens de Status -->
+<?php if (isset($_GET['status']) && in_array($_GET['status'], ['favorito_adicionado', 'favorito_removido'], true)): ?>
+    <div class="alert alert-success alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999;" role="alert">
+        <i class="fas fa-star"></i>
+        <?= $_GET['status'] === 'favorito_adicionado' ? 'Vaga adicionada aos seus favoritos.' : 'Vaga removida dos seus favoritos.' ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
 <?php if (isset($_GET['status']) && $_GET['status'] === 'denuncia_sucesso'): ?>
     <div class="alert alert-success alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999;" role="alert">
         <i class="fas fa-check-circle"></i>
@@ -178,6 +198,9 @@ $title = htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz Conecta';
     <?php
     $errorMessage = '';
     switch ($_GET['error']) {
+        case 'ja_favoritada':
+            $errorMessage = 'Esta vaga já está nos seus favoritos.';
+            break;
         case 'ja_denunciada':
             $errorMessage = 'Você já denunciou esta vaga anteriormente.';
             break;

@@ -109,6 +109,7 @@ CREATE TABLE IF NOT EXISTS denuncias (
     vaga_id INT,
     candidato_id INT,
     motivo TEXT NOT NULL,
+    descricao TEXT,
     status ENUM('Pendente', 'Em análise', 'Resolvida', 'Descartada') NOT NULL DEFAULT 'Pendente',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_denuncias_vaga (vaga_id),

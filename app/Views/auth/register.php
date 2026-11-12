@@ -15,22 +15,6 @@ $title = 'Cadastro - Ferraz Conecta';
                         </div>
                     <?php endif; ?>
 
-                    <!-- Botões de Autenticação Social -->
-                    <div class="mb-4">
-                        <p class="text-center text-muted mb-3">Ou cadastre-se com:</p>
-                        <div class="d-grid gap-2">
-                            <a href="/auth/google" class="btn btn-outline-danger">
-                                <i class="fab fa-google me-2"></i>Cadastrar com Google
-                            </a>
-                            <a href="/auth/linkedin" class="btn btn-outline-primary">
-                                <i class="fab fa-linkedin me-2"></i>Cadastrar com LinkedIn
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="text-center mb-3">
-                        <span class="bg-white px-3 text-muted">ou</span>
-                    </div>
 
                     <form method="POST" action="/cadastro">
                         <div class="row">

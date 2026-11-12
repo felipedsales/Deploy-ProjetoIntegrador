@@ -81,6 +81,59 @@ class Candidato extends Model
         }
     }
 
+    /**
+     * RF19 / UC-C08 (Diagrama de Classe: Candidato.favoritarVaga).
+     * Salva a vaga na lista de favoritos. Devolve false se já estava favoritada:
+     * a UNIQUE (candidato_id, vaga_id) é a implementação física da regra.
+     */
+    public function favoritarVaga($candidatoId, $vagaId)
+    {
+        if ($this->vagaFavoritada($candidatoId, $vagaId)) {
+            return false;
+        }
+
+        try {
+            $sql = "INSERT INTO favoritos (candidato_id, vaga_id) VALUES (?, ?)";
+            $this->db->query($sql, [$candidatoId, $vagaId]);
+            return true;
+        } catch (\PDOException $e) {
+            // Requisição concorrente favoritou entre o SELECT e o INSERT.
+            if (($e->errorInfo[0] ?? $e->getCode()) === '23000') {
+                return false;
+            }
+            throw $e;
+        }
+    }
+
+    public function desfavoritarVaga($candidatoId, $vagaId)
+    {
+        $sql = "DELETE FROM favoritos WHERE candidato_id = ? AND vaga_id = ?";
+        return $this->db->query($sql, [$candidatoId, $vagaId]);
+    }
+
+    public function vagaFavoritada($candidatoId, $vagaId)
+    {
+        $sql = "SELECT id FROM favoritos WHERE candidato_id = ? AND vaga_id = ?";
+        return (bool) $this->db->fetch($sql, [$candidatoId, $vagaId]);
+    }
+
+    /**
+     * "Minhas vagas favoritas" (UC-C08). A coluna `disponivel` indica se a vaga
+     * ainda está ativa e dentro do prazo (RN14); quando não está, a tela avisa
+     * que a vaga não está mais disponível.
+     */
+    public function getVagasFavoritas($candidatoId)
+    {
+        $sql = "SELECT v.*, e.nome AS empresa_nome, f.created_at AS favoritada_em,
+                       (v.status = 'Ativa' AND v.data_expiracao >= CURRENT_DATE) AS disponivel
+                FROM favoritos f
+                JOIN vagas v ON f.vaga_id = v.id
+                JOIN empresas e ON v.empresa_id = e.id
+                WHERE f.candidato_id = ?
+                ORDER BY f.created_at DESC";
+        return $this->db->fetchAll($sql, [$candidatoId]);
+    }
+
     public function desistirCandidatura($candidatoId, $vagaId)
     {
         $sql = "DELETE FROM candidaturas WHERE candidato_id = ? AND vaga_id = ?";

@@ -53,10 +53,11 @@ Em ordem sugerida de prioridade.
 | 11 | **RF22** — Integração com APIs externas | Validação de CNPJ e CPF em bases oficiais, como a Receita Federal (RN10). | Escolha do serviço de consulta e tratamento de indisponibilidade. | Acesso a serviço externo |
 | 12 | **RF25** — IA para currículos *(opcional)* | Análise automática para sugerir vagas e ranquear candidatos (RN13). | Definição de critérios objetivos e não discriminatórios antes de qualquer código. | RF08 e RF12 maduros |
 
-> **Atenção ao RF20:** o repositório já tem código de login com Google e LinkedIn
-> (`SocialAuth.php` e rotas `/auth/...`), mas as colunas que ele usa não existem no
-> `schema.sql`. Como o RF20 está fora da v1, essas rotas e botões devem ser desativados na
-> v1 para o sistema coincidir com a documentação.
+> **Atenção ao RF20:** o repositório tem código de login com Google e LinkedIn
+> (`SocialAuth.php` e métodos em `AuthController`), mas as colunas que ele usa não existem
+> no `schema.sql`. Como o RF20 está fora da v1, as rotas `/auth/...` e os botões das telas
+> de login e cadastro **foram desligados em 2026-11-12**. Para retomar: criar as colunas,
+> religar as rotas em `public/index.php` e devolver os botões às views.
 
 ---
 

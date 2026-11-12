@@ -100,7 +100,7 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 | **vagas** | `id`, `empresa_id`, `titulo`, `descricao`, `requisitos`, `salario`, `tipo_contrato`, `modalidade`, `localizacao`, `beneficios`, `status`, `data_expiracao`, `created_at`, `updated_at` | PK `id`; **FK** `empresa_id` → `empresas(id)` `ON DELETE CASCADE`; índices em `empresa_id`, `status` e `data_expiracao`; **`data_expiracao` implementa a RN14** |
 | **candidaturas** | `id`, `vaga_id`, `candidato_id`, `status`, `data_candidatura`, `observacoes` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **`UNIQUE (vaga_id, candidato_id)` → implementa a RN04** (um candidato não se candidata duas vezes à mesma vaga) |
 | **sessoes** | `id`, `usuario_id`, `tipo_usuario`, `token`, `expira_em`, `created_at` | PK `id`; **UNIQUE** `token`; guarda o **token Bearer** da API; índices em `token` e `expira_em` |
-| **denuncias** | `id`, `vaga_id`, `candidato_id`, `motivo`, `status`, `created_at` | PK `id`; **FK** `vaga_id` → `vagas(id)` `ON DELETE SET NULL`; **FK** `candidato_id` → `candidatos(id)` `ON DELETE SET NULL` |
+| **denuncias** | `id`, `vaga_id`, `candidato_id`, `motivo`, `descricao`, `status`, `created_at` | PK `id`; **FK** `vaga_id` → `vagas(id)` `ON DELETE SET NULL`; **FK** `candidato_id` → `candidatos(id)` `ON DELETE SET NULL` |
 | **administradores** | `id`, `nome`, `email`, `senha`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email` (RF03, RF16) |
 | **favoritos** | `id`, `candidato_id`, `vaga_id`, `created_at` | PK `id`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **`UNIQUE (candidato_id, vaga_id)`** (RF19) |
 | **entrevistas** | `id`, `vaga_id`, `candidato_id`, `data_hora`, `local`, `status`, `created_at`, `updated_at` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; índice em `(candidato_id, data_hora)` (RF26) |
@@ -142,7 +142,7 @@ Lacunas que continuam abertas:
 |---|---|
 | **MER e Diagrama de Classe não refletem o `schema.sql`** (usam `Usuário` como supertipo, `Currículo` e `Notificação` como entidades, e não têm `favoritos` nem `logs_auditoria`) | Regra nº 1 |
 | `candidatos.email_confirmado` / `empresas.email_confirmado` | RN17, RN22 — *Futuro* |
-| colunas `provider` / `provider_id` em `candidatos` (usadas em `SocialAuth.php`) | RF20 — *Futuro*; o login externo deve ficar desativado na v1 |
+| colunas `provider` / `provider_id` em `candidatos` (usadas em `SocialAuth.php`) | RF20 — *Futuro*; rotas e botões de login externo estão desligados na v1 |
 | tabela `push_tokens` | RF14 — *Futuro* |
 | tabela de avaliações / feedback | RF15, RN08 — *Futuro* |
 | tabela de mensagens internas | RF24 — *Futuro* |

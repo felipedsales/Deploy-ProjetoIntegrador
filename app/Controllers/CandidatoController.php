@@ -25,6 +25,22 @@ class CandidatoController extends Controller
         ]);
     }
 
+    /** RF19 / UC-C08 — cenário alternativo "Acessar Lista de Favoritos". */
+    public function vagasFavoritas()
+    {
+        $this->requireAuth();
+
+        if ($this->getSession('user_type') !== 'candidato') {
+            $this->redirect('/');
+        }
+
+        $vagas = $this->candidatoModel->getVagasFavoritas($this->getSession('user_id'));
+
+        return $this->render('candidato/vagas_favoritas', [
+            'vagas' => $vagas
+        ]);
+    }
+
     public function perfil()
     {
         $this->requireAuth();

@@ -65,8 +65,12 @@ class VagaController extends Controller
             $this->redirect('/vagas?error=vaga_indisponivel');
         }
 
+        $favoritada = $this->getSession('user_type') === 'candidato'
+            && $this->candidatoModel->vagaFavoritada($this->getSession('user_id'), $vaga['id']);
+
         return $this->render('vagas/show', [
-            'vaga' => $vaga
+            'vaga' => $vaga,
+            'favoritada' => $favoritada
         ]);
     }
 
@@ -93,6 +97,50 @@ class VagaController extends Controller
         } else {
             $this->redirect('/vagas?error=ja_candidatado');
         }
+    }
+
+    /** RF19 / UC-C08 Favoritar Vagas. */
+    public function favoritar()
+    {
+        $vagaId = $this->exigirCandidatoEVaga();
+
+        // UC-C08: só se favorita vaga que está visível ao candidato (RN14).
+        if (!$this->vagaModel->estaAtiva($this->vagaModel->findById($vagaId))) {
+            $this->redirect('/vagas?error=vaga_indisponivel');
+        }
+
+        if ($this->candidatoModel->favoritarVaga($this->getSession('user_id'), $vagaId)) {
+            $this->redirect("/vagas/{$vagaId}?status=favorito_adicionado");
+        } else {
+            $this->redirect("/vagas/{$vagaId}?error=ja_favoritada");
+        }
+    }
+
+    public function desfavoritar()
+    {
+        $vagaId = $this->exigirCandidatoEVaga();
+
+        $this->candidatoModel->desfavoritarVaga($this->getSession('user_id'), $vagaId);
+
+        // Quem removeu pela lista volta para a lista; a vaga pode nem estar mais disponível.
+        if ($this->getPost('origem') === 'lista') {
+            $this->redirect('/vagas-favoritas?status=favorito_removido');
+        }
+        $this->redirect("/vagas/{$vagaId}?status=favorito_removido");
+    }
+
+    /** Ações de favorito: exige POST de um candidato logado e devolve o id da vaga. */
+    private function exigirCandidatoEVaga()
+    {
+        if (!$this->isLoggedIn()) {
+            $this->redirect('/login');
+        }
+
+        if ($this->getSession('user_type') !== 'candidato' || !$this->isPost()) {
+            $this->redirect('/vagas');
+        }
+
+        return (int) $this->getPost('vaga_id');
     }
 
     public function desistir()
@@ -251,10 +299,15 @@ class VagaController extends Controller
             $this->redirect('/vagas');
         }
 
-        $vagaId = $this->getPost('vaga_id');
+        $vagaId = (int) $this->getPost('vaga_id');
         $motivo = $this->getPost('motivo');
         $descricao = $this->getPost('descricao');
         $candidatoId = $this->getSession('user_id');
+
+        // UC-C09: a denúncia só pode ser feita para conteúdo visível ao candidato.
+        if (!$this->vagaModel->estaAtiva($this->vagaModel->findById($vagaId))) {
+            $this->redirect('/vagas?error=vaga_indisponivel');
+        }
 
         // Verificar se já denunciou esta vaga
         if ($this->vagaModel->verificarDenunciaExistente($candidatoId, $vagaId)) {

@@ -212,6 +212,7 @@ ser atualizados** para refletir essas tabelas. Os itens *Futuro* continuam sem s
 | Colunas `provider` / `provider_id` (já usadas no Model) | RF20 | Futuro |
 | Tabela `push_tokens` | RF14 (notificações no app) | Futuro |
 | Tabela `logs_auditoria` | RN07 (RNF12 fica como Futuro) | ✅ Criada (v1) |
+| `denuncias.descricao` (atributo previsto no MER e no Diagrama de Classe) | RF21 | ✅ Criada (v1) |
 | Tabela de avaliações/feedback | RF15, RN08 | Futuro |
 | Tabela de mensagens internas | RF24 | Futuro |
 | Tabela de tickets de suporte | RF17, RN15 | Futuro |
