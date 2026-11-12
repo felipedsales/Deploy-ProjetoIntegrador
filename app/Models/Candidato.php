@@ -8,8 +8,19 @@ class Candidato extends Model
 
     public function autenticar($email, $senha)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE email = ? AND senha = ?";
-        return $this->db->fetch($sql, [$email, $senha]);
+        return $this->autenticarPorEmail($email, $senha);
+    }
+
+    /** RNF03: a senha é gravada sempre como hash. */
+    public function create($data)
+    {
+        return parent::create($this->protegerSenha($data));
+    }
+
+    /** RNF03: a senha é gravada sempre como hash. */
+    public function update($id, $data)
+    {
+        return parent::update($id, $this->protegerSenha($data));
     }
 
     public function buscarPorEmail($email)

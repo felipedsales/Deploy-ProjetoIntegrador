@@ -122,6 +122,19 @@ Deploy-ProjetoIntegrador/
 - Conexão segura via SSL
 - Charset utf8mb4 para suporte completo a Unicode
 
+### Migrations de banco já existente
+
+Banco novo: basta importar `database/schema.sql`. Banco que já está em uso precisa das
+migrations de `database/migrations/`, nesta ordem, **depois de um backup**:
+
+| Arquivo | O que faz | Como roda |
+|---|---|---|
+| `2026_11_12_escopo_v1.sql` | Cria `vagas.data_expiracao`, `administradores`, `favoritos`, `entrevistas` e `logs_auditoria` | **Manual**, uma única vez, no cliente MySQL do Railway. Aplicar junto com o deploy do código que usa a data de expiração. |
+| `2026_11_12_proteger_senhas.php` | Converte em hash as senhas que estavam em texto puro (RNF03) | **Automático**: o `docker/entrypoint.sh` executa a cada start do container. Só altera o que ainda não é hash. |
+
+Depois do primeiro deploy com a conversão de senhas, confira no log do serviço a linha
+`Total: N` e, no banco, que nenhuma senha ficou em texto puro.
+
 ## 🎨 Frontend
 
 O projeto mantém sua estrutura MVC original:
