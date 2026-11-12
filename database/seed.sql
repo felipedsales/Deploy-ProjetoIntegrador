@@ -7,6 +7,10 @@
 -- O hash em `senha` é o mesmo para todos os usuários e corresponde a uma senha
 -- de teste — NÃO usar em produção.
 
+-- Garante que os acentos dos ENUMs e dos dados sejam lidos como UTF-8, seja qual
+-- for a codificação padrão do cliente usado na importação.
+SET NAMES utf8mb4;
+
 INSERT INTO empresas (nome, email, senha, cnpj, telefone, descricao, setor) VALUES
 ('Empresa Exemplo Ltda', 'contato@empresaexemplo.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '12.345.678/0001-90', '(11) 99999-9999', 'Empresa de tecnologia focada em inovação', 'Tecnologia');
 

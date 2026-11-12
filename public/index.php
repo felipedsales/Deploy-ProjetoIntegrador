@@ -26,6 +26,21 @@ $router->get('/sobre', 'HomeController@sobre');
 $router->get('/empresas', 'EmpresaController@index');
 $router->get('/empresas/{id}', 'EmpresaController@show');
 
+// Painel administrativo (RF03, RF16) — só perfil administrador (RN09)
+$router->get('/admin/login', 'AdminController@login');
+$router->post('/admin/login', 'AdminController@login');
+$router->get('/admin', 'AdminController@painel');
+$router->get('/admin/denuncias', 'AdminController@denuncias');
+$router->post('/admin/denuncias/status', 'AdminController@atualizarDenuncia');
+$router->get('/admin/vagas', 'AdminController@vagas');
+$router->post('/admin/vagas/inativar', 'AdminController@inativarVaga');
+$router->post('/admin/vagas/reativar', 'AdminController@reativarVaga');
+$router->get('/admin/usuarios', 'AdminController@usuarios');
+$router->post('/admin/usuarios/suspender', 'AdminController@suspenderUsuario');
+$router->post('/admin/usuarios/reativar', 'AdminController@reativarUsuario');
+$router->get('/admin/administradores', 'AdminController@administradores');
+$router->post('/admin/administradores', 'AdminController@cadastrarAdministrador');
+
 // Rotas de autenticação
 $router->get('/login', 'AuthController@login');
 $router->post('/login', 'AuthController@login');

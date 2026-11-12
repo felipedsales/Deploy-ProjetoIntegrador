@@ -60,6 +60,21 @@
                                     <li><a class="dropdown-item" href="/logout">Sair</a></li>
                                 </ul>
                             </li>
+                        <?php elseif (($_SESSION['user_type'] ?? '') === 'administrador'): ?>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-shield"></i> <?= htmlspecialchars($_SESSION['user_name'] ?? '') ?>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/admin">Painel</a></li>
+                                    <li><a class="dropdown-item" href="/admin/denuncias">Denúncias</a></li>
+                                    <li><a class="dropdown-item" href="/admin/vagas">Vagas</a></li>
+                                    <li><a class="dropdown-item" href="/admin/usuarios">Usuários</a></li>
+                                    <li><a class="dropdown-item" href="/admin/administradores">Administradores</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="/logout">Sair</a></li>
+                                </ul>
+                            </li>
                         <?php else: ?>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="candidatoDropdown" role="button" data-bs-toggle="dropdown">

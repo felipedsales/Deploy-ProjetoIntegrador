@@ -93,6 +93,12 @@ abstract class Model
         return $conta;
     }
 
+    /** RN18: conta suspensa pelo administrador não entra no sistema. */
+    public function contaSuspensa($conta)
+    {
+        return ($conta['status'] ?? 'Ativa') === 'Suspensa';
+    }
+
     public function count()
     {
         $sql = "SELECT COUNT(*) as total FROM {$this->table}";

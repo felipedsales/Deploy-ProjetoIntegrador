@@ -76,9 +76,7 @@ class VagaController extends Controller
 
     public function candidatar()
     {
-        if (!$this->isLoggedIn()) {
-            $this->redirect('/login');
-        }
+        $this->requirePerfil('candidato');
 
         if (!$this->isPost()) {
             $this->redirect('/vagas');
@@ -145,9 +143,7 @@ class VagaController extends Controller
 
     public function desistir()
     {
-        if (!$this->isLoggedIn()) {
-            $this->redirect('/minhas-candidaturas');
-        }
+        $this->requirePerfil('candidato');
 
         if (!$this->isPost()) {
             $this->redirect('/minhas-candidaturas');
@@ -162,12 +158,7 @@ class VagaController extends Controller
 
     public function create()
     {
-        $this->requireAuth();
-        
-        // Verifica se é uma empresa
-        if ($this->getSession('user_type') !== 'empresa') {
-            $this->redirect('/login-empresa');
-        }
+        $this->requirePerfil('empresa');
         
         if ($this->isPost()) {
             // Usar o campo salario_numerico se disponível, senão converter o salario
@@ -217,7 +208,7 @@ class VagaController extends Controller
 
     public function edit($id)
     {
-        $this->requireAuth();
+        $this->requirePerfil('empresa');
         
         $vaga = $this->vagaModel->findById($id);
         
@@ -273,7 +264,7 @@ class VagaController extends Controller
 
     public function delete($id)
     {
-        $this->requireAuth();
+        $this->requirePerfil('empresa');
         
         $vaga = $this->vagaModel->findById($id);
         

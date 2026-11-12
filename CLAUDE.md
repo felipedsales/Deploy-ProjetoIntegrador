@@ -95,8 +95,8 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 
 | Tabela | Colunas | Chaves e restrições |
 |---|---|---|
-| **candidatos** | `id`, `nome`, `email`, `senha`, `telefone`, `cpf`, `data_nascimento`, `endereco`, `curriculo_path`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cpf` |
-| **empresas** | `id`, `nome`, `email`, `senha`, `cnpj`, `telefone`, `endereco`, `descricao`, `setor`, `logo_path`, `website`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cnpj` |
+| **candidatos** | `id`, `nome`, `email`, `senha`, `telefone`, `cpf`, `data_nascimento`, `endereco`, `curriculo_path`, `status`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cpf`; `status` = conta ativa ou suspensa (RN18) |
+| **empresas** | `id`, `nome`, `email`, `senha`, `cnpj`, `telefone`, `endereco`, `descricao`, `setor`, `logo_path`, `website`, `status`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cnpj`; `status` = conta ativa ou suspensa (RN18) |
 | **vagas** | `id`, `empresa_id`, `titulo`, `descricao`, `requisitos`, `salario`, `tipo_contrato`, `modalidade`, `localizacao`, `beneficios`, `status`, `data_expiracao`, `created_at`, `updated_at` | PK `id`; **FK** `empresa_id` → `empresas(id)` `ON DELETE CASCADE`; índices em `empresa_id`, `status` e `data_expiracao`; **`data_expiracao` implementa a RN14** |
 | **candidaturas** | `id`, `vaga_id`, `candidato_id`, `status`, `data_candidatura`, `observacoes` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **`UNIQUE (vaga_id, candidato_id)` → implementa a RN04** (um candidato não se candidata duas vezes à mesma vaga) |
 | **sessoes** | `id`, `usuario_id`, `tipo_usuario`, `token`, `expira_em`, `created_at` | PK `id`; **UNIQUE** `token`; guarda o **token Bearer** da API; índices em `token` e `expira_em` |
@@ -112,6 +112,7 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 |---|---|
 | `tipo_contrato` (vagas) | `CLT`, `PJ`, `Freelance`, `Estágio` |
 | `modalidade` (vagas) | `Presencial`, `Remoto`, `Híbrido` |
+| `status` (candidatos, empresas) | `Ativa`, `Suspensa` |
 | `status` (vagas) | `Ativa`, `Inativa`, `Pausada` |
 | `status` (candidaturas) | `Pendente`, `Em análise`, `Aprovada`, `Rejeitada`, `Contratada` |
 | `tipo_usuario` (sessoes) | `candidato`, `empresa`, `administrador` |
@@ -175,7 +176,11 @@ Regras com **reflexo direto no banco**, que quem mexe em persistência precisa t
 - **RN14 — visibilidade de vagas ativas:** só se exibe vaga com `vagas.data_expiracao`
   válida; a validade mínima de 7 dias é conferida no back-end ao cadastrar e editar.
 - **RN07 — ações administrativas registradas:** toda ação de administrador grava uma
-  linha em `logs_auditoria`.
+  linha em `logs_auditoria`, na mesma transação da alteração (`Administrador`).
+- **RN18 — suspensão de contas:** só o administrador muda `candidatos.status` /
+  `empresas.status`; conta `Suspensa` não faz login.
+- **RN21 — permissões por perfil:** todo controller de área restrita começa com
+  `requirePerfil('candidato' | 'empresa' | 'administrador')`.
 
 Regras **fora da v1** — RN17/RN22 (e-mail verificado para candidatar-se / ativar conta),
 entre outras: ver **Escopo da v1 e lacunas conhecidas**.

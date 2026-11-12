@@ -209,6 +209,7 @@ ser atualizados** para refletir essas tabelas. Os itens *Futuro* continuam sem s
 | `vagas.data_expiracao` | **RN14** (validade mínima de 7 dias) | ✅ Criada (v1) |
 | `candidatos.email_confirmado` / `empresas.email_confirmado` | **RN22** | Futuro |
 | Tabela `administradores` e valor `administrador` em `sessoes.tipo_usuario` | RF03, RF16, RN09, RN18, RN21 | ✅ Criada (v1) |
+| `candidatos.status` / `empresas.status` (conta ativa ou suspensa) | RN18 | ✅ Criada (v1) |
 | Colunas `provider` / `provider_id` (já usadas no Model) | RF20 | Futuro |
 | Tabela `push_tokens` | RF14 (notificações no app) | Futuro |
 | Tabela `logs_auditoria` | RN07 (RNF12 fica como Futuro) | ✅ Criada (v1) |

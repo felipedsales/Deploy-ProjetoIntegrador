@@ -128,6 +128,24 @@ abstract class Controller
         }
     }
 
+    /**
+     * RN21: cada perfil só acessa o que é dele. Exige usuário logado com o
+     * perfil informado ('candidato', 'empresa' ou 'administrador').
+     */
+    protected function requirePerfil($perfil)
+    {
+        $login = ['candidato' => '/login', 'empresa' => '/login-empresa', 'administrador' => '/admin/login'];
+
+        if (!$this->isLoggedIn()) {
+            $this->redirect($login[$perfil] ?? '/login');
+        }
+
+        if ($this->getSession('user_type') !== $perfil) {
+            $inicio = ['candidato' => '/', 'empresa' => '/painel-empresa', 'administrador' => '/admin'];
+            $this->redirect($inicio[$this->getSession('user_type')] ?? '/');
+        }
+    }
+
     protected function formatMoney($value)
     {
         if (empty($value) || $value == 0) {

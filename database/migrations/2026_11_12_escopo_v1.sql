@@ -9,6 +9,10 @@
 --
 -- Atende: RN14, RF03, RF16, RN09, RN18, RN21, RF19, RF21, RF26, RN07.
 
+-- Garante que os acentos dos ENUMs e dos dados sejam lidos como UTF-8, seja qual
+-- for a codificação padrão do cliente usado na importação.
+SET NAMES utf8mb4;
+
 -- 1) RN14 — prazo de candidatura da vaga.
 --    As vagas que já existem recebem 30 dias a partir de hoje; depois disso a
 --    coluna passa a ser obrigatória.
@@ -26,7 +30,13 @@ ALTER TABLE sessoes
 --    já previam e o código já enviava).
 ALTER TABLE denuncias ADD COLUMN descricao TEXT NULL AFTER motivo;
 
--- 4) Tabelas novas (mesma definição de database/schema.sql).
+-- 4) RN18 — suspensão de contas pelo administrador.
+ALTER TABLE candidatos
+    ADD COLUMN status ENUM('Ativa', 'Suspensa') NOT NULL DEFAULT 'Ativa' AFTER curriculo_path;
+ALTER TABLE empresas
+    ADD COLUMN status ENUM('Ativa', 'Suspensa') NOT NULL DEFAULT 'Ativa' AFTER website;
+
+-- 5) Tabelas novas (mesma definição de database/schema.sql).
 CREATE TABLE IF NOT EXISTS administradores (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,

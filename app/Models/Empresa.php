@@ -60,16 +60,22 @@ class Empresa extends Model
         return $this->db->fetchAll($sql, [$vagaId, $empresaId]);
     }
 
-    public function atualizarStatusCandidatura($candidatoId, $vagaId, $status)
+    /** RN21: a empresa só altera candidaturas das próprias vagas. */
+    public function atualizarStatusCandidatura($candidatoId, $vagaId, $status, $empresaId)
     {
-        $sql = "UPDATE candidaturas SET status = ? WHERE candidato_id = ? AND vaga_id = ?";
-        return $this->db->query($sql, [$status, $candidatoId, $vagaId]);
+        $sql = "UPDATE candidaturas SET status = ?
+                WHERE candidato_id = ? AND vaga_id = ?
+                  AND vaga_id IN (SELECT id FROM vagas WHERE empresa_id = ?)";
+        return $this->db->query($sql, [$status, $candidatoId, $vagaId, $empresaId]);
     }
 
-    public function removerCandidato($candidatoId, $vagaId)
+    /** RN21: a empresa só remove candidaturas das próprias vagas. */
+    public function removerCandidato($candidatoId, $vagaId, $empresaId)
     {
-        $sql = "DELETE FROM candidaturas WHERE candidato_id = ? AND vaga_id = ?";
-        return $this->db->query($sql, [$candidatoId, $vagaId]);
+        $sql = "DELETE FROM candidaturas
+                WHERE candidato_id = ? AND vaga_id = ?
+                  AND vaga_id IN (SELECT id FROM vagas WHERE empresa_id = ?)";
+        return $this->db->query($sql, [$candidatoId, $vagaId, $empresaId]);
     }
 
     public function getEstatisticas()

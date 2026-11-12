@@ -28,12 +28,20 @@ class AuthController extends Controller
         if ($this->isPost()) {
             $email = $this->getPost('email');
             $senha = $this->getPost('senha');
-            $tipo = $this->getPost('tipo', 'candidato');
+            // RN21: esta tela só autentica candidato ou empresa; o perfil gravado na
+            // sessão nunca vem direto do formulário.
+            $tipo = $this->getPost('tipo') === 'empresa' ? 'empresa' : 'candidato';
 
             if ($tipo === 'empresa') {
                 $user = $this->empresaModel->autenticar($email, $senha);
             } else {
                 $user = $this->candidatoModel->autenticar($email, $senha);
+            }
+
+            if ($user && $this->candidatoModel->contaSuspensa($user)) {
+                return $this->render('auth/login', [
+                    'error' => 'Sua conta está suspensa. Entre em contato com a Prefeitura.'
+                ]);
             }
 
             if ($user) {
@@ -67,6 +75,12 @@ class AuthController extends Controller
             $senha = $this->getPost('senha');
 
             $user = $this->empresaModel->autenticar($email, $senha);
+
+            if ($user && $this->empresaModel->contaSuspensa($user)) {
+                return $this->render('auth/login_empresa', [
+                    'error' => 'Sua conta está suspensa. Entre em contato com a Prefeitura.'
+                ]);
+            }
 
             if ($user) {
                 $this->setSession('user_id', $user['id']);

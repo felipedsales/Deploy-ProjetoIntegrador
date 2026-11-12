@@ -15,7 +15,7 @@ class CandidatoController extends Controller
 
     public function minhasCandidaturas()
     {
-        $this->requireAuth();
+        $this->requirePerfil('candidato');
         
         $candidatoId = $this->getSession('user_id');
         $candidaturas = $this->candidatoModel->getMinhasCandidaturas($candidatoId);
@@ -28,11 +28,7 @@ class CandidatoController extends Controller
     /** RF19 / UC-C08 — cenário alternativo "Acessar Lista de Favoritos". */
     public function vagasFavoritas()
     {
-        $this->requireAuth();
-
-        if ($this->getSession('user_type') !== 'candidato') {
-            $this->redirect('/');
-        }
+        $this->requirePerfil('candidato');
 
         $vagas = $this->candidatoModel->getVagasFavoritas($this->getSession('user_id'));
 
@@ -43,7 +39,7 @@ class CandidatoController extends Controller
 
     public function perfil()
     {
-        $this->requireAuth();
+        $this->requirePerfil('candidato');
         
         $candidatoId = $this->getSession('user_id');
         $candidato = $this->candidatoModel->findById($candidatoId);
@@ -55,7 +51,7 @@ class CandidatoController extends Controller
 
     public function atualizarPerfil()
     {
-        $this->requireAuth();
+        $this->requirePerfil('candidato');
         
         if (!$this->isPost()) {
             $this->redirect('/perfil');

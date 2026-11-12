@@ -50,7 +50,7 @@ class EmpresaController extends Controller
 
     public function painel()
     {
-        $this->requireAuth();
+        $this->requirePerfil('empresa');
         
         $empresaId = $this->getSession('user_id');
         $empresa = $this->empresaModel->findById($empresaId);
@@ -64,7 +64,7 @@ class EmpresaController extends Controller
 
     public function minhasVagas()
     {
-        $this->requireAuth();
+        $this->requirePerfil('empresa');
         
         $empresaId = $this->getSession('user_id');
         $vagas = $this->empresaModel->getVagasEmpresa($empresaId);
@@ -76,7 +76,7 @@ class EmpresaController extends Controller
 
     public function candidatosVaga($vagaId)
     {
-        $this->requireAuth();
+        $this->requirePerfil('empresa');
         
         $empresaId = $this->getSession('user_id');
         $vaga = $this->vagaModel->findById($vagaId);
@@ -96,7 +96,7 @@ class EmpresaController extends Controller
 
     public function atualizarStatusCandidato()
     {
-        $this->requireAuth();
+        $this->requirePerfil('empresa');
         
         if (!$this->isPost()) {
             $this->redirect('/painel-empresa');
@@ -106,13 +106,13 @@ class EmpresaController extends Controller
         $vagaId = $this->getPost('vaga_id');
         $status = $this->getPost('status');
         
-        $this->empresaModel->atualizarStatusCandidatura($candidatoId, $vagaId, $status);
+        $this->empresaModel->atualizarStatusCandidatura($candidatoId, $vagaId, $status, $this->getSession('user_id'));
         $this->redirect("/empresa/vagas/{$vagaId}/candidatos?status=status_atualizado");
     }
 
     public function removerCandidato()
     {
-        $this->requireAuth();
+        $this->requirePerfil('empresa');
         
         if (!$this->isPost()) {
             $this->redirect('/painel-empresa');
@@ -121,7 +121,7 @@ class EmpresaController extends Controller
         $candidatoId = $this->getPost('candidato_id');
         $vagaId = $this->getPost('vaga_id');
         
-        $this->empresaModel->removerCandidato($candidatoId, $vagaId);
+        $this->empresaModel->removerCandidato($candidatoId, $vagaId, $this->getSession('user_id'));
         $this->redirect("/empresa/vagas/{$vagaId}/candidatos?status=candidato_removido");
     }
 } 
