@@ -27,9 +27,14 @@ class Empresa extends Model
         return $this->db->fetchAll($sql, [$buscaTerm, $buscaTerm]);
     }
 
-    public function getVagasEmpresa($empresaId)
+    /**
+     * Vagas de uma empresa. No painel da própria empresa vêm todas; na página
+     * pública ($somenteAtivas) só as ativas e dentro do prazo (RN14).
+     */
+    public function getVagasEmpresa($empresaId, $somenteAtivas = false)
     {
-        $sql = "SELECT * FROM vagas WHERE empresa_id = ? ORDER BY created_at DESC";
+        $filtro = $somenteAtivas ? " AND status = 'Ativa' AND data_expiracao >= CURRENT_DATE" : '';
+        $sql = "SELECT * FROM vagas WHERE empresa_id = ?{$filtro} ORDER BY created_at DESC";
         return $this->db->fetchAll($sql, [$empresaId]);
     }
 

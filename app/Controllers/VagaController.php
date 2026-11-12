@@ -58,6 +58,13 @@ class VagaController extends Controller
             $this->redirect('/vagas');
         }
 
+        // RN14: vaga inativa ou fora do prazo só é exibida para a empresa dona.
+        $ehDona = $this->getSession('user_type') === 'empresa'
+            && $vaga['empresa_id'] == $this->getSession('user_id');
+        if (!$this->vagaModel->estaAtiva($vaga) && !$ehDona) {
+            $this->redirect('/vagas?error=vaga_indisponivel');
+        }
+
         return $this->render('vagas/show', [
             'vaga' => $vaga
         ]);
@@ -75,6 +82,11 @@ class VagaController extends Controller
 
         $vagaId = $this->getPost('vaga_id');
         $candidatoId = $this->getSession('user_id');
+
+        // RN14: não se recebe candidatura em vaga inativa ou fora do prazo.
+        if (!$this->vagaModel->estaAtiva($this->vagaModel->findById($vagaId))) {
+            $this->redirect('/vagas?error=vaga_indisponivel');
+        }
 
         if ($this->candidatoModel->candidatarVaga($candidatoId, $vagaId)) {
             $this->redirect('/?status=candidatura_sucesso');
@@ -132,14 +144,27 @@ class VagaController extends Controller
                 'localizacao' => $this->getPost('localizacao'),
                 'beneficios' => $this->getPost('beneficios'),
                 'status' => 'Ativa',
+                'data_expiracao' => $this->getPost('data_expiracao'),
                 'empresa_id' => $this->getSession('user_id'),
             ];
+
+            // RN03 e RN14: a regra fica no Model; aqui só se decide o fluxo.
+            $erros = $this->vagaModel->validar($data);
+            if ($erros) {
+                return $this->render('vagas/create', [
+                    'erros' => $erros,
+                    'vaga' => $data,
+                    'dataMinima' => $this->vagaModel->dataExpiracaoMinima(),
+                ]);
+            }
 
             $this->vagaModel->create($data);
             $this->redirect('/painel-empresa?status=vaga_criada');
         }
 
-        return $this->render('vagas/create');
+        return $this->render('vagas/create', [
+            'dataMinima' => $this->vagaModel->dataExpiracaoMinima(),
+        ]);
     }
 
     public function edit($id)
@@ -174,15 +199,27 @@ class VagaController extends Controller
                 'modalidade' => $this->getPost('modalidade'),
                 'localizacao' => $this->getPost('localizacao'),
                 'beneficios' => $this->getPost('beneficios'),
-                'status' => $this->getPost('status', $vaga['status'])
+                'status' => $this->getPost('status', $vaga['status']),
+                'data_expiracao' => $this->getPost('data_expiracao'),
             ];
+
+            // RN03 e RN14: os 7 dias mínimos contam da publicação da vaga.
+            $erros = $this->vagaModel->validar($data, $vaga['created_at']);
+            if ($erros) {
+                return $this->render('vagas/edit', [
+                    'erros' => $erros,
+                    'vaga' => array_merge($vaga, $data),
+                    'dataMinima' => $this->vagaModel->dataExpiracaoMinima($vaga['created_at']),
+                ]);
+            }
 
             $this->vagaModel->update($id, $data);
             $this->redirect('/painel-empresa?status=vaga_atualizada');
         }
 
         return $this->render('vagas/edit', [
-            'vaga' => $vaga
+            'vaga' => $vaga,
+            'dataMinima' => $this->vagaModel->dataExpiracaoMinima($vaga['created_at']),
         ]);
     }
 

@@ -20,6 +20,13 @@ $title = htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz Conecta';
                         </div>
                     </div>
 
+                    <?php if (!empty($vaga['data_expiracao'])): ?>
+                        <div class="mb-4">
+                            <h5><i class="fas fa-calendar-alt text-danger"></i> Candidaturas até</h5>
+                            <p class="text-muted"><?= date('d/m/Y', strtotime($vaga['data_expiracao'])) ?></p>
+                        </div>
+                    <?php endif; ?>
+
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <h5><i class="fas fa-briefcase text-info"></i> Tipo de Contrato</h5>

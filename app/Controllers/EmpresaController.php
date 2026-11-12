@@ -40,7 +40,7 @@ class EmpresaController extends Controller
             $this->redirect('/empresas');
         }
 
-        $vagas = $this->empresaModel->getVagasEmpresa($id);
+        $vagas = $this->empresaModel->getVagasEmpresa($id, true);
         
         return $this->render('empresa/show', [
             'empresa' => $empresa,

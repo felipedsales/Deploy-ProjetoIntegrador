@@ -11,6 +11,17 @@ $title = 'Editar Vaga - Ferraz Conecta';
                         <i class="fas fa-edit text-primary"></i> Editar Vaga
                     </h2>
 
+                    <?php if (!empty($erros)): ?>
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Não foi possível salvar a vaga:</strong>
+                            <ul class="mb-0">
+                                <?php foreach ($erros as $mensagem): ?>
+                                    <li><?= htmlspecialchars($mensagem) ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    <?php endif; ?>
+
                     <form method="POST" action="/vagas/<?= $vaga['id'] ?? '' ?>/editar">
                         <div class="mb-3">
                             <label for="titulo" class="form-label required">Título da Vaga</label>
@@ -24,8 +35,8 @@ $title = 'Editar Vaga - Ferraz Conecta';
                         </div>
 
                         <div class="mb-3">
-                            <label for="requisitos" class="form-label">Requisitos</label>
-                            <textarea class="form-control" id="requisitos" name="requisitos" rows="4"><?= htmlspecialchars($vaga['requisitos'] ?? '') ?></textarea>
+                            <label for="requisitos" class="form-label required">Requisitos</label>
+                            <textarea class="form-control" id="requisitos" name="requisitos" rows="4" required><?= htmlspecialchars($vaga['requisitos'] ?? '') ?></textarea>
                         </div>
 
                         <div class="mb-3">
@@ -75,6 +86,17 @@ $title = 'Editar Vaga - Ferraz Conecta';
                                     <option value="Pausada" <?= ($vaga['status'] ?? '') === 'Pausada' ? 'selected' : '' ?>>Pausada</option>
                                     <option value="Inativa" <?= ($vaga['status'] ?? '') === 'Inativa' ? 'selected' : '' ?>>Inativa</option>
                                 </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="data_expiracao" class="form-label required">Receber candidaturas até</label>
+                                <input type="date" class="form-control<?= isset($erros['data_expiracao']) ? ' is-invalid' : '' ?>"
+                                    id="data_expiracao" name="data_expiracao"
+                                    value="<?= htmlspecialchars($vaga['data_expiracao'] ?? '') ?>"
+                                    min="<?= htmlspecialchars($dataMinima ?? '') ?>" required>
+                                <div class="form-text">A vaga fica aberta por no mínimo 7 dias.</div>
                             </div>
                         </div>
 

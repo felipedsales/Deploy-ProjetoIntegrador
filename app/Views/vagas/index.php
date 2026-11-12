@@ -18,6 +18,16 @@ $title = 'Vagas - Ferraz Conecta';
     </div>
 </section>
 
+<?php if (isset($_GET['error']) && $_GET['error'] === 'vaga_indisponivel'): ?>
+    <div class="container">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            Esta vaga não está mais disponível.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+<?php endif; ?>
+
 <?php if (isset($_GET['error']) && $_GET['error'] === 'ja_candidatado'): ?>
     <div class="container">
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
