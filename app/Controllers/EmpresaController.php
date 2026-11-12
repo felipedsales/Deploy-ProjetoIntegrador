@@ -3,17 +3,20 @@
 namespace App\Controllers;
 
 use App\Models\Empresa;
+use App\Models\Entrevista;
 use App\Models\Vaga;
 
 class EmpresaController extends Controller
 {
     private $empresaModel;
     private $vagaModel;
+    private $entrevistaModel;
 
     public function __construct()
     {
         $this->empresaModel = new Empresa();
         $this->vagaModel = new Vaga();
+        $this->entrevistaModel = new Entrevista();
     }
 
     public function index()
@@ -86,12 +89,73 @@ class EmpresaController extends Controller
             $this->redirect('/painel-empresa');
         }
         
-        $candidatos = $this->empresaModel->getCandidatosPorVaga($vagaId, $empresaId);
-        
-        return $this->render('empresa/candidatos_vaga', [
+        return $this->renderCandidatosVaga($vaga, $empresaId);
+    }
+
+    private function renderCandidatosVaga($vaga, $empresaId, $extra = [])
+    {
+        return $this->render('empresa/candidatos_vaga', array_merge([
             'vaga' => $vaga,
-            'candidatos' => $candidatos
-        ]);
+            'candidatos' => $this->empresaModel->getCandidatosPorVaga($vaga['id'], $empresaId),
+            'entrevistas' => $this->entrevistaModel->getPorVaga($vaga['id'], $empresaId),
+        ], $extra));
+    }
+
+    /** RF26 / UC-E06 Agendar Entrevista (e o cenário alternativo de reagendamento). */
+    public function agendarEntrevista()
+    {
+        $this->requirePerfil('empresa');
+
+        if (!$this->isPost()) {
+            $this->redirect('/painel-empresa');
+        }
+
+        $empresaId = $this->getSession('user_id');
+        $dados = [
+            'vaga_id' => (int) $this->getPost('vaga_id'),
+            'candidato_id' => (int) $this->getPost('candidato_id'),
+            'data_hora' => $this->getPost('data_hora'),
+            'local' => $this->getPost('local'),
+        ];
+
+        $vaga = $this->vagaModel->findById($dados['vaga_id']);
+        if (!$vaga || $vaga['empresa_id'] != $empresaId) {
+            $this->redirect('/painel-empresa');
+        }
+
+        $erros = $this->entrevistaModel->agendamento($empresaId, $dados);
+        if ($erros) {
+            return $this->renderCandidatosVaga($vaga, $empresaId, [
+                'errosEntrevista' => $erros,
+                'dadosEntrevista' => $dados,
+            ]);
+        }
+
+        $this->redirect("/empresa/vagas/{$vaga['id']}/candidatos?status=entrevista_agendada");
+    }
+
+    public function cancelarEntrevista()
+    {
+        $this->encerrarEntrevista('cancelar', 'entrevista_cancelada');
+    }
+
+    public function finalizarEntrevista()
+    {
+        $this->encerrarEntrevista('finalizar', 'entrevista_realizada');
+    }
+
+    private function encerrarEntrevista($operacao, $statusOk)
+    {
+        $this->requirePerfil('empresa');
+
+        if (!$this->isPost()) {
+            $this->redirect('/painel-empresa');
+        }
+
+        $vagaId = (int) $this->getPost('vaga_id');
+        $ok = $this->entrevistaModel->$operacao($this->getSession('user_id'), (int) $this->getPost('entrevista_id'));
+
+        $this->redirect("/empresa/vagas/{$vagaId}/candidatos?" . ($ok ? "status={$statusOk}" : 'error=entrevista_nao_alterada'));
     }
 
     public function atualizarStatusCandidato()

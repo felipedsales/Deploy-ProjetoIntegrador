@@ -22,7 +22,36 @@ $title = 'Candidatos - ' . htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz 
             <div class="alert alert-success">
                 <i class="fas fa-check-circle"></i> Candidato removido da vaga com sucesso!
             </div>
+        <?php elseif ($_GET['status'] === 'entrevista_agendada'): ?>
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> Entrevista agendada. O candidato vê a data, a hora e o local em "Minhas Candidaturas".
+            </div>
+        <?php elseif ($_GET['status'] === 'entrevista_cancelada'): ?>
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> Entrevista cancelada.
+            </div>
+        <?php elseif ($_GET['status'] === 'entrevista_realizada'): ?>
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> Entrevista marcada como realizada.
+            </div>
         <?php endif; ?>
+    <?php endif; ?>
+
+    <?php if (($_GET['error'] ?? '') === 'entrevista_nao_alterada'): ?>
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> A entrevista não foi alterada: ela não está mais agendada ou o horário ainda não chegou.
+        </div>
+    <?php endif; ?>
+
+    <?php if (!empty($errosEntrevista)): ?>
+        <div class="alert alert-danger">
+            <strong>Não foi possível agendar a entrevista:</strong>
+            <ul class="mb-0">
+                <?php foreach ($errosEntrevista as $mensagem): ?>
+                    <li><?= htmlspecialchars($mensagem) ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
     <?php endif; ?>
 
     <?php if (!empty($candidatos)): ?>
@@ -39,10 +68,10 @@ $title = 'Candidatos - ' . htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz 
 
                         <ul class="details">
                             <li><strong>Email:</strong> <?= htmlspecialchars($candidato['email']) ?></li>
-                            <li><strong>Telefone:</strong> <?= htmlspecialchars($candidato['telefone']) ?></li>
-                            <li><strong>CPF:</strong> <?= htmlspecialchars($candidato['cpf']) ?></li>
-                            <li><strong>Data de Nascimento:</strong> <?= date('d/m/Y', strtotime($candidato['data_nascimento'])) ?></li>
-                            <li><strong>Endereço:</strong> <?= htmlspecialchars($candidato['endereco']) ?></li>
+                            <li><strong>Telefone:</strong> <?= htmlspecialchars($candidato['telefone'] ?? 'Não informado') ?></li>
+                            <li><strong>CPF:</strong> <?= htmlspecialchars($candidato['cpf'] ?? 'Não informado') ?></li>
+                            <li><strong>Data de Nascimento:</strong> <?= !empty($candidato['data_nascimento']) ? date('d/m/Y', strtotime($candidato['data_nascimento'])) : 'Não informado' ?></li>
+                            <li><strong>Endereço:</strong> <?= htmlspecialchars($candidato['endereco'] ?? 'Não informado') ?></li>
                             <li><strong>Data da Candidatura:</strong> <?= date('d/m/Y', strtotime($candidato['data_candidatura'])) ?></li>
                         </ul>
 
@@ -78,6 +107,64 @@ $title = 'Candidatos - ' . htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz 
                                 </form>
                             </div>
                         </div>
+
+                        <?php
+                        // RF26 / UC-E06 — entrevista deste candidato nesta vaga
+                        $entrevista = $entrevistas[$candidato['id']] ?? null;
+                        $agendada = $entrevista && $entrevista['status'] === 'Agendada';
+                        $reenviado = (int) ($dadosEntrevista['candidato_id'] ?? 0) === (int) $candidato['id'];
+                        $valorDataHora = $reenviado
+                            ? (string) $dadosEntrevista['data_hora']
+                            : ($agendada ? date('Y-m-d\TH:i', strtotime($entrevista['data_hora'])) : '');
+                        $valorLocal = $reenviado ? (string) $dadosEntrevista['local'] : ($agendada ? $entrevista['local'] : '');
+                        ?>
+                        <hr>
+                        <h6><i class="fas fa-calendar-check text-primary"></i> Entrevista</h6>
+
+                        <?php if ($entrevista): ?>
+                            <p class="mb-2">
+                                <span class="badge bg-<?= $agendada ? 'primary' : ($entrevista['status'] === 'Realizada' ? 'success' : 'secondary') ?>"><?= htmlspecialchars($entrevista['status']) ?></span>
+                                <?= date('d/m/Y \à\s H:i', strtotime($entrevista['data_hora'])) ?> — <?= htmlspecialchars($entrevista['local']) ?>
+                            </p>
+                        <?php endif; ?>
+
+                        <?php if ($agendada): ?>
+                            <div class="d-flex gap-2 mb-2">
+                                <form method="POST" action="/empresa/entrevistas/finalizar">
+                                    <input type="hidden" name="vaga_id" value="<?= $vaga['id'] ?>">
+                                    <input type="hidden" name="entrevista_id" value="<?= $entrevista['id'] ?>">
+                                    <button type="submit" class="btn btn-outline-success btn-sm">Marcar como realizada</button>
+                                </form>
+                                <form method="POST" action="/empresa/entrevistas/cancelar"
+                                    onsubmit="return confirm('Cancelar esta entrevista?')">
+                                    <input type="hidden" name="vaga_id" value="<?= $vaga['id'] ?>">
+                                    <input type="hidden" name="entrevista_id" value="<?= $entrevista['id'] ?>">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Cancelar entrevista</button>
+                                </form>
+                            </div>
+                        <?php endif; ?>
+
+                        <form method="POST" action="/empresa/entrevistas/agendar" class="row g-2 align-items-end">
+                            <input type="hidden" name="vaga_id" value="<?= $vaga['id'] ?>">
+                            <input type="hidden" name="candidato_id" value="<?= $candidato['id'] ?>">
+                            <div class="col-md-4">
+                                <label for="data_hora_<?= $candidato['id'] ?>" class="form-label small mb-1">Data e hora</label>
+                                <input type="datetime-local" class="form-control form-control-sm" id="data_hora_<?= $candidato['id'] ?>"
+                                    name="data_hora" value="<?= htmlspecialchars($valorDataHora) ?>"
+                                    min="<?= date('Y-m-d\TH:i') ?>" required>
+                            </div>
+                            <div class="col-md-5">
+                                <label for="local_<?= $candidato['id'] ?>" class="form-label small mb-1">Local</label>
+                                <input type="text" class="form-control form-control-sm" id="local_<?= $candidato['id'] ?>"
+                                    name="local" maxlength="200" value="<?= htmlspecialchars($valorLocal) ?>"
+                                    placeholder="Endereço ou link da chamada" required>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary btn-sm w-100">
+                                    <?= $agendada ? 'Reagendar' : 'Agendar entrevista' ?>
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             <?php endforeach; ?>

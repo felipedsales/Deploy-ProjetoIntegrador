@@ -83,6 +83,9 @@ $router->get('/empresa/vagas', 'EmpresaController@minhasVagas');
 $router->get('/empresa/vagas/{id}/candidatos', 'EmpresaController@candidatosVaga');
 $router->post('/empresa/candidatos/status', 'EmpresaController@atualizarStatusCandidato');
 $router->post('/empresa/candidatos/remover', 'EmpresaController@removerCandidato');
+$router->post('/empresa/entrevistas/agendar', 'EmpresaController@agendarEntrevista');
+$router->post('/empresa/entrevistas/cancelar', 'EmpresaController@cancelarEntrevista');
+$router->post('/empresa/entrevistas/finalizar', 'EmpresaController@finalizarEntrevista');
 
 // --- Rotas da API ---
 $router->get('/api/vagas', 'VagaController@apiIndex');

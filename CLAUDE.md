@@ -68,6 +68,8 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 - Todo endpoint autenticado valida o token Bearer contra `sessoes` (token existente,
   não expirado — `expira_em`).
 - Nada de SQL montado por concatenação. **PDO + prepared statements sempre.**
+- **Fuso horário:** PHP e a sessão do MySQL usam `America/Sao_Paulo` (`app/bootstrap.php`
+  e `App\Models\Database`), para que prazos e horários não sigam o UTC do container.
 
 ---
 
@@ -177,6 +179,9 @@ Regras com **reflexo direto no banco**, que quem mexe em persistência precisa t
   válida; a validade mínima de 7 dias é conferida no back-end ao cadastrar e editar.
 - **RN07 — ações administrativas registradas:** toda ação de administrador grava uma
   linha em `logs_auditoria`, na mesma transação da alteração (`Administrador`).
+- **RF26 — entrevistas:** conflito de horário conferido em `Entrevista::agendamento`
+  (empresa ou candidato com outra entrevista `Agendada` a menos de 60 minutos); a
+  entrevista agendada é cancelada quando a candidatura deixa de existir.
 - **RN18 — suspensão de contas:** só o administrador muda `candidatos.status` /
   `empresas.status`; conta `Suspensa` não faz login.
 - **RN21 — permissões por perfil:** todo controller de área restrita começa com

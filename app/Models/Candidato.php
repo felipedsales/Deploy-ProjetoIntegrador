@@ -137,7 +137,14 @@ class Candidato extends Model
     public function desistirCandidatura($candidatoId, $vagaId)
     {
         $sql = "DELETE FROM candidaturas WHERE candidato_id = ? AND vaga_id = ?";
-        return $this->db->query($sql, [$candidatoId, $vagaId]);
+        $desistencia = $this->db->query($sql, [$candidatoId, $vagaId]);
+
+        // Sem candidatura, a entrevista que estava agendada perde o sentido (RF26).
+        if ($desistencia->rowCount() > 0) {
+            (new Entrevista())->cancelarDaCandidatura($vagaId, $candidatoId);
+        }
+
+        return $desistencia;
     }
 
     public function getEstatisticas()

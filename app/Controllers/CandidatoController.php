@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\Candidato;
+use App\Models\Entrevista;
 
 class CandidatoController extends Controller
 {
@@ -21,7 +22,9 @@ class CandidatoController extends Controller
         $candidaturas = $this->candidatoModel->getMinhasCandidaturas($candidatoId);
         
         return $this->render('candidato/minhas_candidaturas', [
-            'candidaturas' => $candidaturas
+            'candidaturas' => $candidaturas,
+            // RF26: o candidato acompanha aqui a entrevista marcada pela empresa.
+            'entrevistas' => (new Entrevista())->getPorCandidato($candidatoId)
         ]);
     }
 

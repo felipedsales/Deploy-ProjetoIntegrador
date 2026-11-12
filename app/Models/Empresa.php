@@ -51,7 +51,10 @@ class Empresa extends Model
 
     public function getCandidatosPorVaga($vagaId, $empresaId)
     {
-        $sql = "SELECT c.*, cv.data_candidatura, cv.status
+        // Colunas explícitas: a senha do candidato não vai para a tela, e o
+        // status é o da candidatura (candidatos também tem coluna status).
+        $sql = "SELECT c.id, c.nome, c.email, c.telefone, c.cpf, c.data_nascimento, c.endereco,
+                       c.curriculo_path, cv.data_candidatura, cv.status
                 FROM candidaturas cv
                 JOIN candidatos c ON cv.candidato_id = c.id
                 JOIN vagas v ON cv.vaga_id = v.id
@@ -75,7 +78,14 @@ class Empresa extends Model
         $sql = "DELETE FROM candidaturas
                 WHERE candidato_id = ? AND vaga_id = ?
                   AND vaga_id IN (SELECT id FROM vagas WHERE empresa_id = ?)";
-        return $this->db->query($sql, [$candidatoId, $vagaId, $empresaId]);
+        $removida = $this->db->query($sql, [$candidatoId, $vagaId, $empresaId]);
+
+        // Sem candidatura, a entrevista que estava agendada perde o sentido (RF26).
+        if ($removida->rowCount() > 0) {
+            (new Entrevista())->cancelarDaCandidatura($vagaId, $candidatoId);
+        }
+
+        return $removida;
     }
 
     public function getEstatisticas()

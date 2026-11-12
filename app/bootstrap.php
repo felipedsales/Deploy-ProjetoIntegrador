@@ -32,6 +32,11 @@ if (class_exists(\Dotenv\Dotenv::class)) {
     error_log('[Ferraz Conecta] vlucas/phpdotenv nao instalado: o arquivo .env NAO foi carregado. Rode "composer install".');
 }
 
+// Datas e horas no horário de Ferraz de Vasconcelos, e não no UTC do container:
+// prazo de vaga (RN14) e horário de entrevista (RF26) dependem disso. A conexão
+// com o banco usa o mesmo fuso (ver App\Models\Database).
+date_default_timezone_set(ferraz_env('APP_TIMEZONE', 'America/Sao_Paulo'));
+
 // Exibição de erros segue o ambiente (APP_ENV / APP_DEBUG via
 // ferraz_ambiente_desenvolvimento()), nunca o padrão do php.ini do container:
 // em produção o container sobe com display_errors ligado por padrão, o que
