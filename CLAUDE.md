@@ -50,7 +50,7 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
   produto comercial; o objetivo é entregar software que corresponda à documentação da
   disciplina.
 - **Usuários finais:** munícipes candidatos, empresas da região e a equipe da Prefeitura
-  (perfil administrador — ver "Lacunas conhecidas").
+  (perfil administrador).
 
 ---
 
@@ -59,8 +59,8 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 | Camada | Stack |
 |---|---|
 | **Back-end web** | PHP **8.2**, arquitetura **MVC em camadas**, `DocumentRoot` em `public/` |
-| **App mobile** | **React Native / Expo** em **TypeScript** |
-| **API** | REST em **`/api/v1`**, autenticação por **token Bearer** persistido na tabela `sessoes` |
+| **App mobile** *(pós-v1)* | **React Native / Expo** em **TypeScript** |
+| **API** *(pós-v1)* | REST em **`/api/v1`**, autenticação por **token Bearer** persistido na tabela `sessoes` |
 | **Banco** | **MySQL 8**, acesso **exclusivamente via PDO com prepared statements** |
 | **Hospedagem** | **Railway** |
 
@@ -97,10 +97,14 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 |---|---|---|
 | **candidatos** | `id`, `nome`, `email`, `senha`, `telefone`, `cpf`, `data_nascimento`, `endereco`, `curriculo_path`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cpf` |
 | **empresas** | `id`, `nome`, `email`, `senha`, `cnpj`, `telefone`, `endereco`, `descricao`, `setor`, `logo_path`, `website`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cnpj` |
-| **vagas** | `id`, `empresa_id`, `titulo`, `descricao`, `requisitos`, `salario`, `tipo_contrato`, `modalidade`, `localizacao`, `beneficios`, `status`, `created_at`, `updated_at` | PK `id`; **FK** `empresa_id` → `empresas(id)` `ON DELETE CASCADE`; índices em `empresa_id` e `status` |
+| **vagas** | `id`, `empresa_id`, `titulo`, `descricao`, `requisitos`, `salario`, `tipo_contrato`, `modalidade`, `localizacao`, `beneficios`, `status`, `data_expiracao`, `created_at`, `updated_at` | PK `id`; **FK** `empresa_id` → `empresas(id)` `ON DELETE CASCADE`; índices em `empresa_id`, `status` e `data_expiracao`; **`data_expiracao` implementa a RN14** |
 | **candidaturas** | `id`, `vaga_id`, `candidato_id`, `status`, `data_candidatura`, `observacoes` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **`UNIQUE (vaga_id, candidato_id)` → implementa a RN04** (um candidato não se candidata duas vezes à mesma vaga) |
 | **sessoes** | `id`, `usuario_id`, `tipo_usuario`, `token`, `expira_em`, `created_at` | PK `id`; **UNIQUE** `token`; guarda o **token Bearer** da API; índices em `token` e `expira_em` |
 | **denuncias** | `id`, `vaga_id`, `candidato_id`, `motivo`, `status`, `created_at` | PK `id`; **FK** `vaga_id` → `vagas(id)` `ON DELETE SET NULL`; **FK** `candidato_id` → `candidatos(id)` `ON DELETE SET NULL` |
+| **administradores** | `id`, `nome`, `email`, `senha`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email` (RF03, RF16) |
+| **favoritos** | `id`, `candidato_id`, `vaga_id`, `created_at` | PK `id`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **`UNIQUE (candidato_id, vaga_id)`** (RF19) |
+| **entrevistas** | `id`, `vaga_id`, `candidato_id`, `data_hora`, `local`, `status`, `created_at`, `updated_at` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; índice em `(candidato_id, data_hora)` (RF26) |
+| **logs_auditoria** | `id`, `administrador_id`, `acao`, `entidade`, `entidade_id`, `detalhes`, `created_at` | PK `id`; **FK** `administrador_id` → `administradores(id)` `ON DELETE SET NULL` (RN07) |
 
 ### Domínios (ENUM no schema)
 
@@ -110,7 +114,8 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 | `modalidade` (vagas) | `Presencial`, `Remoto`, `Híbrido` |
 | `status` (vagas) | `Ativa`, `Inativa`, `Pausada` |
 | `status` (candidaturas) | `Pendente`, `Em análise`, `Aprovada`, `Rejeitada`, `Contratada` |
-| `tipo_usuario` (sessoes) | `candidato`, `empresa` |
+| `tipo_usuario` (sessoes) | `candidato`, `empresa`, `administrador` |
+| `status` (entrevistas) | `Agendada`, `Cancelada`, `Realizada` |
 | `status` (denuncias) | `Pendente`, `Em análise`, `Resolvida`, `Descartada` |
 
 > **RN04 em destaque:** a restrição `UNIQUE (vaga_id, candidato_id)` na tabela
@@ -120,27 +125,28 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 
 ---
 
-## Lacunas conhecidas (documentação × `schema.sql`)
+## Escopo da v1 e lacunas conhecidas
 
-Itens que aparecem na documentação mas **ainda não existem** no `schema.sql`. Enquanto não
-forem criados, **não há base para implementar o requisito correspondente**.
+A v1 entrega **somente a plataforma web** e os RFs marcados como **v1** em
+[`docs/REQUISITOS.md`](docs/REQUISITOS.md). **App mobile e API REST `/api/v1` ficam para
+depois da v1** — ver [`docs/IMPLEMENTACOES_FUTURAS.md`](docs/IMPLEMENTACOES_FUTURAS.md).
+Não implementar nada marcado como *Futuro*.
 
-| Falta no `schema.sql` | Atende |
+A estrutura de banco da v1 já existe no `schema.sql` (`administradores`, `favoritos`,
+`entrevistas`, `logs_auditoria`, `vagas.data_expiracao`). Banco já existente recebe a
+`database/migrations/2026_11_12_escopo_v1.sql`.
+
+Lacunas que continuam abertas:
+
+| Lacuna | Atende |
 |---|---|
-| tabela `favoritos` | **RF19** |
-| tabela `entrevistas` | **RF26**, **UC-E06** |
-| `vagas.data_expiracao` (validade mínima de 7 dias, definida pela empresa) | **RN14** |
-| `candidatos.email_confirmado` / `empresas.email_confirmado` | **RN17**, **RN22** |
-| perfil/tabela de administrador (`sessoes.tipo_usuario` só aceita `candidato` e `empresa`) | **RF03**, **RF16**, **RN09**, **RN18**, **RN21** |
-| colunas `provider` / `provider_id` em `candidatos` (já usadas no Model, login externo) | **RF20** |
-| tabela `push_tokens` | **RF14** |
-| tabela de logs de auditoria | **RN07**, **RNF12** |
-| tabela de avaliações / feedback | **RF15**, **RN08** |
-| tabela de mensagens internas | **RF24** |
-| tabela de tickets de suporte | **RF17**, **RN15** |
-
-> Esta tabela **espelha** a seção *"Impacto no banco de dados"* de
-> [`docs/REQUISITOS.md`](docs/REQUISITOS.md); em caso de divergência, o `REQUISITOS.md` vence.
+| **MER e Diagrama de Classe não refletem o `schema.sql`** (usam `Usuário` como supertipo, `Currículo` e `Notificação` como entidades, e não têm `favoritos` nem `logs_auditoria`) | Regra nº 1 |
+| `candidatos.email_confirmado` / `empresas.email_confirmado` | RN17, RN22 — *Futuro* |
+| colunas `provider` / `provider_id` em `candidatos` (usadas em `SocialAuth.php`) | RF20 — *Futuro*; o login externo deve ficar desativado na v1 |
+| tabela `push_tokens` | RF14 — *Futuro* |
+| tabela de avaliações / feedback | RF15, RN08 — *Futuro* |
+| tabela de mensagens internas | RF24 — *Futuro* |
+| tabela de tickets de suporte | RF17, RN15 — *Futuro* |
 
 > **Regra para fechar cada lacuna:** a **migration**, a atualização do **MER** e a do
 > **Diagrama de Classe** são **a mesma tarefa** — não se faz uma sem as outras. Depois,
@@ -166,9 +172,13 @@ Regras com **reflexo direto no banco**, que quem mexe em persistência precisa t
 - **RN16 — validação de formato:** CPF, CNPJ, e-mail e telefone validados na **camada de
   negócio do back-end**, não só no formulário.
 
-Regras **sem base ainda no `schema.sql`** — RN14 (expiração de vaga), RN17/RN22 (e-mail
-verificado para candidatar-se / ativar conta), RN07/RN09/RN18/RN21 (perfil administrador,
-logs de auditoria, permissões por perfil), entre outras: ver **Lacunas conhecidas**.
+- **RN14 — visibilidade de vagas ativas:** só se exibe vaga com `vagas.data_expiracao`
+  válida; a validade mínima de 7 dias é conferida no back-end ao cadastrar e editar.
+- **RN07 — ações administrativas registradas:** toda ação de administrador grava uma
+  linha em `logs_auditoria`.
+
+Regras **fora da v1** — RN17/RN22 (e-mail verificado para candidatar-se / ativar conta),
+entre outras: ver **Escopo da v1 e lacunas conhecidas**.
 
 ---
 

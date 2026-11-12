@@ -4,7 +4,7 @@
 > card do Trello e commit deve referenciar os códigos definidos aqui.
 >
 > Consolidado a partir de `Projeto_Integrador_-_FATEC_2024.docx` (base) e `RFRNFRN.xlsx`
-> (complementos). Versão 1.0 — pendente de validação com o orientador.
+> (complementos). Versão 1.1 (2026-11-12) — escopo da v1 definido (ver também `IMPLEMENTACOES_FUTURAS.md`) e estrutura de banco da v1 criada; pendente de validação com o orientador.
 
 ---
 
@@ -21,36 +21,79 @@ Renumerar quebraria a matriz inteira.
 
 ---
 
+## Escopo da v1
+
+**Decisão de 2026-11-12:** a v1 entrega **somente os requisitos obrigatórios**, na
+**plataforma web**. Tudo o que não está listado aqui fica como *Futuro* e deve ser declarado
+fora do escopo no Documento de Visão.
+
+| Dentro da v1 | Requisitos |
+|---|---|
+| Cadastro e acesso | RF01, RF02, RF03, RF04 |
+| Perfis | RF06, RF07, RF08 |
+| Vagas | RF10, RF11, RF12 |
+| Candidatura e seleção | RF13, RF18, RF26 |
+| Favoritos e denúncias | RF19, RF21 |
+| Administração | RF16 |
+
+Alguns RFs entram com recorte; o recorte de cada um está na coluna **Escopo** da tabela de
+Requisitos Funcionais.
+
+**Confirmados como obrigatórios:** o perfil **administrador** (RF03, RF16) e o
+**agendamento de entrevistas** (RF26).
+
+**Fora da v1 (Futuro):**
+
+- **App mobile (React Native / Expo) e API REST `/api/v1`** — implementados depois da
+  entrega completa da plataforma web. Na v1 o candidato usa a web.
+- RF05 (recuperação de senha), RF09 (carta de apresentação), RF14 (notificações),
+  RF15 (feedback), RF17 (suporte), RF20 (login externo), RF22 (APIs externas),
+  RF23 (exportação LGPD), RF24 (mensagens internas), RF25 (IA de currículos).
+- RN19 / R18 (métricas e relatórios da empresa), RNF09 (multifator), RNF04 (microsserviços).
+
+**RNs e RNFs:** acompanham o RF a que estão ligadas na matriz de rastreabilidade, com
+três ajustes decididos em 2026-11-12:
+
+| Regra | Decisão |
+|---|---|
+| RN07 — ações administrativas registradas | **v1**, em forma simples: tabela de log gravando quem fez, o quê e quando. Sem tela de relatório de logs. |
+| RN14 — validade mínima de 7 dias da vaga | **v1**: coluna `vagas.data_expiracao`; vaga vencida deixa de ser exibida. |
+| RN17 / RN22 — e-mail confirmado | **Futuro**: dependem de envio de e-mail. Na v1 a conta fica ativa no cadastro e a candidatura exige apenas currículo anexado. |
+
+O que ficou fora está detalhado em **`IMPLEMENTACOES_FUTURAS.md`**.
+
+---
+
 ## Requisitos Funcionais
 
-| Código | Nome | Descrição |
-|---|---|---|
-| RF01 | Cadastro de Candidatos | Validação de CPF, e-mail único e senha segura. |
-| RF02 | Cadastro de Empresas | CNPJ, razão social e nome do responsável pela conta. |
-| RF03 | Cadastro de Administradores | Autenticação dupla e permissões especiais. |
-| RF04 | Login *(Include)* | E-mail/senha, redes sociais e autenticação multifator. |
-| RF05 | Recuperação de Senha *(Include)* | Envio de link temporário por e-mail (válido por 15 minutos). |
-| RF06 | Edição de Perfil do Candidato | Atualização de dados pessoais, currículo e preferências. |
-| RF07 | Edição de Perfil da Empresa | Alteração de dados cadastrais, logo e descrição institucional. |
-| RF08 | Upload de Currículo | Suporte a PDF/DOC, com validação de tipo e tamanho de arquivo. |
-| RF09 | Upload de Carta de Apresentação | Upload opcional, associada à vaga ou padrão no perfil. |
-| RF10 | Cadastro de Vagas | Descrição completa, requisitos, localização e benefícios. |
-| RF11 | Edição/Exclusão de Vagas | Permitido com histórico de alterações. |
-| RF12 | Busca de Vagas com Filtros | Filtros por área, localidade, tipo, experiência e modelo de trabalho. |
-| RF13 | Candidatura em Vagas | Envio de currículo e/ou carta de apresentação. |
-| RF14 | Notificações de Vagas | Vagas relevantes com base em perfil e histórico de candidaturas. |
-| RF15 | Feedback e Avaliação | Feedback pós-processo e avaliações por candidatos e empresas. |
-| RF16 | Painel Administrativo | Gestão de usuários, vagas, denúncias e logs do sistema. |
-| RF17 | Suporte ao Usuário | Chatbot e formulário com acompanhamento de ticket. |
-| RF18 | Histórico de Candidaturas | Status atualizado e mensagens da empresa. |
-| RF19 | Favoritar Vagas | Salvar para ver depois, com alerta de expiração. |
-| RF20 | Login Externo *(Include)* | Google, Facebook, LinkedIn e código único por e-mail. |
-| RF21 | Denúncia de Conteúdo/Usuários | Com motivo e evidência. |
-| RF22 | Integração com APIs Externas | Ex.: Receita Federal, validação LGPD. |
-| RF23 | Exportação de Dados (LGPD) | Feita pelo próprio usuário. |
-| RF24 | Mensagens Internas | Comunicação entre empresa e candidato após candidatura aceita. |
-| RF25 | IA para Currículos *(opcional)* | Análise automática de currículos para sugestão de vagas e ranqueamento. |
-| RF26 | Agendamento de Entrevistas | Ferramenta para agendamento entre empresa e candidato. |
+| Código | Nome | Descrição | Escopo |
+|---|---|---|---|
+| RF01 | Cadastro de Candidatos | Validação de CPF, e-mail único e senha segura. | **v1** |
+| RF02 | Cadastro de Empresas | CNPJ, razão social e nome do responsável pela conta. | **v1** |
+| RF03 | Cadastro de Administradores | Autenticação dupla e permissões especiais. | **v1** — sem autenticação dupla |
+| RF04 | Login *(Include)* | E-mail/senha, redes sociais e autenticação multifator. | **v1** — só e-mail e senha; sem redes sociais e sem multifator |
+| RF05 | Recuperação de Senha *(Include)* | Envio de link temporário por e-mail (válido por 15 minutos). | Futuro |
+| RF06 | Edição de Perfil do Candidato | Atualização de dados pessoais, currículo e preferências. | **v1** |
+| RF07 | Edição de Perfil da Empresa | Alteração de dados cadastrais, logo e descrição institucional. | **v1** |
+| RF08 | Upload de Currículo | Suporte a PDF/DOC, com validação de tipo e tamanho de arquivo. | **v1** |
+| RF09 | Upload de Carta de Apresentação | Upload opcional, associada à vaga ou padrão no perfil. | Futuro |
+| RF10 | Cadastro de Vagas | Descrição completa, requisitos, localização e benefícios. | **v1** |
+| RF11 | Edição/Exclusão de Vagas | Permitido com histórico de alterações. | **v1** — sem histórico de alterações |
+| RF12 | Busca de Vagas com Filtros | Filtros por área, localidade, tipo, experiência e modelo de trabalho. | **v1** |
+| RF13 | Candidatura em Vagas | Envio de currículo e/ou carta de apresentação. | **v1** — só currículo; carta de apresentação fica no RF09 |
+| RF14 | Notificações de Vagas | Vagas relevantes com base em perfil e histórico de candidaturas. | Futuro |
+| RF15 | Feedback e Avaliação | Feedback pós-processo e avaliações por candidatos e empresas. | Futuro |
+| RF16 | Painel Administrativo | Gestão de usuários, vagas, denúncias e logs do sistema. | **v1** — moderação de denúncias, vagas e usuários; sem logs do sistema |
+| RF17 | Suporte ao Usuário | Chatbot e formulário com acompanhamento de ticket. | Futuro |
+| RF18 | Histórico de Candidaturas | Status atualizado e mensagens da empresa. | **v1** — só status; mensagens da empresa ficam no RF24 |
+| RF19 | Favoritar Vagas | Salvar para ver depois, com alerta de expiração. | **v1** — sem alerta de expiração |
+| RF20 | Login Externo *(Include)* | Google, Facebook, LinkedIn e código único por e-mail. | Futuro |
+| RF21 | Denúncia de Conteúdo/Usuários | Com motivo e evidência. | **v1** |
+| RF22 | Integração com APIs Externas | Ex.: Receita Federal, validação LGPD. | Futuro |
+| RF23 | Exportação de Dados (LGPD) | Feita pelo próprio usuário. | Futuro |
+| RF24 | Mensagens Internas | Comunicação entre empresa e candidato após candidatura aceita. | Futuro |
+| RF25 | IA para Currículos *(opcional)* | Análise automática de currículos para sugestão de vagas e ranqueamento. | Futuro |
+| RF26 | Agendamento de Entrevistas | Ferramenta para agendamento entre empresa e candidato. | **v1** |
 
 > ⚠️ **RF25 e RF26 estavam ausentes da planilha.** O RF26 é essencial: sustenta o caso de
 > uso "Agendar Entrevista" do diagrama mobile e o UC-E06. O RF25 permanece como opcional e
@@ -154,22 +197,24 @@ listagem da empresa" — e aí ela vira comportamento implementável.*
 
 ## Impacto no banco de dados
 
-Requisitos e regras que **ainda não têm suporte no `schema.sql`**. Cada item exige migration
-+ atualização do MER e do Diagrama de Classe na mesma tarefa:
+Situação de cada estrutura que a documentação pede e o `schema.sql` original não tinha. Os
+itens da v1 foram criados em 2026-11-12 (`database/schema.sql` e
+`database/migrations/2026_11_12_escopo_v1.sql`); **MER e Diagrama de Classe ainda precisam
+ser atualizados** para refletir essas tabelas. Os itens *Futuro* continuam sem suporte.
 
-| Falta no schema | Atende |
-|---|---|
-| Tabela `favoritos` | RF19 |
-| Tabela `entrevistas` | RF26, UC-E06 |
-| `vagas.data_expiracao` | **RN14** (validade mínima de 7 dias) |
-| `candidatos.email_confirmado` / `empresas.email_confirmado` | **RN22** |
-| Perfil/tabela de administrador (hoje `sessoes.tipo_usuario` só aceita candidato e empresa) | RF03, RF16, RN09, RN18, RN21 |
-| Colunas `provider` / `provider_id` (já usadas no Model) | RF20 |
-| Tabela `push_tokens` | RF14 (notificações no app) |
-| Tabela de logs de auditoria | RN07, RNF12 |
-| Tabela de avaliações/feedback | RF15, RN08 |
-| Tabela de mensagens internas | RF24 |
-| Tabela de tickets de suporte | RF17, RN15 |
+| Estrutura | Atende | Situação |
+|---|---|---|
+| Tabela `favoritos` | RF19 | ✅ Criada (v1) |
+| Tabela `entrevistas` | RF26, UC-E06 | ✅ Criada (v1) |
+| `vagas.data_expiracao` | **RN14** (validade mínima de 7 dias) | ✅ Criada (v1) |
+| `candidatos.email_confirmado` / `empresas.email_confirmado` | **RN22** | Futuro |
+| Tabela `administradores` e valor `administrador` em `sessoes.tipo_usuario` | RF03, RF16, RN09, RN18, RN21 | ✅ Criada (v1) |
+| Colunas `provider` / `provider_id` (já usadas no Model) | RF20 | Futuro |
+| Tabela `push_tokens` | RF14 (notificações no app) | Futuro |
+| Tabela `logs_auditoria` | RN07 (RNF12 fica como Futuro) | ✅ Criada (v1) |
+| Tabela de avaliações/feedback | RF15, RN08 | Futuro |
+| Tabela de mensagens internas | RF24 | Futuro |
+| Tabela de tickets de suporte | RF17, RN15 | Futuro |
 
 ---
 
@@ -179,14 +224,17 @@ Requisitos e regras que **ainda não têm suporte no `schema.sql`**. Cada item e
    Autenticação), a hipótese mais provável é algo como "proteção contra ataques de força
    bruta / bloqueio após tentativas sucessivas". **Definir o texto ou remover a referência
    da matriz.**
-2. **Escopo da v1** — são 26 RFs e 22 RNs para entregar até 27/11. Recomenda-se classificar
-   cada RF como *v1 (obrigatório)*, *v1 (desejável)* ou *futuro*, e o Documento de Visão
-   passa a declarar explicitamente o que ficou fora.
+2. **Escopo da v1** — ~~classificar cada RF~~. **Resolvido em 2026-11-12:** a v1 entrega
+   somente os 16 RFs obrigatórios, na web; mobile e API REST ficam para depois. Ver seção
+   "Escopo da v1". Falta refletir no Documento de Visão.
 3. **Planilha RN08 (carta = +30%)** — confirmar o descarte ou reescrever como regra
    verificável.
-4. **RF25 / RN13 (IA de currículos)** — permanecem como opcionais e fora da v1?
+4. **RF25 / RN13 (IA de currículos)** — ~~permanecem como opcionais e fora da v1?~~
+   **Resolvido em 2026-11-12:** fora da v1 (Futuro).
 5. **Banco de dados** — ~~MySQL (documentação) × PostgreSQL (código atual)~~.
    **Resolvido em 2026-08-29:** padronizado em **MySQL 8** (Projeto Integrador e
    Documento de Visão). `database/schema.sql` convertido para o dialeto MySQL,
    dados de exemplo movidos para `database/seed.sql`, e removidos o driver
    `pdo_pgsql` (Dockerfile) e o ramo `pgsql` de `app/Models/Database.php`.
+6. **RNs que dependem de recurso fora da v1** — **Resolvido em 2026-11-12:** RN07 e RN14
+   entram na v1 em forma simples; RN17 e RN22 ficam como Futuro. Ver seção "Escopo da v1".
