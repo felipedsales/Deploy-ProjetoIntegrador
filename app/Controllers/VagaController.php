@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\Categoria;
 use App\Models\Vaga;
 use App\Models\Candidato;
 
@@ -39,7 +40,9 @@ class VagaController extends Controller
             'busca' => $filtros['busca'],
             'filtros' => $filtros,
             'tiposContrato' => Vaga::TIPOS_CONTRATO,
-            'modalidades' => Vaga::MODALIDADES
+            'modalidades' => Vaga::MODALIDADES,
+            'categorias' => (new Categoria())->listar(),
+            'niveisExperiencia' => Vaga::NIVEIS_EXPERIENCIA
         ]);
     }
 
@@ -47,7 +50,7 @@ class VagaController extends Controller
     private function filtrosDaBusca()
     {
         $filtros = [];
-        foreach (['busca', 'localizacao', 'tipo_contrato', 'modalidade'] as $campo) {
+        foreach (['busca', 'localizacao', 'tipo_contrato', 'modalidade', 'categoria_id', 'nivel_experiencia'] as $campo) {
             $filtros[$campo] = trim((string) $this->getQuery($campo, ''));
         }
 
@@ -72,9 +75,15 @@ class VagaController extends Controller
         $favoritada = $this->getSession('user_type') === 'candidato'
             && $this->candidatoModel->vagaFavoritada($this->getSession('user_id'), $vaga['id']);
 
+        // RN19: conta a visualização de quem não é a empresa dona nem administrador.
+        if (!$ehDona && $this->getSession('user_type') !== 'administrador') {
+            $this->vagaModel->registrarVisualizacao($vaga['id']);
+        }
+
         return $this->render('vagas/show', [
             'vaga' => $vaga,
-            'favoritada' => $favoritada
+            'favoritada' => $favoritada,
+            'categoria' => $vaga['categoria_id'] ? (new Categoria())->findById($vaga['categoria_id']) : null
         ]);
     }
 
@@ -99,10 +108,15 @@ class VagaController extends Controller
             $this->redirect('/perfil?error=curriculo_obrigatorio');
         }
 
-        if ($this->candidatoModel->candidatarVaga($candidatoId, $vagaId)) {
+        // RF09: carta de apresentação opcional, enviada junto com a candidatura.
+        $resultado = $this->candidatoModel->candidatarComCarta($candidatoId, $vagaId, $_FILES['carta'] ?? null);
+
+        if ($resultado === 'ok') {
             $this->redirect('/?status=candidatura_sucesso');
-        } else {
+        } elseif ($resultado === 'ja_candidatado') {
             $this->redirect('/vagas?error=ja_candidatado');
+        } else {
+            $this->redirect("/vagas/{$vagaId}?error=carta_invalida");
         }
     }
 
@@ -190,6 +204,8 @@ class VagaController extends Controller
                 'tipo_contrato' => $this->getPost('tipo_contrato'),
                 'modalidade' => $this->getPost('modalidade'),
                 'localizacao' => $this->getPost('localizacao'),
+                'categoria_id' => $this->getPost('categoria_id') ?: null,
+                'nivel_experiencia' => $this->getPost('nivel_experiencia') ?: null,
                 'beneficios' => $this->getPost('beneficios'),
                 'status' => 'Ativa',
                 'data_expiracao' => $this->getPost('data_expiracao'),
@@ -199,7 +215,7 @@ class VagaController extends Controller
             // RN03 e RN14: a regra fica no Model; aqui só se decide o fluxo.
             $erros = $this->vagaModel->validar($data);
             if ($erros) {
-                return $this->render('vagas/create', [
+                return $this->render('vagas/create', $this->opcoesDoFormulario() + [
                     'erros' => $erros,
                     'vaga' => $data,
                     'dataMinima' => $this->vagaModel->dataExpiracaoMinima(),
@@ -210,9 +226,18 @@ class VagaController extends Controller
             $this->redirect('/painel-empresa?status=vaga_criada');
         }
 
-        return $this->render('vagas/create', [
+        return $this->render('vagas/create', $this->opcoesDoFormulario() + [
             'dataMinima' => $this->vagaModel->dataExpiracaoMinima(),
         ]);
+    }
+
+    /** Listas dos campos de seleção do cadastro e da edição de vaga (RF12). */
+    private function opcoesDoFormulario()
+    {
+        return [
+            'categorias' => (new Categoria())->listar(),
+            'niveisExperiencia' => Vaga::NIVEIS_EXPERIENCIA,
+        ];
     }
 
     public function edit($id)
@@ -246,6 +271,8 @@ class VagaController extends Controller
                 'tipo_contrato' => $this->getPost('tipo_contrato'),
                 'modalidade' => $this->getPost('modalidade'),
                 'localizacao' => $this->getPost('localizacao'),
+                'categoria_id' => $this->getPost('categoria_id') ?: null,
+                'nivel_experiencia' => $this->getPost('nivel_experiencia') ?: null,
                 'beneficios' => $this->getPost('beneficios'),
                 'status' => $this->getPost('status', $vaga['status']),
                 'data_expiracao' => $this->getPost('data_expiracao'),
@@ -254,20 +281,23 @@ class VagaController extends Controller
             // RN03 e RN14: os 7 dias mínimos contam da publicação da vaga.
             $erros = $this->vagaModel->validar($data, $vaga['created_at']);
             if ($erros) {
-                return $this->render('vagas/edit', [
+                return $this->render('vagas/edit', $this->opcoesDoFormulario() + [
                     'erros' => $erros,
                     'vaga' => array_merge($vaga, $data),
                     'dataMinima' => $this->vagaModel->dataExpiracaoMinima($vaga['created_at']),
+                    'historico' => $this->vagaModel->getHistorico($id),
                 ]);
             }
 
-            $this->vagaModel->update($id, $data);
+            // RF11: a edição grava o histórico do que mudou.
+            $this->vagaModel->atualizarComHistorico($vaga, $data);
             $this->redirect('/painel-empresa?status=vaga_atualizada');
         }
 
-        return $this->render('vagas/edit', [
+        return $this->render('vagas/edit', $this->opcoesDoFormulario() + [
             'vaga' => $vaga,
             'dataMinima' => $this->vagaModel->dataExpiracaoMinima($vaga['created_at']),
+            'historico' => $this->vagaModel->getHistorico($id),
         ]);
     }
 

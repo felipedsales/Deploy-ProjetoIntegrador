@@ -36,7 +36,8 @@ class CandidatoController extends Controller
         $vagas = $this->candidatoModel->getVagasFavoritas($this->getSession('user_id'));
 
         return $this->render('candidato/vagas_favoritas', [
-            'vagas' => $vagas
+            'vagas' => $vagas,
+            'diasAlerta' => Candidato::DIAS_ALERTA_EXPIRACAO
         ]);
     }
 
@@ -52,6 +53,7 @@ class CandidatoController extends Controller
         return $this->render('candidato/perfil', array_merge([
             'candidato' => $this->candidatoModel->findById($candidatoId),
             'curriculo' => $this->candidatoModel->getResumoCurriculo($candidatoId),
+            'carta' => $this->candidatoModel->getResumoCarta($candidatoId),
         ], $extra));
     }
 
@@ -114,6 +116,45 @@ class CandidatoController extends Controller
         }
 
         $this->redirect('/perfil?status=curriculo_removido');
+    }
+
+    /** RF09 — carta de apresentação padrão do perfil. */
+    public function enviarCarta()
+    {
+        $this->requirePerfil('candidato');
+
+        if (!$this->isPost()) {
+            $this->redirect('/perfil');
+        }
+
+        $candidatoId = $this->getSession('user_id');
+        $erro = $this->candidatoModel->salvarCarta($candidatoId, $_FILES['carta'] ?? null);
+        if ($erro !== null) {
+            return $this->renderPerfil($candidatoId, ['erroCarta' => $erro]);
+        }
+
+        $this->redirect('/perfil?status=carta_enviada');
+    }
+
+    public function removerCarta()
+    {
+        $this->requirePerfil('candidato');
+
+        if ($this->isPost()) {
+            $this->candidatoModel->removerCarta($this->getSession('user_id'));
+        }
+
+        $this->redirect('/perfil?status=carta_removida');
+    }
+
+    public function baixarCarta()
+    {
+        $this->requirePerfil('candidato');
+
+        $this->enviarConteudo(
+            $this->candidatoModel->getCarta($this->getSession('user_id')),
+            'carta_' . $this->getSession('user_name')
+        );
     }
 
     /** O candidato baixa o próprio currículo. */

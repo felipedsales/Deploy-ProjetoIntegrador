@@ -9,6 +9,15 @@ class Vaga extends Model
     /** Domínios dos ENUMs de vagas, usados nos formulários e nos filtros da busca. */
     public const TIPOS_CONTRATO = ['CLT', 'PJ', 'Freelance', 'Estágio'];
     public const MODALIDADES = ['Presencial', 'Remoto', 'Híbrido'];
+    public const NIVEIS_EXPERIENCIA = ['Sem experiência', 'Júnior', 'Pleno', 'Sênior'];
+
+    /** RF11: campos acompanhados no histórico de alterações e o nome exibido de cada um. */
+    public const CAMPOS_HISTORICO = [
+        'titulo' => 'Título', 'descricao' => 'Descrição', 'requisitos' => 'Requisitos', 'salario' => 'Salário',
+        'tipo_contrato' => 'Tipo de contrato', 'modalidade' => 'Modalidade', 'localizacao' => 'Localização',
+        'categoria_id' => 'Categoria', 'nivel_experiencia' => 'Nível de experiência', 'beneficios' => 'Benefícios',
+        'status' => 'Status', 'data_expiracao' => 'Candidaturas até',
+    ];
 
     /** RN14: validade mínima, em dias, do prazo de candidatura de uma vaga. */
     public const VALIDADE_MINIMA_DIAS = 7;
@@ -84,7 +93,90 @@ class Vaga extends Model
             }
         }
 
+
+        // RF12: categoria e nível de experiência são opcionais, mas têm de existir.
+        if (!empty($dados['categoria_id']) && !(new Categoria())->findById($dados['categoria_id'])) {
+            $erros['categoria_id'] = 'Categoria inválida.';
+        }
+        if (!empty($dados['nivel_experiencia']) && !in_array($dados['nivel_experiencia'], self::NIVEIS_EXPERIENCIA, true)) {
+            $erros['nivel_experiencia'] = 'Nível de experiência inválido.';
+        }
+
         return $erros;
+    }
+
+    /**
+     * RF11 — grava a edição da vaga e, na mesma transação, uma linha no
+     * histórico com os campos que mudaram. Edição sem mudança não gera histórico.
+     */
+    public function atualizarComHistorico($vaga, $dados)
+    {
+        $alteracoes = [];
+        foreach (array_keys(self::CAMPOS_HISTORICO) as $campo) {
+            if (!array_key_exists($campo, $dados)) {
+                continue;
+            }
+            $de = $this->normalizar($campo, $vaga[$campo] ?? null);
+            $para = $this->normalizar($campo, $dados[$campo]);
+            if ($de !== $para) {
+                $alteracoes[$campo] = ['de' => $de, 'para' => $para];
+            }
+        }
+
+        $pdo = $this->db->getConnection();
+        $pdo->beginTransaction();
+        try {
+            $this->update($vaga['id'], $dados);
+            if ($alteracoes) {
+                $this->db->query(
+                    "INSERT INTO vagas_historico (vaga_id, alteracoes) VALUES (?, ?)",
+                    [$vaga['id'], json_encode($alteracoes, JSON_UNESCAPED_UNICODE)]
+                );
+            }
+            $pdo->commit();
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+
+        return count($alteracoes);
+    }
+
+    /** Deixa o valor antigo e o novo comparáveis (texto vazio = nulo; salário como número). */
+    private function normalizar($campo, $valor)
+    {
+        if ($valor === null || trim((string) $valor) === '') {
+            return null;
+        }
+        if ($campo === 'salario') {
+            return number_format((float) $valor, 2, '.', '');
+        }
+        if ($campo === 'categoria_id') {
+            return (string) (int) $valor;
+        }
+
+        return trim(str_replace("\r\n", "\n", (string) $valor));
+    }
+
+    /** RF11 — histórico de alterações da vaga, do mais recente para o mais antigo. */
+    public function getHistorico($vagaId)
+    {
+        $linhas = $this->db->fetchAll(
+            "SELECT alteracoes, created_at FROM vagas_historico WHERE vaga_id = ? ORDER BY id DESC",
+            [$vagaId]
+        );
+        foreach ($linhas as &$linha) {
+            $linha['alteracoes'] = json_decode($linha['alteracoes'], true) ?: [];
+        }
+
+        return $linhas;
+    }
+
+    /** RN19 — conta uma visualização, sem mexer na data de atualização da vaga. */
+    public function registrarVisualizacao($vagaId)
+    {
+        $sql = "UPDATE {$this->table} SET visualizacoes = visualizacoes + 1, updated_at = updated_at WHERE id = ?";
+        return $this->db->query($sql, [$vagaId]);
     }
 
     public function getVagasDestaque($limit = 8)
@@ -98,7 +190,8 @@ class Vaga extends Model
 
     /**
      * RF12 / UC-C03 Pesquisar Vagas — busca com filtros combináveis (RN05):
-     * palavra-chave, localidade, tipo de contrato e modalidade. Só devolve vagas
+     * palavra-chave, localidade, área (categoria), nível de experiência, tipo de
+     * contrato e modalidade. Só devolve vagas
      * ativas e dentro do prazo (RN14). Filtro vazio ou com valor fora do
      * domínio é ignorado.
      */
@@ -129,9 +222,21 @@ class Vaga extends Model
             $parametros[] = $filtros['modalidade'];
         }
 
-        $sql = "SELECT v.*, e.nome as empresa_nome
+        // Área: categoria da vaga (UC13).
+        if ((int) ($filtros['categoria_id'] ?? 0) > 0) {
+            $condicoes[] = 'v.categoria_id = ?';
+            $parametros[] = (int) $filtros['categoria_id'];
+        }
+
+        if (in_array($filtros['nivel_experiencia'] ?? '', self::NIVEIS_EXPERIENCIA, true)) {
+            $condicoes[] = 'v.nivel_experiencia = ?';
+            $parametros[] = $filtros['nivel_experiencia'];
+        }
+
+        $sql = "SELECT v.*, e.nome as empresa_nome, c.nome AS categoria_nome
                 FROM {$this->table} v
                 JOIN empresas e ON v.empresa_id = e.id
+                LEFT JOIN categorias c ON c.id = v.categoria_id
                 WHERE " . implode(' AND ', $condicoes) . "
                 ORDER BY v.created_at DESC";
         return $this->db->fetchAll($sql, $parametros);

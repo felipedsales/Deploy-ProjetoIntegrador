@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS candidatos (
 CREATE TABLE IF NOT EXISTS empresas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
+    -- RF02: nome do responsável pela conta da empresa.
+    responsavel VARCHAR(255),
     email VARCHAR(255) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
     cnpj VARCHAR(18) UNIQUE,
@@ -51,6 +53,14 @@ CREATE TABLE IF NOT EXISTS empresas (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- Tabela de categorias de vagas (RF12, UC13 Gerenciar Categorias de Vagas).
+-- Mantida pelo administrador; a empresa escolhe uma ao cadastrar a vaga.
+CREATE TABLE IF NOT EXISTS categorias (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL UNIQUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- Tabela de vagas
 CREATE TABLE IF NOT EXISTS vagas (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -62,18 +72,27 @@ CREATE TABLE IF NOT EXISTS vagas (
     tipo_contrato ENUM('CLT', 'PJ', 'Freelance', 'Estágio') NOT NULL DEFAULT 'CLT',
     modalidade ENUM('Presencial', 'Remoto', 'Híbrido') NOT NULL DEFAULT 'Presencial',
     localizacao VARCHAR(255),
+    -- RF12: área (categoria) e nível de experiência, usados nos filtros da busca.
+    categoria_id INT,
+    nivel_experiencia ENUM('Sem experiência', 'Júnior', 'Pleno', 'Sênior'),
     beneficios TEXT,
     status ENUM('Ativa', 'Inativa', 'Pausada') NOT NULL DEFAULT 'Ativa',
     -- RN14: prazo de candidatura definido pela empresa. Só vagas com prazo
     -- válido são exibidas; a validade mínima de 7 dias é conferida no back-end.
     data_expiracao DATE NOT NULL,
+    -- RN19: quantas vezes a página da vaga foi aberta por quem não é a empresa dona.
+    visualizacoes INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     KEY idx_vagas_empresa (empresa_id),
     KEY idx_vagas_status (status),
     KEY idx_vagas_expiracao (data_expiracao),
+    KEY idx_vagas_categoria (categoria_id),
     CONSTRAINT fk_vagas_empresa
-        FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE
+        FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE,
+    -- UC13: categoria em uso não pode ser excluída (sem ON DELETE: o banco recusa).
+    CONSTRAINT fk_vagas_categoria
+        FOREIGN KEY (categoria_id) REFERENCES categorias (id)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Tabela de candidaturas
@@ -221,4 +240,37 @@ CREATE TABLE IF NOT EXISTS logos_empresas (
     UNIQUE KEY uq_logos_empresa (empresa_id),
     CONSTRAINT fk_logos_empresa
         FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Histórico de alterações das vagas (RF11).
+-- Cada edição grava uma linha com os campos alterados, em JSON:
+-- {"campo": {"de": valor anterior, "para": valor novo}}.
+CREATE TABLE IF NOT EXISTS vagas_historico (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    vaga_id INT NOT NULL,
+    alteracoes TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_vagas_historico_vaga (vaga_id),
+    CONSTRAINT fk_vagas_historico_vaga
+        FOREIGN KEY (vaga_id) REFERENCES vagas (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Cartas de apresentação (RF09). Opcionais. Com vaga_id nulo é a carta padrão
+-- do perfil; com vaga_id preenchido é a carta enviada para aquela vaga. O
+-- arquivo fica no banco, como o currículo.
+CREATE TABLE IF NOT EXISTS cartas_apresentacao (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    candidato_id INT NOT NULL,
+    vaga_id INT,
+    nome_arquivo VARCHAR(255) NOT NULL,
+    tipo VARCHAR(100) NOT NULL,
+    tamanho INT NOT NULL,
+    conteudo MEDIUMBLOB NOT NULL,
+    data_envio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_cartas_candidato_vaga (candidato_id, vaga_id),
+    KEY idx_cartas_vaga (vaga_id),
+    CONSTRAINT fk_cartas_candidato
+        FOREIGN KEY (candidato_id) REFERENCES candidatos (id) ON DELETE CASCADE,
+    CONSTRAINT fk_cartas_vaga
+        FOREIGN KEY (vaga_id) REFERENCES vagas (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

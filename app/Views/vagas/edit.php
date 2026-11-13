@@ -60,6 +60,27 @@ $title = 'Editar Vaga - Ferraz Conecta';
                         </div>
 
                         <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="categoria_id" class="form-label">Categoria (área)</label>
+                                <select class="form-select" id="categoria_id" name="categoria_id">
+                                    <option value="">Não informada</option>
+                                    <?php foreach ($categorias ?? [] as $categoria): ?>
+                                        <option value="<?= $categoria['id'] ?>" <?= (string) ($vaga['categoria_id'] ?? '') === (string) $categoria['id'] ? 'selected' : '' ?>><?= htmlspecialchars($categoria['nome']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="nivel_experiencia" class="form-label">Nível de experiência</label>
+                                <select class="form-select" id="nivel_experiencia" name="nivel_experiencia">
+                                    <option value="">Não informado</option>
+                                    <?php foreach ($niveisExperiencia ?? [] as $nivel): ?>
+                                        <option value="<?= $nivel ?>" <?= ($vaga['nivel_experiencia'] ?? '') === $nivel ? 'selected' : '' ?>><?= $nivel ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label for="tipo_contrato" class="form-label required">Tipo de Contrato</label>
                                 <select class="form-select" id="tipo_contrato" name="tipo_contrato" required>
@@ -109,6 +130,50 @@ $title = 'Editar Vaga - Ferraz Conecta';
                             </a>
                         </div>
                     </form>
+
+                    <?php if (!empty($historico)): ?>
+                        <hr>
+                        <h5><i class="fas fa-history text-secondary"></i> Histórico de alterações</h5>
+                        <?php foreach ($historico as $registro): ?>
+                            <p class="mb-1"><strong><?= date('d/m/Y \\à\\s H:i', strtotime($registro['created_at'])) ?></strong></p>
+                            <ul class="small">
+                                <?php foreach ($registro['alteracoes'] as $campo => $mudanca): ?>
+                                    <?php
+                                    $nomeCampo = \App\Models\Vaga::CAMPOS_HISTORICO[$campo] ?? $campo;
+                                    $curto = in_array($campo, ['descricao', 'requisitos', 'beneficios'], true);
+                                    $mostrar = function ($valor) use ($campo, $categorias) {
+                                        if ($valor === null) {
+                                            return '(vazio)';
+                                        }
+                                        if ($campo === 'categoria_id') {
+                                            foreach ($categorias ?? [] as $categoria) {
+                                                if ((string) $categoria['id'] === (string) $valor) {
+                                                    return $categoria['nome'];
+                                                }
+                                            }
+                                            return 'categoria removida';
+                                        }
+                                        if ($campo === 'data_expiracao') {
+                                            return date('d/m/Y', strtotime($valor));
+                                        }
+                                        if ($campo === 'salario') {
+                                            return 'R$ ' . number_format((float) $valor, 2, ',', '.');
+                                        }
+                                        return $valor;
+                                    };
+                                    ?>
+                                    <li>
+                                        <strong><?= htmlspecialchars($nomeCampo) ?>:</strong>
+                                        <?php if ($curto): ?>
+                                            texto alterado
+                                        <?php else: ?>
+                                            <?= htmlspecialchars($mostrar($mudanca['de'])) ?> → <?= htmlspecialchars($mostrar($mudanca['para'])) ?>
+                                        <?php endif; ?>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

@@ -153,6 +153,114 @@ class Administrador extends Model
         return $this->mudarStatus($adminId, 'vagas', $vagaId, 'Ativa', 'reativar_vaga');
     }
 
+    /**
+     * UC13 Gerenciar Categorias de Vagas — cria e/ou renomeia categorias de uma
+     * vez (cenário alternativo "Edição em Massa"). Categorias não podem ser
+     * duplicadas nem ficar sem nome.
+     *
+     * @param array  $nomes id da categoria → novo nome
+     * @param string $nova  nome de uma categoria a criar (opcional)
+     * @return array lista de mensagens de erro; vazia quando tudo foi salvo
+     */
+    public function salvarCategorias($adminId, $nomes, $nova = '')
+    {
+        $atuais = [];
+        foreach ((new Categoria())->listar() as $categoria) {
+            $atuais[$categoria['id']] = $categoria['nome'];
+        }
+
+        $finais = $atuais;
+        foreach ($nomes as $id => $nome) {
+            if (isset($atuais[$id])) {
+                $finais[$id] = trim((string) $nome);
+            }
+        }
+        $nova = trim((string) $nova);
+        if ($nova !== '') {
+            $finais['nova'] = $nova;
+        }
+
+        $erros = [];
+        $vistos = [];
+        foreach ($finais as $nome) {
+            if (!mb_check_encoding($nome, 'UTF-8')) {
+                $erros['invalido'] = 'Nome de categoria inválido.';
+                continue;
+            }
+            $chave = mb_strtolower($nome);
+            if ($nome === '') {
+                $erros['vazio'] = 'O nome da categoria não pode ficar em branco.';
+            } elseif (mb_strlen($nome) > 100) {
+                $erros['tamanho'] = 'O nome da categoria deve ter no máximo 100 caracteres.';
+            } elseif (isset($vistos[$chave])) {
+                $erros['dup_' . $chave] = "A categoria \"{$nome}\" está duplicada.";
+            }
+            $vistos[$chave] = true;
+        }
+        if ($erros) {
+            return array_values($erros);
+        }
+
+        $this->emTransacao(function () use ($adminId, $atuais, $finais) {
+            // Nomes temporários primeiro: permite trocar dois nomes entre si sem esbarrar na UNIQUE.
+            $alteradas = [];
+            foreach ($finais as $id => $nome) {
+                if ($id !== 'nova' && $nome !== $atuais[$id]) {
+                    $this->db->query("UPDATE categorias SET nome = ? WHERE id = ?", ["~{$id}~" . bin2hex(random_bytes(4)), $id]);
+                    $alteradas[$id] = $nome;
+                }
+            }
+            foreach ($alteradas as $id => $nome) {
+                $this->db->query("UPDATE categorias SET nome = ? WHERE id = ?", [$nome, $id]);
+                $this->registrarLog($adminId, 'renomear_categoria', 'categorias', $id, "{$atuais[$id]} → {$nome}");
+            }
+            if (isset($finais['nova'])) {
+                $this->db->query("INSERT INTO categorias (nome) VALUES (?)", [$finais['nova']]);
+                $this->registrarLog($adminId, 'criar_categoria', 'categorias', $this->db->lastInsertId(), $finais['nova']);
+            }
+
+            return true;
+        });
+
+        return [];
+    }
+
+    /**
+     * UC13 — exclui uma categoria. Não exclui categoria em uso por vagas
+     * (exceção "Categoria Vinculada") nem a última categoria do sistema.
+     *
+     * @return string|null mensagem de erro, ou null quando a categoria foi excluída
+     */
+    public function excluirCategoria($adminId, $categoriaId)
+    {
+        $categorias = (new Categoria())->listarComUso();
+        $alvo = null;
+        foreach ($categorias as $categoria) {
+            if ((int) $categoria['id'] === (int) $categoriaId) {
+                $alvo = $categoria;
+            }
+        }
+
+        if (!$alvo) {
+            return 'Categoria não encontrada.';
+        }
+        if ((int) $alvo['total_vagas'] > 0) {
+            return "A categoria \"{$alvo['nome']}\" está em uso por {$alvo['total_vagas']} vaga(s) e não pode ser excluída.";
+        }
+        if (count($categorias) <= 1) {
+            return 'O sistema não pode ficar sem categorias.';
+        }
+
+        $this->emTransacao(function () use ($adminId, $alvo) {
+            $this->db->query("DELETE FROM categorias WHERE id = ?", [$alvo['id']]);
+            $this->registrarLog($adminId, 'excluir_categoria', 'categorias', $alvo['id'], $alvo['nome']);
+
+            return true;
+        });
+
+        return null;
+    }
+
     /** RF16 (Diagrama de Classe: gerenciarUsuarios) — candidatos e empresas cadastrados. */
     public function gerenciarUsuarios()
     {

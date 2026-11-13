@@ -80,6 +80,11 @@ $title = 'Candidatos - ' . htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz 
                                     não enviado
                                 <?php endif; ?>
                             </li>
+                            <?php if (!empty($candidato['tem_carta'])): ?>
+                                <li><strong>Carta de apresentação:</strong>
+                                    <a href="/empresa/vagas/<?= $vaga['id'] ?>/candidatos/<?= $candidato['id'] ?>/carta"><i class="fas fa-download"></i> Baixar carta</a>
+                                </li>
+                            <?php endif; ?>
                         </ul>
 
                         <div class="mt-3">

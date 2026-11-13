@@ -158,6 +158,81 @@ class Candidato extends Model
         return $this->db->fetch($sql, [$candidatoId]);
     }
 
+    /**
+     * RF09 — grava a carta de apresentação (opcional). Sem $vagaId é a carta
+     * padrão do perfil; com $vagaId é a carta daquela candidatura. Substitui a
+     * anterior do mesmo tipo.
+     *
+     * @return string|null mensagem de erro, ou null quando a carta foi gravada
+     */
+    public function salvarCarta($candidatoId, $arquivo, $vagaId = null)
+    {
+        $validado = Arquivo::validar($arquivo, Arquivo::CARTA);
+        if (isset($validado['erro'])) {
+            return $validado['erro'];
+        }
+
+        $conteudo = file_get_contents($validado['temporario']);
+        if ($conteudo === false || $conteudo === '') {
+            return 'Não foi possível receber o arquivo. Tente novamente.';
+        }
+
+        $this->removerCarta($candidatoId, $vagaId);
+        $sql = "INSERT INTO cartas_apresentacao (candidato_id, vaga_id, nome_arquivo, tipo, tamanho, conteudo)
+                VALUES (?, ?, ?, ?, ?, ?)";
+        $this->db->query($sql, [$candidatoId, $vagaId, $validado['nome'], $validado['tipo'], $validado['tamanho'], $conteudo]);
+
+        return null;
+    }
+
+    /** Remove a carta padrão ($vagaId nulo) ou a carta de uma candidatura. */
+    public function removerCarta($candidatoId, $vagaId = null)
+    {
+        $sql = "DELETE FROM cartas_apresentacao WHERE candidato_id = ? AND vaga_id <=> ?";
+        return $this->db->query($sql, [$candidatoId, $vagaId]);
+    }
+
+    /** Dados da carta padrão do perfil para exibição, sem carregar o arquivo. */
+    public function getResumoCarta($candidatoId)
+    {
+        $sql = "SELECT nome_arquivo, data_envio FROM cartas_apresentacao WHERE candidato_id = ? AND vaga_id IS NULL";
+        return $this->db->fetch($sql, [$candidatoId]);
+    }
+
+    /** Carta padrão completa, para o próprio candidato baixar. */
+    public function getCarta($candidatoId)
+    {
+        $sql = "SELECT nome_arquivo, tipo, conteudo FROM cartas_apresentacao WHERE candidato_id = ? AND vaga_id IS NULL";
+        return $this->db->fetch($sql, [$candidatoId]);
+    }
+
+    /**
+     * RF13 + RF09 — candidata-se à vaga, com carta de apresentação opcional.
+     * A carta é conferida antes: carta inválida não gera candidatura.
+     *
+     * @param array|null $carta entrada de $_FILES; ausente ou vazia = sem carta
+     * @return string 'ok', 'ja_candidatado' ou a mensagem de erro da carta
+     */
+    public function candidatarComCarta($candidatoId, $vagaId, $carta = null)
+    {
+        $temCarta = ($carta['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
+        if ($temCarta) {
+            $validado = Arquivo::validar($carta, Arquivo::CARTA);
+            if (isset($validado['erro'])) {
+                return $validado['erro'];
+            }
+        }
+
+        if (!$this->candidatarVaga($candidatoId, $vagaId)) {
+            return 'ja_candidatado';
+        }
+        if ($temCarta) {
+            $this->salvarCarta($candidatoId, $carta, $vagaId);
+        }
+
+        return 'ok';
+    }
+
     /** RF13: a candidatura exige currículo anexado ao perfil. */
     public function temCurriculo($candidatoId)
     {
@@ -263,10 +338,14 @@ class Candidato extends Model
      * ainda está ativa e dentro do prazo (RN14); quando não está, a tela avisa
      * que a vaga não está mais disponível.
      */
+    /** RF19: prazo, em dias, a partir do qual a vaga favorita é sinalizada como prestes a expirar. */
+    public const DIAS_ALERTA_EXPIRACAO = 3;
+
     public function getVagasFavoritas($candidatoId)
     {
         $sql = "SELECT v.*, e.nome AS empresa_nome, f.created_at AS favoritada_em,
-                       (v.status = 'Ativa' AND v.data_expiracao >= CURRENT_DATE) AS disponivel
+                       (v.status = 'Ativa' AND v.data_expiracao >= CURRENT_DATE) AS disponivel,
+                       DATEDIFF(v.data_expiracao, CURRENT_DATE) AS dias_restantes
                 FROM favoritos f
                 JOIN vagas v ON f.vaga_id = v.id
                 JOIN empresas e ON v.empresa_id = e.id
@@ -283,6 +362,7 @@ class Candidato extends Model
         // Sem candidatura, a entrevista que estava agendada perde o sentido (RF26).
         if ($desistencia->rowCount() > 0) {
             (new Entrevista())->cancelarDaCandidatura($vagaId, $candidatoId);
+            $this->removerCarta($candidatoId, $vagaId);
         }
 
         return $desistencia;

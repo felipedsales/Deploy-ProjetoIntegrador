@@ -17,6 +17,9 @@ $title = 'Painel Empresa - Ferraz Conecta';
                         <a href="/empresa/vagas" class="btn btn-outline-primary">
                             <i class="fas fa-list"></i> Minhas Vagas
                         </a>
+                        <a href="/empresa/relatorio" class="btn btn-outline-primary">
+                            <i class="fas fa-chart-bar"></i> Relatório de Vagas
+                        </a>
                         <a href="/empresa/perfil" class="btn btn-outline-secondary">
                             <i class="fas fa-building"></i> Perfil da Empresa
                         </a>
