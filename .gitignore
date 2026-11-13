@@ -23,6 +23,6 @@
 .DS_Store
 Thumbs.db
 
-# Arquivos enviados pelos usuarios (curriculos e logos): dados pessoais,
-# nunca versionar.
-/uploads/*
+# Curriculos e logos ficam no banco. A pasta uploads/ nao e mais usada;
+# o que aparecer nela (dados pessoais) nunca deve ser versionado.
+/uploads/

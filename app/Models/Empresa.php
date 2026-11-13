@@ -121,22 +121,41 @@ class Empresa extends Model
     }
 
     /**
-     * RF07 — recebe o logo da empresa e substitui o anterior.
+     * RF07 — recebe o logo da empresa e grava no banco, substituindo o anterior.
      *
      * @return string|null mensagem de erro, ou null quando o logo foi gravado
      */
     public function salvarLogo($empresaId, $arquivo)
     {
-        $resultado = Arquivo::salvar($arquivo, Arquivo::LOGO, $empresaId);
-        if (isset($resultado['erro'])) {
-            return $resultado['erro'];
+        $validado = Arquivo::validar($arquivo, Arquivo::LOGO);
+        if (isset($validado['erro'])) {
+            return $validado['erro'];
         }
 
-        $anterior = $this->findById($empresaId)['logo_path'] ?? null;
-        parent::update($empresaId, ['logo_path' => $resultado['caminho']]);
-        Arquivo::remover($anterior);
+        $conteudo = file_get_contents($validado['temporario']);
+        if ($conteudo === false || $conteudo === '') {
+            return 'Não foi possível receber o arquivo. Tente novamente.';
+        }
+
+        $sql = "INSERT INTO logos_empresas (empresa_id, tipo, tamanho, conteudo)
+                VALUES (?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE tipo = VALUES(tipo), tamanho = VALUES(tamanho),
+                    conteudo = VALUES(conteudo), data_envio = CURRENT_TIMESTAMP";
+        $this->db->query($sql, [$empresaId, $validado['tipo'], $validado['tamanho'], $conteudo]);
 
         return null;
+    }
+
+    /** Indica se a empresa tem logo e quando foi enviado, sem carregar a imagem. */
+    public function getResumoLogo($empresaId)
+    {
+        return $this->db->fetch("SELECT data_envio FROM logos_empresas WHERE empresa_id = ?", [$empresaId]);
+    }
+
+    /** Logo completo (tipo e conteudo), para exibição. */
+    public function getLogo($empresaId)
+    {
+        return $this->db->fetch("SELECT tipo, conteudo FROM logos_empresas WHERE empresa_id = ?", [$empresaId]);
     }
 
     /**

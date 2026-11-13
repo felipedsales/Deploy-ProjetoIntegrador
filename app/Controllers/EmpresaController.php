@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Models\Arquivo;
 use App\Models\Empresa;
 use App\Models\Entrevista;
 use App\Models\Vaga;
@@ -48,7 +47,8 @@ class EmpresaController extends Controller
         
         return $this->render('empresa/show', [
             'empresa' => $empresa,
-            'vagas' => $vagas
+            'vagas' => $vagas,
+            'logo' => $this->empresaModel->getResumoLogo($id)
         ]);
     }
 
@@ -57,9 +57,15 @@ class EmpresaController extends Controller
     {
         $this->requirePerfil('empresa');
 
-        return $this->render('empresa/perfil', [
-            'empresa' => $this->empresaModel->findById($this->getSession('user_id'))
-        ]);
+        return $this->renderPerfil($this->getSession('user_id'));
+    }
+
+    private function renderPerfil($empresaId, $extra = [])
+    {
+        return $this->render('empresa/perfil', array_merge([
+            'empresa' => $this->empresaModel->findById($empresaId),
+            'logo' => $this->empresaModel->getResumoLogo($empresaId),
+        ], $extra));
     }
 
     public function atualizarPerfil()
@@ -84,7 +90,7 @@ class EmpresaController extends Controller
         $erros = $this->empresaModel->validarPerfil($data);
         if ($erros) {
             unset($data['nova_senha']);
-            return $this->render('empresa/perfil', [
+            return $this->renderPerfil($empresaId, [
                 'empresa' => array_merge($this->empresaModel->findById($empresaId), $data),
                 'erros' => $erros
             ]);
@@ -107,10 +113,7 @@ class EmpresaController extends Controller
         $empresaId = $this->getSession('user_id');
         $erro = $this->empresaModel->salvarLogo($empresaId, $_FILES['logo'] ?? null);
         if ($erro !== null) {
-            return $this->render('empresa/perfil', [
-                'empresa' => $this->empresaModel->findById($empresaId),
-                'erroLogo' => $erro
-            ]);
+            return $this->renderPerfil($empresaId, ['erroLogo' => $erro]);
         }
 
         $this->redirect('/empresa/perfil?status=logo_enviado');
@@ -119,8 +122,7 @@ class EmpresaController extends Controller
     /** Logo da empresa: imagem pública, exibida na página da empresa. */
     public function logo($id)
     {
-        $empresa = $this->empresaModel->findById($id);
-        $this->enviarArquivo(Arquivo::localizar($empresa['logo_path'] ?? null));
+        $this->enviarConteudo($this->empresaModel->getLogo($id));
     }
 
     /** RF13 — a empresa baixa o currículo de quem se candidatou a uma vaga dela (RN21). */

@@ -98,12 +98,13 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 | Tabela | Colunas | Chaves e restrições |
 |---|---|---|
 | **candidatos** | `id`, `nome`, `email`, `senha`, `telefone`, `cpf`, `data_nascimento`, `endereco`, `status`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cpf`; `status` = conta ativa ou suspensa (RN18) |
-| **empresas** | `id`, `nome`, `email`, `senha`, `cnpj`, `telefone`, `endereco`, `descricao`, `setor`, `logo_path`, `website`, `status`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cnpj`; `status` = conta ativa ou suspensa (RN18) |
+| **empresas** | `id`, `nome`, `email`, `senha`, `cnpj`, `telefone`, `endereco`, `descricao`, `setor`, `website`, `status`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cnpj`; `status` = conta ativa ou suspensa (RN18) |
 | **vagas** | `id`, `empresa_id`, `titulo`, `descricao`, `requisitos`, `salario`, `tipo_contrato`, `modalidade`, `localizacao`, `beneficios`, `status`, `data_expiracao`, `created_at`, `updated_at` | PK `id`; **FK** `empresa_id` → `empresas(id)` `ON DELETE CASCADE`; índices em `empresa_id`, `status` e `data_expiracao`; **`data_expiracao` implementa a RN14** |
 | **candidaturas** | `id`, `vaga_id`, `candidato_id`, `status`, `data_candidatura`, `observacoes` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **`UNIQUE (vaga_id, candidato_id)` → implementa a RN04** (um candidato não se candidata duas vezes à mesma vaga) |
 | **sessoes** | `id`, `usuario_id`, `tipo_usuario`, `token`, `expira_em`, `created_at` | PK `id`; **UNIQUE** `token`; guarda o **token Bearer** da API; índices em `token` e `expira_em` |
 | **denuncias** | `id`, `vaga_id`, `candidato_id`, `motivo`, `descricao`, `status`, `created_at` | PK `id`; **FK** `vaga_id` → `vagas(id)` `ON DELETE SET NULL`; **FK** `candidato_id` → `candidatos(id)` `ON DELETE SET NULL` |
 | **curriculos** | `id`, `candidato_id`, `nome_arquivo`, `tipo`, `tamanho`, `conteudo`, `data_envio` | PK `id`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **UNIQUE** `candidato_id` (um currículo por candidato); `conteudo` guarda o arquivo (RF08, RN02) |
+| **logos_empresas** | `id`, `empresa_id`, `tipo`, `tamanho`, `conteudo`, `data_envio` | PK `id`; **FK** `empresa_id` → `empresas(id)` `CASCADE`; **UNIQUE** `empresa_id` (um logo por empresa); `conteudo` guarda a imagem (RF07) |
 | **administradores** | `id`, `nome`, `email`, `senha`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email` (RF03, RF16) |
 | **favoritos** | `id`, `candidato_id`, `vaga_id`, `created_at` | PK `id`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **`UNIQUE (candidato_id, vaga_id)`** (RF19) |
 | **entrevistas** | `id`, `vaga_id`, `candidato_id`, `data_hora`, `local`, `status`, `created_at`, `updated_at` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; índice em `(candidato_id, data_hora)` (RF26) |
@@ -137,7 +138,7 @@ depois da v1** — ver [`docs/IMPLEMENTACOES_FUTURAS.md`](docs/IMPLEMENTACOES_FU
 Não implementar nada marcado como *Futuro*.
 
 A estrutura de banco da v1 já existe no `schema.sql` (`administradores`, `favoritos`,
-`entrevistas`, `logs_auditoria`, `curriculos`, `vagas.data_expiracao`). Banco já existente recebe a
+`entrevistas`, `logs_auditoria`, `curriculos`, `logos_empresas`, `vagas.data_expiracao`). Banco já existente recebe a
 `database/migrations/2026_11_12_escopo_v1.sql`.
 
 Lacunas que continuam abertas:
@@ -173,11 +174,10 @@ Regras com **reflexo direto no banco**, que quem mexe em persistência precisa t
   `candidaturas` (ver o box **"RN04 em destaque"** na seção *Modelo de dados*).
 - **RN12 — histórico de candidaturas:** `candidaturas.data_candidatura` e
   `candidaturas.status` registram data/hora e situação de cada ação.
-- **RF08 — currículo no banco:** o arquivo é gravado em `curriculos.conteudo`, não no
-  disco, para não se perder a cada deploy; só sai por rota que confere a permissão. Nunca
-  selecionar `conteudo` em listagens — só no download.
-- **RF07 — logo:** fica em `uploads/logos/`, fora de `public/` e fora do versionamento
-  (`App\Models\Arquivo`).
+- **RF08 / RF07 — arquivos no banco:** currículo em `curriculos.conteudo` e logo em
+  `logos_empresas.conteudo`, não no disco, para não se perderem a cada deploy. O currículo
+  só sai por rota que confere a permissão. Nunca selecionar `conteudo` em listagens — só
+  na entrega do arquivo. `App\Models\Arquivo` valida tipo e tamanho.
 - **RF13 — candidatura:** exige currículo anexado ao perfil (`Candidato::temCurriculo`).
 - **RN16 — validação de formato** (`App\Models\Validador`)**:** CPF, CNPJ, e-mail e telefone validados na **camada de
   negócio do back-end**, não só no formulário.

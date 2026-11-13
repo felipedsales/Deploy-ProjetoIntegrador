@@ -5,9 +5,9 @@ namespace App\Models;
 /**
  * Arquivos enviados pelos usuários (RF08 currículo, RF07 logo).
  *
- * O currículo é validado aqui e gravado no banco (tabela curriculos). O logo
- * fica em uploads/, fora do DocumentRoot (public/): nenhum arquivo é servido
- * direto pelo Apache, só por rotas da aplicação.
+ * Esta classe só valida o envio. Os arquivos são gravados no banco (tabelas
+ * curriculos e logos_empresas), e não no disco do servidor, para não se
+ * perderem quando a aplicação é reimplantada.
  */
 class Arquivo
 {
@@ -27,7 +27,6 @@ class Arquivo
     ];
 
     public const LOGO = [
-        'pasta' => 'logos',
         'tamanho_maximo' => 1024 * 1024,
         'descricao' => 'imagem PNG, JPG ou WEBP de até 1 MB',
         'tipos' => [
@@ -37,11 +36,6 @@ class Arquivo
             'webp' => ['image/webp'],
         ],
     ];
-
-    private static function raiz()
-    {
-        return dirname(__DIR__, 2) . '/uploads';
-    }
 
     /**
      * Valida um arquivo recebido em $_FILES: envio, tamanho e tipo. O tipo é
@@ -81,57 +75,5 @@ class Arquivo
             'nome' => mb_substr(basename((string) $arquivo['name']), -255),
             'tamanho' => filesize($arquivo['tmp_name']),
         ];
-    }
-
-    /**
-     * Valida e grava em uploads/ um arquivo recebido em $_FILES (usado no logo).
-     *
-     * @param string $prefixo identifica o dono no nome do arquivo (ex.: id da empresa)
-     * @return array ['caminho' => relativo a uploads/] ou ['erro' => mensagem]
-     */
-    public static function salvar($arquivo, $regras, $prefixo)
-    {
-        $validado = self::validar($arquivo, $regras);
-        if (isset($validado['erro'])) {
-            return $validado;
-        }
-
-        $pasta = self::raiz() . '/' . $regras['pasta'];
-        if (!is_dir($pasta) && !mkdir($pasta, 0775, true) && !is_dir($pasta)) {
-            return ['erro' => 'Não foi possível gravar o arquivo. Tente novamente.'];
-        }
-
-        // Nome gerado pelo sistema: o nome original não entra no caminho.
-        $caminho = $regras['pasta'] . '/' . $prefixo . '_' . bin2hex(random_bytes(8)) . '.' . $validado['extensao'];
-        if (!move_uploaded_file($validado['temporario'], self::raiz() . '/' . $caminho)) {
-            return ['erro' => 'Não foi possível gravar o arquivo. Tente novamente.'];
-        }
-
-        return ['caminho' => $caminho];
-    }
-
-    /** Caminho absoluto de um arquivo gravado, ou null se não existir dentro de uploads/. */
-    public static function localizar($caminho)
-    {
-        if (!$caminho) {
-            return null;
-        }
-
-        $raiz = realpath(self::raiz());
-        $absoluto = realpath(self::raiz() . '/' . $caminho);
-
-        if ($raiz === false || $absoluto === false || strpos($absoluto, $raiz . DIRECTORY_SEPARATOR) !== 0) {
-            return null;
-        }
-
-        return is_file($absoluto) ? $absoluto : null;
-    }
-
-    public static function remover($caminho)
-    {
-        $absoluto = self::localizar($caminho);
-        if ($absoluto !== null) {
-            unlink($absoluto);
-        }
     }
 }

@@ -44,7 +44,6 @@ CREATE TABLE IF NOT EXISTS empresas (
     endereco TEXT,
     descricao TEXT,
     setor VARCHAR(100),
-    logo_path VARCHAR(500),
     website VARCHAR(255),
     -- RN18: conta suspensa pelo administrador não entra no sistema.
     status ENUM('Ativa', 'Suspensa') NOT NULL DEFAULT 'Ativa',
@@ -206,4 +205,20 @@ CREATE TABLE IF NOT EXISTS curriculos (
     UNIQUE KEY uq_curriculos_candidato (candidato_id),
     CONSTRAINT fk_curriculos_candidato
         FOREIGN KEY (candidato_id) REFERENCES candidatos (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Tabela de logos das empresas (RF07).
+-- Como os currículos, o arquivo fica no banco para não se perder quando a
+-- aplicação é reimplantada. Fica em tabela própria, e não em empresas, para
+-- que as consultas de empresas não carreguem a imagem. Um logo por empresa.
+CREATE TABLE IF NOT EXISTS logos_empresas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    empresa_id INT NOT NULL,
+    tipo VARCHAR(100) NOT NULL,
+    tamanho INT NOT NULL,
+    conteudo MEDIUMBLOB NOT NULL,
+    data_envio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_logos_empresa (empresa_id),
+    CONSTRAINT fk_logos_empresa
+        FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

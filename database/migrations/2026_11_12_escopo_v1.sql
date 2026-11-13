@@ -7,7 +7,7 @@
 -- Faça backup antes de aplicar. Aplicar UMA vez; o passo 1 falha se a coluna
 -- já existir.
 --
--- Atende: RN14, RF03, RF16, RN09, RN18, RN21, RF19, RF21, RF26, RN07, RF08.
+-- Atende: RN14, RF03, RF16, RN09, RN18, RN21, RF19, RF21, RF26, RN07, RF08, RF07.
 
 -- Garante que os acentos dos ENUMs e dos dados sejam lidos como UTF-8, seja qual
 -- for a codificação padrão do cliente usado na importação.
@@ -108,3 +108,19 @@ CREATE TABLE IF NOT EXISTS curriculos (
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 ALTER TABLE candidatos DROP COLUMN curriculo_path;
+
+-- 7) RF07 — logos das empresas gravados no banco. A coluna empresas.logo_path
+--    sai pelo mesmo motivo de candidatos.curriculo_path.
+CREATE TABLE IF NOT EXISTS logos_empresas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    empresa_id INT NOT NULL,
+    tipo VARCHAR(100) NOT NULL,
+    tamanho INT NOT NULL,
+    conteudo MEDIUMBLOB NOT NULL,
+    data_envio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_logos_empresa (empresa_id),
+    CONSTRAINT fk_logos_empresa
+        FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE empresas DROP COLUMN logo_path;

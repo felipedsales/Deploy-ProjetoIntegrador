@@ -108,8 +108,8 @@ $mensagens = [
                         <div class="alert alert-danger"><?= htmlspecialchars($erroLogo) ?></div>
                     <?php endif; ?>
 
-                    <?php if (!empty($empresa['logo_path'])): ?>
-                        <img src="/empresas/<?= $empresa['id'] ?>/logo?v=<?= urlencode($empresa['logo_path']) ?>"
+                    <?php if (!empty($logo)): ?>
+                        <img src="/empresas/<?= $empresa['id'] ?>/logo?v=<?= strtotime($logo['data_envio']) ?>"
                             alt="Logo de <?= htmlspecialchars($empresa['nome'] ?? '') ?>" class="img-fluid mb-3" style="max-height: 160px;">
                     <?php else: ?>
                         <p class="text-muted">Nenhum logo enviado.</p>

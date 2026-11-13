@@ -122,37 +122,13 @@ abstract class Controller
     }
 
     /**
-     * Entrega um arquivo de uploads/ a quem já teve a permissão conferida.
-     * $nome é o nome sugerido para download; sem ele, o arquivo é exibido.
-     */
-    protected function enviarArquivo($caminhoAbsoluto, $nome = null)
-    {
-        if ($caminhoAbsoluto === null) {
-            http_response_code(404);
-            echo 'Arquivo não encontrado.';
-            exit;
-        }
-
-        header('Content-Type: ' . (new \finfo(FILEINFO_MIME_TYPE))->file($caminhoAbsoluto));
-        header('Content-Length: ' . filesize($caminhoAbsoluto));
-        header('X-Content-Type-Options: nosniff');
-        if ($nome !== null) {
-            $extensao = pathinfo($caminhoAbsoluto, PATHINFO_EXTENSION);
-            $nome = trim(preg_replace('/[^A-Za-z0-9]+/', '_', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $nome)), '_');
-            header('Content-Disposition: attachment; filename="' . ($nome ?: 'arquivo') . '.' . $extensao . '"');
-        }
-        readfile($caminhoAbsoluto);
-        exit;
-    }
-
-    /**
-     * Entrega para download um arquivo guardado no banco (currículo), a quem já
-     * teve a permissão conferida.
+     * Entrega um arquivo guardado no banco, a quem já teve a permissão conferida.
      *
-     * @param array|false $arquivo linha com nome_arquivo, tipo e conteudo
-     * @param string      $nome    nome sugerido, sem extensão
+     * @param array|false $arquivo linha com tipo e conteudo (e nome_arquivo, no download)
+     * @param string|null $nome    nome sugerido para download, sem extensão; null
+     *                             exibe o arquivo no navegador (logo)
      */
-    protected function enviarConteudo($arquivo, $nome)
+    protected function enviarConteudo($arquivo, $nome = null)
     {
         if (!$arquivo) {
             http_response_code(404);
@@ -160,13 +136,17 @@ abstract class Controller
             exit;
         }
 
-        $extensao = strtolower(pathinfo($arquivo['nome_arquivo'], PATHINFO_EXTENSION));
-        $nome = trim(preg_replace('/[^A-Za-z0-9]+/', '_', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $nome)), '_');
-
         header('Content-Type: ' . $arquivo['tipo']);
         header('Content-Length: ' . strlen($arquivo['conteudo']));
         header('X-Content-Type-Options: nosniff');
-        header('Content-Disposition: attachment; filename="' . ($nome ?: 'arquivo') . '.' . $extensao . '"');
+        if ($nome !== null) {
+            $extensao = strtolower(pathinfo($arquivo['nome_arquivo'], PATHINFO_EXTENSION));
+            $nome = trim(preg_replace('/[^A-Za-z0-9]+/', '_', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $nome)), '_');
+            header('Content-Disposition: attachment; filename="' . ($nome ?: 'arquivo') . '.' . $extensao . '"');
+        } else {
+            // A URL do logo muda a cada envio (?v=), então o navegador pode guardar a imagem.
+            header('Cache-Control: public, max-age=86400');
+        }
         echo $arquivo['conteudo'];
         exit;
     }
