@@ -145,6 +145,32 @@ abstract class Controller
         exit;
     }
 
+    /**
+     * Entrega para download um arquivo guardado no banco (currículo), a quem já
+     * teve a permissão conferida.
+     *
+     * @param array|false $arquivo linha com nome_arquivo, tipo e conteudo
+     * @param string      $nome    nome sugerido, sem extensão
+     */
+    protected function enviarConteudo($arquivo, $nome)
+    {
+        if (!$arquivo) {
+            http_response_code(404);
+            echo 'Arquivo não encontrado.';
+            exit;
+        }
+
+        $extensao = strtolower(pathinfo($arquivo['nome_arquivo'], PATHINFO_EXTENSION));
+        $nome = trim(preg_replace('/[^A-Za-z0-9]+/', '_', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $nome)), '_');
+
+        header('Content-Type: ' . $arquivo['tipo']);
+        header('Content-Length: ' . strlen($arquivo['conteudo']));
+        header('X-Content-Type-Options: nosniff');
+        header('Content-Disposition: attachment; filename="' . ($nome ?: 'arquivo') . '.' . $extensao . '"');
+        echo $arquivo['conteudo'];
+        exit;
+    }
+
     protected function requireAuth()
     {
         if (!$this->isLoggedIn()) {

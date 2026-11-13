@@ -141,14 +141,15 @@ class Empresa extends Model
 
     /**
      * RF13 / RN21 — currículo de um candidato, só para a empresa dona de uma
-     * vaga à qual ele se candidatou. Devolve o candidato (id, nome,
-     * curriculo_path) ou false.
+     * vaga à qual ele se candidatou. Devolve nome do candidato e o arquivo
+     * (nome_arquivo, tipo, conteudo), ou false.
      */
     public function getCurriculoDeCandidato($empresaId, $vagaId, $candidatoId)
     {
-        $sql = "SELECT c.id, c.nome, c.curriculo_path
+        $sql = "SELECT c.id, c.nome, cu.nome_arquivo, cu.tipo, cu.conteudo
                 FROM candidaturas cv
                 JOIN candidatos c ON c.id = cv.candidato_id
+                JOIN curriculos cu ON cu.candidato_id = c.id
                 JOIN vagas v ON v.id = cv.vaga_id
                 WHERE cv.vaga_id = ? AND cv.candidato_id = ? AND v.empresa_id = ?";
         return $this->db->fetch($sql, [$vagaId, $candidatoId, $empresaId]);
@@ -185,9 +186,10 @@ class Empresa extends Model
         // Colunas explícitas: a senha do candidato não vai para a tela, e o
         // status é o da candidatura (candidatos também tem coluna status).
         $sql = "SELECT c.id, c.nome, c.email, c.telefone, c.cpf, c.data_nascimento, c.endereco,
-                       c.curriculo_path, cv.data_candidatura, cv.status
+                       cu.id AS curriculo_id, cv.data_candidatura, cv.status
                 FROM candidaturas cv
                 JOIN candidatos c ON cv.candidato_id = c.id
+                LEFT JOIN curriculos cu ON cu.candidato_id = c.id
                 JOIN vagas v ON cv.vaga_id = v.id
                 WHERE cv.vaga_id = ? AND v.empresa_id = ?
                 ORDER BY cv.data_candidatura DESC";

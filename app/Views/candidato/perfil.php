@@ -113,8 +113,12 @@ $title = 'Meu Perfil - Ferraz Conecta';
                         <div class="alert alert-danger"><?= htmlspecialchars($erroCurriculo) ?></div>
                     <?php endif; ?>
 
-                    <?php if (!empty($candidato['curriculo_path'])): ?>
-                        <p class="mb-2"><span class="badge bg-success">Enviado</span></p>
+                    <?php if (!empty($curriculo)): ?>
+                        <p class="mb-2">
+                            <span class="badge bg-success">Enviado</span>
+                            <?= htmlspecialchars($curriculo['nome_arquivo']) ?><br>
+                            <small class="text-muted">em <?= date('d/m/Y \\à\\s H:i', strtotime($curriculo['data_envio'])) ?></small>
+                        </p>
                         <div class="d-flex gap-2 mb-3">
                             <a href="/perfil/curriculo" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-download"></i> Baixar
@@ -133,7 +137,7 @@ $title = 'Meu Perfil - Ferraz Conecta';
                     <form method="POST" action="/perfil/curriculo" enctype="multipart/form-data">
                         <div class="mb-2">
                             <label for="curriculo_arquivo" class="form-label">
-                                <?= !empty($candidato['curriculo_path']) ? 'Substituir currículo' : 'Enviar currículo' ?>
+                                <?= !empty($curriculo) ? 'Substituir currículo' : 'Enviar currículo' ?>
                             </label>
                             <input type="file" class="form-control" id="curriculo_arquivo" name="curriculo" accept=".pdf,.doc,.docx" required>
                             <small class="text-muted">PDF, DOC ou DOCX de até 2 MB</small>

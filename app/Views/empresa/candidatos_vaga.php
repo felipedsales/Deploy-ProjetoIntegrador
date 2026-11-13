@@ -74,7 +74,7 @@ $title = 'Candidatos - ' . htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz 
                             <li><strong>Endereço:</strong> <?= htmlspecialchars($candidato['endereco'] ?? 'Não informado') ?></li>
                             <li><strong>Data da Candidatura:</strong> <?= date('d/m/Y', strtotime($candidato['data_candidatura'])) ?></li>
                             <li><strong>Currículo:</strong>
-                                <?php if (!empty($candidato['curriculo_path'])): ?>
+                                <?php if (!empty($candidato['curriculo_id'])): ?>
                                     <a href="/empresa/vagas/<?= $vaga['id'] ?>/candidatos/<?= $candidato['id'] ?>/curriculo"><i class="fas fa-download"></i> Baixar currículo</a>
                                 <?php else: ?>
                                     não enviado

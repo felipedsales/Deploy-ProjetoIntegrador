@@ -7,7 +7,7 @@
 -- Faça backup antes de aplicar. Aplicar UMA vez; o passo 1 falha se a coluna
 -- já existir.
 --
--- Atende: RN14, RF03, RF16, RN09, RN18, RN21, RF19, RF21, RF26, RN07.
+-- Atende: RN14, RF03, RF16, RN09, RN18, RN21, RF19, RF21, RF26, RN07, RF08.
 
 -- Garante que os acentos dos ENUMs e dos dados sejam lidos como UTF-8, seja qual
 -- for a codificação padrão do cliente usado na importação.
@@ -89,3 +89,22 @@ CREATE TABLE IF NOT EXISTS logs_auditoria (
     CONSTRAINT fk_logs_administrador
         FOREIGN KEY (administrador_id) REFERENCES administradores (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 6) RF08 — currículos gravados no banco (entidade Currículo do MER).
+--    A coluna candidatos.curriculo_path sai: ela guardava o caminho de um
+--    arquivo no disco do servidor, que é apagado a cada deploy, e nenhuma
+--    versão publicada do sistema chegou a preenchê-la.
+CREATE TABLE IF NOT EXISTS curriculos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    candidato_id INT NOT NULL,
+    nome_arquivo VARCHAR(255) NOT NULL,
+    tipo VARCHAR(100) NOT NULL,
+    tamanho INT NOT NULL,
+    conteudo MEDIUMBLOB NOT NULL,
+    data_envio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_curriculos_candidato (candidato_id),
+    CONSTRAINT fk_curriculos_candidato
+        FOREIGN KEY (candidato_id) REFERENCES candidatos (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE candidatos DROP COLUMN curriculo_path;

@@ -129,10 +129,7 @@ class EmpresaController extends Controller
         $this->requirePerfil('empresa');
 
         $candidato = $this->empresaModel->getCurriculoDeCandidato($this->getSession('user_id'), $vagaId, $candidatoId);
-        $this->enviarArquivo(
-            $candidato ? Arquivo::localizar($candidato['curriculo_path']) : null,
-            'curriculo_' . ($candidato['nome'] ?? '')
-        );
+        $this->enviarConteudo($candidato, 'curriculo_' . ($candidato['nome'] ?? ''));
     }
 
     public function painel()

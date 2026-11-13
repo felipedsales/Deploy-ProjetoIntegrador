@@ -111,20 +111,29 @@ class Candidato extends Model
     }
 
     /**
-     * RF08 / RN02 — recebe o currículo (PDF, DOC ou DOCX) e substitui o anterior.
+     * RF08 / RN02 — recebe o currículo (PDF, DOC ou DOCX) e grava no banco,
+     * substituindo o anterior. O candidato envia uma vez e o arquivo fica na
+     * conta até ele trocar ou excluir.
      *
      * @return string|null mensagem de erro, ou null quando o currículo foi gravado
      */
     public function salvarCurriculo($candidatoId, $arquivo)
     {
-        $resultado = Arquivo::salvar($arquivo, Arquivo::CURRICULO, $candidatoId);
-        if (isset($resultado['erro'])) {
-            return $resultado['erro'];
+        $validado = Arquivo::validar($arquivo, Arquivo::CURRICULO);
+        if (isset($validado['erro'])) {
+            return $validado['erro'];
         }
 
-        $anterior = $this->findById($candidatoId)['curriculo_path'] ?? null;
-        parent::update($candidatoId, ['curriculo_path' => $resultado['caminho']]);
-        Arquivo::remover($anterior);
+        $conteudo = file_get_contents($validado['temporario']);
+        if ($conteudo === false || $conteudo === '') {
+            return 'Não foi possível receber o arquivo. Tente novamente.';
+        }
+
+        $sql = "INSERT INTO curriculos (candidato_id, nome_arquivo, tipo, tamanho, conteudo)
+                VALUES (?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE nome_arquivo = VALUES(nome_arquivo), tipo = VALUES(tipo),
+                    tamanho = VALUES(tamanho), conteudo = VALUES(conteudo), data_envio = CURRENT_TIMESTAMP";
+        $this->db->query($sql, [$candidatoId, $validado['nome'], $validado['tipo'], $validado['tamanho'], $conteudo]);
 
         return null;
     }
@@ -132,15 +141,27 @@ class Candidato extends Model
     /** RN02 — o candidato pode excluir o currículo a qualquer momento. */
     public function removerCurriculo($candidatoId)
     {
-        $anterior = $this->findById($candidatoId)['curriculo_path'] ?? null;
-        parent::update($candidatoId, ['curriculo_path' => null]);
-        Arquivo::remover($anterior);
+        return $this->db->query("DELETE FROM curriculos WHERE candidato_id = ?", [$candidatoId]);
+    }
+
+    /** Dados do currículo para exibição, sem carregar o arquivo. */
+    public function getResumoCurriculo($candidatoId)
+    {
+        $sql = "SELECT nome_arquivo, tamanho, data_envio FROM curriculos WHERE candidato_id = ?";
+        return $this->db->fetch($sql, [$candidatoId]);
+    }
+
+    /** Currículo completo, com o conteúdo do arquivo, para download. */
+    public function getCurriculo($candidatoId)
+    {
+        $sql = "SELECT nome_arquivo, tipo, conteudo FROM curriculos WHERE candidato_id = ?";
+        return $this->db->fetch($sql, [$candidatoId]);
     }
 
     /** RF13: a candidatura exige currículo anexado ao perfil. */
     public function temCurriculo($candidatoId)
     {
-        return Arquivo::localizar($this->findById($candidatoId)['curriculo_path'] ?? null) !== null;
+        return (bool) $this->getResumoCurriculo($candidatoId);
     }
 
     public function buscarPorEmail($email)

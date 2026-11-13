@@ -134,10 +134,14 @@ migrations de `database/migrations/`, nesta ordem, **depois de um backup**:
 
 ### Arquivos enviados (currículos e logos)
 
-Currículos e logos são gravados em `uploads/`, dentro do container. **O disco do container
-é apagado a cada deploy**: sem um volume, os arquivos enviados se perdem e os candidatos
-precisam reenviar o currículo. Para manter os arquivos, crie um **Volume** no serviço do
-Railway montado em `/var/www/html/uploads`.
+**Currículos** ficam gravados no banco (tabela `curriculos`): não dependem do disco do
+container, não se perdem em deploy e entram no backup do MySQL. O candidato envia uma vez e
+o arquivo fica na conta.
+
+**Logos de empresas** ainda são gravados em `uploads/logos/`, dentro do container, e **o
+disco do container é apagado a cada deploy**. Para mantê-los, crie um **Volume** no serviço
+do Railway montado em `/var/www/html/uploads`. Sem o volume, a empresa precisa reenviar o
+logo depois de cada deploy.
 
 ### Primeiro administrador
 

@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Models\Arquivo;
 use App\Models\Candidato;
 use App\Models\Entrevista;
 
@@ -45,12 +44,15 @@ class CandidatoController extends Controller
     {
         $this->requirePerfil('candidato');
         
-        $candidatoId = $this->getSession('user_id');
-        $candidato = $this->candidatoModel->findById($candidatoId);
-        
-        return $this->render('candidato/perfil', [
-            'candidato' => $candidato
-        ]);
+        return $this->renderPerfil($this->getSession('user_id'));
+    }
+
+    private function renderPerfil($candidatoId, $extra = [])
+    {
+        return $this->render('candidato/perfil', array_merge([
+            'candidato' => $this->candidatoModel->findById($candidatoId),
+            'curriculo' => $this->candidatoModel->getResumoCurriculo($candidatoId),
+        ], $extra));
     }
 
     public function atualizarPerfil()
@@ -73,7 +75,7 @@ class CandidatoController extends Controller
         $erros = $this->candidatoModel->validarPerfil($data);
         if ($erros) {
             unset($data['nova_senha']);
-            return $this->render('candidato/perfil', [
+            return $this->renderPerfil($candidatoId, [
                 'candidato' => array_merge($this->candidatoModel->findById($candidatoId), $data),
                 'erros' => $erros
             ]);
@@ -96,10 +98,7 @@ class CandidatoController extends Controller
         $candidatoId = $this->getSession('user_id');
         $erro = $this->candidatoModel->salvarCurriculo($candidatoId, $_FILES['curriculo'] ?? null);
         if ($erro !== null) {
-            return $this->render('candidato/perfil', [
-                'candidato' => $this->candidatoModel->findById($candidatoId),
-                'erroCurriculo' => $erro
-            ]);
+            return $this->renderPerfil($candidatoId, ['erroCurriculo' => $erro]);
         }
 
         $this->redirect('/perfil?status=curriculo_enviado');
@@ -122,7 +121,10 @@ class CandidatoController extends Controller
     {
         $this->requirePerfil('candidato');
 
-        $candidato = $this->candidatoModel->findById($this->getSession('user_id'));
-        $this->enviarArquivo(Arquivo::localizar($candidato['curriculo_path'] ?? null), 'curriculo_' . $candidato['nome']);
+        $candidatoId = $this->getSession('user_id');
+        $this->enviarConteudo(
+            $this->candidatoModel->getCurriculo($candidatoId),
+            'curriculo_' . $this->getSession('user_name')
+        );
     }
 } 

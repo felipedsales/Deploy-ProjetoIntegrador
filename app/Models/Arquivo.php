@@ -5,13 +5,13 @@ namespace App\Models;
 /**
  * Arquivos enviados pelos usuários (RF08 currículo, RF07 logo).
  *
- * Ficam em uploads/, fora do DocumentRoot (public/): nenhum arquivo é servido
- * direto pelo Apache, só por rotas que conferem a permissão de quem pede.
+ * O currículo é validado aqui e gravado no banco (tabela curriculos). O logo
+ * fica em uploads/, fora do DocumentRoot (public/): nenhum arquivo é servido
+ * direto pelo Apache, só por rotas da aplicação.
  */
 class Arquivo
 {
     public const CURRICULO = [
-        'pasta' => 'curriculos',
         'tamanho_maximo' => 2 * 1024 * 1024,
         'descricao' => 'PDF, DOC ou DOCX de até 2 MB',
         // extensão => tipos de conteúdo aceitos (detectados no arquivo, não informados pelo navegador)
@@ -44,14 +44,14 @@ class Arquivo
     }
 
     /**
-     * Valida e grava um arquivo recebido em $_FILES.
+     * Valida um arquivo recebido em $_FILES: envio, tamanho e tipo. O tipo é
+     * conferido pelo conteúdo do arquivo, não pelo que o navegador informa.
      *
      * @param array|null $arquivo entrada de $_FILES
      * @param array      $regras  self::CURRICULO ou self::LOGO
-     * @param string     $prefixo identifica o dono no nome do arquivo (ex.: id do candidato)
-     * @return array ['caminho' => relativo a uploads/] ou ['erro' => mensagem]
+     * @return array ['temporario', 'extensao', 'tipo', 'nome', 'tamanho'] ou ['erro' => mensagem]
      */
-    public static function salvar($arquivo, $regras, $prefixo)
+    public static function validar($arquivo, $regras)
     {
         $erroEnvio = $arquivo['error'] ?? UPLOAD_ERR_NO_FILE;
 
@@ -73,14 +73,37 @@ class Arquivo
             return ['erro' => "Tipo de arquivo não aceito. Envie {$regras['descricao']}."];
         }
 
+        return [
+            'temporario' => $arquivo['tmp_name'],
+            'extensao' => $extensao,
+            // Tipo oficial da extensão (o primeiro da lista), usado ao devolver o arquivo.
+            'tipo' => $regras['tipos'][$extensao][0],
+            'nome' => mb_substr(basename((string) $arquivo['name']), -255),
+            'tamanho' => filesize($arquivo['tmp_name']),
+        ];
+    }
+
+    /**
+     * Valida e grava em uploads/ um arquivo recebido em $_FILES (usado no logo).
+     *
+     * @param string $prefixo identifica o dono no nome do arquivo (ex.: id da empresa)
+     * @return array ['caminho' => relativo a uploads/] ou ['erro' => mensagem]
+     */
+    public static function salvar($arquivo, $regras, $prefixo)
+    {
+        $validado = self::validar($arquivo, $regras);
+        if (isset($validado['erro'])) {
+            return $validado;
+        }
+
         $pasta = self::raiz() . '/' . $regras['pasta'];
         if (!is_dir($pasta) && !mkdir($pasta, 0775, true) && !is_dir($pasta)) {
             return ['erro' => 'Não foi possível gravar o arquivo. Tente novamente.'];
         }
 
         // Nome gerado pelo sistema: o nome original não entra no caminho.
-        $caminho = $regras['pasta'] . '/' . $prefixo . '_' . bin2hex(random_bytes(8)) . '.' . $extensao;
-        if (!move_uploaded_file($arquivo['tmp_name'], self::raiz() . '/' . $caminho)) {
+        $caminho = $regras['pasta'] . '/' . $prefixo . '_' . bin2hex(random_bytes(8)) . '.' . $validado['extensao'];
+        if (!move_uploaded_file($validado['temporario'], self::raiz() . '/' . $caminho)) {
             return ['erro' => 'Não foi possível gravar o arquivo. Tente novamente.'];
         }
 

@@ -27,7 +27,6 @@ CREATE TABLE IF NOT EXISTS candidatos (
     cpf VARCHAR(14) UNIQUE,
     data_nascimento DATE,
     endereco TEXT,
-    curriculo_path VARCHAR(500),
     -- RN18: conta suspensa pelo administrador não entra no sistema.
     status ENUM('Ativa', 'Suspensa') NOT NULL DEFAULT 'Ativa',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -190,4 +189,21 @@ CREATE TABLE IF NOT EXISTS logs_auditoria (
     KEY idx_logs_entidade (entidade, entidade_id),
     CONSTRAINT fk_logs_administrador
         FOREIGN KEY (administrador_id) REFERENCES administradores (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Tabela de currículos (RF08, RN02) — entidade Currículo do MER.
+-- O arquivo fica gravado no próprio banco (coluna conteudo), e não no disco do
+-- servidor: assim ele não se perde quando a aplicação é reimplantada e entra
+-- no backup do banco. Um currículo por candidato; enviar de novo substitui.
+CREATE TABLE IF NOT EXISTS curriculos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    candidato_id INT NOT NULL,
+    nome_arquivo VARCHAR(255) NOT NULL,
+    tipo VARCHAR(100) NOT NULL,
+    tamanho INT NOT NULL,
+    conteudo MEDIUMBLOB NOT NULL,
+    data_envio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_curriculos_candidato (candidato_id),
+    CONSTRAINT fk_curriculos_candidato
+        FOREIGN KEY (candidato_id) REFERENCES candidatos (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
