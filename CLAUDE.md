@@ -138,8 +138,10 @@ depois da v1** — ver [`docs/IMPLEMENTACOES_FUTURAS.md`](docs/IMPLEMENTACOES_FU
 Não implementar nada marcado como *Futuro*.
 
 A estrutura de banco da v1 já existe no `schema.sql` (`administradores`, `favoritos`,
-`entrevistas`, `logs_auditoria`, `curriculos`, `logos_empresas`, `vagas.data_expiracao`). Banco já existente recebe a
-`database/migrations/2026_11_12_escopo_v1.sql`.
+`entrevistas`, `logs_auditoria`, `curriculos`, `logos_empresas`, `vagas.data_expiracao`). Banco já existente
+é atualizado no start do container por `database/migrar.php`, que aplica o que faltar
+para chegar ao `schema.sql`. **Toda mudança de estrutura entra no `schema.sql` e, se
+alterar tabela existente, também no `migrar.php`.**
 
 Lacunas que continuam abertas:
 

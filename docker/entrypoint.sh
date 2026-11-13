@@ -18,6 +18,12 @@ sed -ri "s/<VirtualHost \*:[0-9]+>/<VirtualHost *:${PORT}>/" /etc/apache2/sites-
 find /etc/apache2/mods-enabled/ -name 'mpm_*' ! -name 'mpm_prefork*' -delete 2>/dev/null || true
 a2enmod mpm_prefork >/dev/null 2>&1 || true
 
+# Estrutura do banco: aplica o que faltar para chegar ao database/schema.sql.
+# Roda a cada start, mas só altera o que ainda não foi aplicado, e não apaga
+# dados. Uma falha é registrada no log e não impede o Apache de subir.
+timeout 120 php /var/www/html/database/migrar.php \
+    || echo "[Ferraz Conecta] aviso: atualizacao da estrutura do banco nao concluida; sera tentada no proximo start."
+
 # RNF03: converte em hash qualquer senha que ainda esteja em texto puro no
 # banco. Roda a cada start, mas só altera o que ainda não é hash; depois da
 # primeira execução não faz mais nada. Uma falha aqui (banco fora do ar, por

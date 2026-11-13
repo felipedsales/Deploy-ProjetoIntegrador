@@ -199,7 +199,7 @@ listagem da empresa" — e aí ela vira comportamento implementável.*
 
 Situação de cada estrutura que a documentação pede e o `schema.sql` original não tinha. Os
 itens da v1 foram criados em 2026-11-12 (`database/schema.sql` e
-`database/migrations/2026_11_12_escopo_v1.sql`); **MER e Diagrama de Classe ainda precisam
+`database/migrar.php`, que atualiza o banco existente no start do container); **MER e Diagrama de Classe ainda precisam
 ser atualizados** para refletir essas tabelas. Os itens *Futuro* continuam sem suporte.
 
 | Estrutura | Atende | Situação |
