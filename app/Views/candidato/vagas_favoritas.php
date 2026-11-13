@@ -20,6 +20,17 @@ $title = 'Vagas Favoritas - Ferraz Conecta';
                     <div class="card-body">
                         <h3><?= htmlspecialchars($vaga['titulo'] ?? '') ?></h3>
 
+                        <?php if (!empty($vaga['disponivel']) && (int) $vaga['dias_restantes'] <= ($diasAlerta ?? 3)): ?>
+                            <div class="alert alert-warning">
+                                <i class="fas fa-clock"></i>
+                                <?php if ((int) $vaga['dias_restantes'] === 0): ?>
+                                    As candidaturas para esta vaga terminam hoje.
+                                <?php else: ?>
+                                    As candidaturas para esta vaga terminam em <?= (int) $vaga['dias_restantes'] ?> dia(s).
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+
                         <?php if (empty($vaga['disponivel'])): ?>
                             <div class="alert alert-warning">
                                 <i class="fas fa-exclamation-triangle"></i> Esta vaga não está mais disponível.

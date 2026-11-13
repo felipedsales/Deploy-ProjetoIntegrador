@@ -16,7 +16,8 @@
  *
  *     php database/migrar.php
  *
- * Atende: RN14, RF03, RF16, RN07, RN18, RF19, RF21, RF26, RF08, RF07.
+ * Atende: RN14, RF03, RF16, RN07, RN18, RF19, RF21, RF26, RF08, RF07, RF02,
+ * RF09, RF11, RF12, RN19.
  */
 
 if (PHP_SAPI !== 'cli') {
@@ -128,6 +129,55 @@ foreach (['candidatos' => 'curriculo_path', 'empresas' => 'logo_path'] as $tabel
         continue;
     }
     $aplicar("remoção da coluna vazia {$tabela}.{$antiga}", "ALTER TABLE {$tabela} DROP COLUMN {$antiga}");
+}
+
+// 7) RF02 — nome do responsável pela conta da empresa.
+if (!$coluna('empresas', 'responsavel')) {
+    $aplicar('coluna empresas.responsavel', 'ALTER TABLE empresas ADD COLUMN responsavel VARCHAR(255) NULL AFTER nome');
+}
+
+// 8) RF12 — área (categoria) e nível de experiência da vaga.
+if (!$coluna('vagas', 'categoria_id')) {
+    $aplicar('coluna vagas.categoria_id', 'ALTER TABLE vagas ADD COLUMN categoria_id INT NULL AFTER localizacao');
+}
+if (!$coluna('vagas', 'nivel_experiencia')) {
+    $aplicar(
+        'coluna vagas.nivel_experiencia',
+        "ALTER TABLE vagas ADD COLUMN nivel_experiencia ENUM('Sem experiência', 'Júnior', 'Pleno', 'Sênior') NULL AFTER categoria_id"
+    );
+}
+if (!$existeIndice('vagas', 'idx_vagas_categoria')) {
+    $aplicar('índice idx_vagas_categoria', 'ALTER TABLE vagas ADD KEY idx_vagas_categoria (categoria_id)');
+}
+$temFkCategoria = $db->fetch(
+    "SELECT 1 FROM information_schema.table_constraints
+     WHERE table_schema = DATABASE() AND table_name = 'vagas' AND constraint_name = 'fk_vagas_categoria'"
+);
+if (!$temFkCategoria) {
+    $aplicar(
+        'vínculo vagas.categoria_id → categorias',
+        'ALTER TABLE vagas ADD CONSTRAINT fk_vagas_categoria FOREIGN KEY (categoria_id) REFERENCES categorias (id)'
+    );
+}
+
+// 9) RN19 — contador de visualizações da vaga.
+if (!$coluna('vagas', 'visualizacoes')) {
+    $aplicar('coluna vagas.visualizacoes', 'ALTER TABLE vagas ADD COLUMN visualizacoes INT NOT NULL DEFAULT 0 AFTER data_expiracao');
+}
+
+// 10) UC13 — o sistema não pode ficar sem categorias: lista inicial, que o
+//     administrador ajusta depois em /admin/categorias.
+if ((int) $db->fetch('SELECT COUNT(*) AS total FROM categorias')['total'] === 0) {
+    $iniciais = [
+        'Administração', 'Atendimento ao Cliente', 'Comércio e Vendas', 'Construção Civil', 'Educação',
+        'Indústria e Produção', 'Logística e Transporte', 'Saúde', 'Serviços Gerais', 'Tecnologia',
+    ];
+    $db->query(
+        'INSERT INTO categorias (nome) VALUES ' . implode(', ', array_fill(0, count($iniciais), '(?)')),
+        $iniciais
+    );
+    echo "  aplicado: categorias iniciais\n";
+    $aplicados++;
 }
 
 echo $aplicados === 0

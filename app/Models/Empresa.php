@@ -43,6 +43,11 @@ class Empresa extends Model
             $erros['senha'] = Validador::REGRA_SENHA;
         }
 
+        // RF02: nome do responsável pela conta.
+        if (trim((string) ($dados['responsavel'] ?? '')) === '') {
+            $erros['responsavel'] = 'Informe o nome do responsável pela conta.';
+        }
+
         if (!Validador::cnpj($dados['cnpj'] ?? '')) {
             $erros['cnpj'] = 'CNPJ inválido.';
         } elseif ($this->db->fetch("SELECT id FROM {$this->table} WHERE cnpj = ?", [Validador::formatarCnpj($dados['cnpj'])])) {
@@ -60,6 +65,9 @@ class Empresa extends Model
         $website = trim((string) ($dados['website'] ?? ''));
         if ($website !== '' && (!filter_var($website, FILTER_VALIDATE_URL) || !preg_match('#^https?://#i', $website))) {
             $erros['website'] = 'Informe o site completo, começando com http:// ou https://.';
+        }
+        if (trim((string) ($dados['responsavel'] ?? '')) === '') {
+            $erros['responsavel'] = 'Informe o nome do responsável pela conta.';
         }
         if (mb_strlen(trim((string) ($dados['setor'] ?? ''))) > 100) {
             $erros['setor'] = 'O setor deve ter no máximo 100 caracteres.';
@@ -93,6 +101,7 @@ class Empresa extends Model
     {
         return $this->create([
             'nome' => trim($dados['nome']),
+            'responsavel' => trim($dados['responsavel']),
             'email' => trim($dados['email']),
             'senha' => $dados['senha'],
             'telefone' => trim($dados['telefone']),
@@ -107,6 +116,7 @@ class Empresa extends Model
     {
         $alteracoes = [
             'nome' => trim($dados['nome']),
+            'responsavel' => trim((string) ($dados['responsavel'] ?? '')) ?: null,
             'telefone' => trim($dados['telefone']),
             'endereco' => trim($dados['endereco']),
             'descricao' => trim((string) ($dados['descricao'] ?? '')),
@@ -174,6 +184,74 @@ class Empresa extends Model
         return $this->db->fetch($sql, [$vagaId, $candidatoId, $empresaId]);
     }
 
+    /**
+     * RF09 / RN21 — carta de apresentação de um candidato, só para a empresa dona
+     * de uma vaga à qual ele se candidatou. Vale a carta enviada para a vaga;
+     * sem ela, a carta padrão do perfil.
+     */
+    public function getCartaDeCandidato($empresaId, $vagaId, $candidatoId)
+    {
+        $sql = "SELECT c.nome, ca.nome_arquivo, ca.tipo, ca.conteudo
+                FROM candidaturas cv
+                JOIN candidatos c ON c.id = cv.candidato_id
+                JOIN vagas v ON v.id = cv.vaga_id
+                JOIN cartas_apresentacao ca ON ca.candidato_id = c.id
+                     AND (ca.vaga_id = cv.vaga_id OR ca.vaga_id IS NULL)
+                WHERE cv.vaga_id = ? AND cv.candidato_id = ? AND v.empresa_id = ?
+                ORDER BY ca.vaga_id IS NULL, ca.id DESC
+                LIMIT 1";
+        return $this->db->fetch($sql, [$vagaId, $candidatoId, $empresaId]);
+    }
+
+    /**
+     * RN19 / UC02 Gerar Relatório de Estatísticas de Vagas — visualizações,
+     * candidaturas e taxa de retorno de cada vaga DA EMPRESA informada.
+     * Taxa de retorno = candidaturas ÷ visualizações.
+     * Filtros opcionais (cenário "Filtro Personalizado"): status e período de publicação.
+     */
+    public function getRelatorioVagas($empresaId, $filtros = [])
+    {
+        $condicoes = ['v.empresa_id = ?'];
+        $parametros = [$empresaId];
+
+        if (in_array($filtros['status'] ?? '', ['Ativa', 'Inativa', 'Pausada'], true)) {
+            $condicoes[] = 'v.status = ?';
+            $parametros[] = $filtros['status'];
+        }
+        foreach (['de' => '>=', 'ate' => '<='] as $campo => $operador) {
+            $data = \DateTime::createFromFormat('!Y-m-d', (string) ($filtros[$campo] ?? ''));
+            if ($data) {
+                $condicoes[] = "DATE(v.created_at) {$operador} ?";
+                $parametros[] = $data->format('Y-m-d');
+            }
+        }
+
+        $sql = "SELECT v.id, v.titulo, v.status, v.created_at, v.data_expiracao, v.visualizacoes,
+                       COUNT(cv.id) AS candidaturas
+                FROM vagas v
+                LEFT JOIN candidaturas cv ON cv.vaga_id = v.id
+                WHERE " . implode(' AND ', $condicoes) . "
+                GROUP BY v.id, v.titulo, v.status, v.created_at, v.data_expiracao, v.visualizacoes
+                ORDER BY v.created_at DESC";
+        $vagas = $this->db->fetchAll($sql, $parametros);
+
+        $totais = ['vagas' => count($vagas), 'visualizacoes' => 0, 'candidaturas' => 0];
+        foreach ($vagas as &$vaga) {
+            $vaga['taxa_retorno'] = $this->taxaDeRetorno($vaga['candidaturas'], $vaga['visualizacoes']);
+            $totais['visualizacoes'] += (int) $vaga['visualizacoes'];
+            $totais['candidaturas'] += (int) $vaga['candidaturas'];
+        }
+        $totais['taxa_retorno'] = $this->taxaDeRetorno($totais['candidaturas'], $totais['visualizacoes']);
+
+        return ['vagas' => $vagas, 'totais' => $totais];
+    }
+
+    /** Percentual de candidaturas por visualização; null quando ainda não há visualização. */
+    private function taxaDeRetorno($candidaturas, $visualizacoes)
+    {
+        return (int) $visualizacoes > 0 ? round((int) $candidaturas / (int) $visualizacoes * 100, 1) : null;
+    }
+
     public function buscarPorEmail($email)
     {
         $sql = "SELECT * FROM {$this->table} WHERE email = ?";
@@ -205,7 +283,10 @@ class Empresa extends Model
         // Colunas explícitas: a senha do candidato não vai para a tela, e o
         // status é o da candidatura (candidatos também tem coluna status).
         $sql = "SELECT c.id, c.nome, c.email, c.telefone, c.cpf, c.data_nascimento, c.endereco,
-                       cu.id AS curriculo_id, cv.data_candidatura, cv.status
+                       cu.id AS curriculo_id, cv.data_candidatura, cv.status,
+                       EXISTS (SELECT 1 FROM cartas_apresentacao ca
+                               WHERE ca.candidato_id = c.id
+                                 AND (ca.vaga_id = cv.vaga_id OR ca.vaga_id IS NULL)) AS tem_carta
                 FROM candidaturas cv
                 JOIN candidatos c ON cv.candidato_id = c.id
                 LEFT JOIN curriculos cu ON cu.candidato_id = c.id
@@ -235,6 +316,7 @@ class Empresa extends Model
         // Sem candidatura, a entrevista que estava agendada perde o sentido (RF26).
         if ($removida->rowCount() > 0) {
             (new Entrevista())->cancelarDaCandidatura($vagaId, $candidatoId);
+            $this->db->query("DELETE FROM cartas_apresentacao WHERE candidato_id = ? AND vaga_id = ?", [$candidatoId, $vagaId]);
         }
 
         return $removida;

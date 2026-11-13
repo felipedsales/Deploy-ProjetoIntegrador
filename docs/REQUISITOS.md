@@ -4,7 +4,7 @@
 > card do Trello e commit deve referenciar os códigos definidos aqui.
 >
 > Consolidado a partir de `Projeto_Integrador_-_FATEC_2024.docx` (base) e `RFRNFRN.xlsx`
-> (complementos). Versão 1.1 (2026-11-12) — escopo da v1 definido (ver também `IMPLEMENTACOES_FUTURAS.md`) e estrutura de banco da v1 criada; pendente de validação com o orientador.
+> (complementos). Versão 1.2 (2026-11-13) — v1 entregue; itens futuros em implementação por lotes (ver também `IMPLEMENTACOES_FUTURAS.md`) e estrutura de banco da v1 criada; pendente de validação com o orientador.
 
 ---
 
@@ -22,6 +22,11 @@ Renumerar quebraria a matriz inteira.
 ---
 
 ## Escopo da v1
+
+**Decisão de 2026-11-13:** com a v1 no ar, os itens que estavam como *Futuro* passam a ser
+implementados, em lotes, antes da revisão do MER e do Diagrama de Classe. O plano e a
+situação de cada lote estão em `IMPLEMENTACOES_FUTURAS.md`. A coluna **Escopo** da tabela
+abaixo mostra o que já foi entregue.
 
 **Decisão de 2026-11-12:** a v1 entrega **somente os requisitos obrigatórios**, na
 **plataforma web**. Tudo o que não está listado aqui fica como *Futuro* e deve ser declarado
@@ -49,7 +54,7 @@ Requisitos Funcionais.
 - RF05 (recuperação de senha), RF09 (carta de apresentação), RF14 (notificações),
   RF15 (feedback), RF17 (suporte), RF20 (login externo), RF22 (APIs externas),
   RF23 (exportação LGPD), RF24 (mensagens internas), RF25 (IA de currículos).
-- RN19 / R18 (métricas e relatórios da empresa), RNF09 (multifator), RNF04 (microsserviços).
+- RNF09 (multifator), RNF04 (microsserviços). *(RN19 / R18, métricas da empresa: ✅ entregue no lote 1.)*
 
 **RNs e RNFs:** acompanham o RF a que estão ligadas na matriz de rastreabilidade, com
 três ajustes decididos em 2026-11-12:
@@ -69,24 +74,24 @@ O que ficou fora está detalhado em **`IMPLEMENTACOES_FUTURAS.md`**.
 | Código | Nome | Descrição | Escopo |
 |---|---|---|---|
 | RF01 | Cadastro de Candidatos | Validação de CPF, e-mail único e senha segura. | **v1** |
-| RF02 | Cadastro de Empresas | CNPJ, razão social e nome do responsável pela conta. | **v1** — sem o nome do responsável (não há coluna em `empresas`) |
+| RF02 | Cadastro de Empresas | CNPJ, razão social e nome do responsável pela conta. | **v1** + ✅ nome do responsável (lote 1) |
 | RF03 | Cadastro de Administradores | Autenticação dupla e permissões especiais. | **v1** — sem autenticação dupla |
 | RF04 | Login *(Include)* | E-mail/senha, redes sociais e autenticação multifator. | **v1** — só e-mail e senha; sem redes sociais e sem multifator |
 | RF05 | Recuperação de Senha *(Include)* | Envio de link temporário por e-mail (válido por 15 minutos). | Futuro |
 | RF06 | Edição de Perfil do Candidato | Atualização de dados pessoais, currículo e preferências. | **v1** |
 | RF07 | Edição de Perfil da Empresa | Alteração de dados cadastrais, logo e descrição institucional. | **v1** |
 | RF08 | Upload de Currículo | Suporte a PDF/DOC, com validação de tipo e tamanho de arquivo. | **v1** — PDF, DOC ou DOCX de até 2 MB |
-| RF09 | Upload de Carta de Apresentação | Upload opcional, associada à vaga ou padrão no perfil. | Futuro |
+| RF09 | Upload de Carta de Apresentação | Upload opcional, associada à vaga ou padrão no perfil. | ✅ Entregue (lote 1) — carta padrão no perfil e carta por candidatura |
 | RF10 | Cadastro de Vagas | Descrição completa, requisitos, localização e benefícios. | **v1** |
-| RF11 | Edição/Exclusão de Vagas | Permitido com histórico de alterações. | **v1** — sem histórico de alterações |
-| RF12 | Busca de Vagas com Filtros | Filtros por área, localidade, tipo, experiência e modelo de trabalho. | **v1** — palavra-chave, localidade, tipo de contrato e modelo de trabalho; área e experiência não têm coluna em `vagas` |
+| RF11 | Edição/Exclusão de Vagas | Permitido com histórico de alterações. | **v1** + ✅ histórico de alterações (lote 1) |
+| RF12 | Busca de Vagas com Filtros | Filtros por área, localidade, tipo, experiência e modelo de trabalho. | **v1** + ✅ filtros por área (categoria) e por experiência (lote 1) |
 | RF13 | Candidatura em Vagas | Envio de currículo e/ou carta de apresentação. | **v1** — só currículo; carta de apresentação fica no RF09 |
 | RF14 | Notificações de Vagas | Vagas relevantes com base em perfil e histórico de candidaturas. | Futuro |
 | RF15 | Feedback e Avaliação | Feedback pós-processo e avaliações por candidatos e empresas. | Futuro |
 | RF16 | Painel Administrativo | Gestão de usuários, vagas, denúncias e logs do sistema. | **v1** — moderação de denúncias, vagas e usuários; sem logs do sistema |
 | RF17 | Suporte ao Usuário | Chatbot e formulário com acompanhamento de ticket. | Futuro |
 | RF18 | Histórico de Candidaturas | Status atualizado e mensagens da empresa. | **v1** — só status; mensagens da empresa ficam no RF24 |
-| RF19 | Favoritar Vagas | Salvar para ver depois, com alerta de expiração. | **v1** — sem alerta de expiração |
+| RF19 | Favoritar Vagas | Salvar para ver depois, com alerta de expiração. | **v1** + ✅ alerta de expiração na lista de favoritos (lote 1) |
 | RF20 | Login Externo *(Include)* | Google, Facebook, LinkedIn e código único por e-mail. | Futuro |
 | RF21 | Denúncia de Conteúdo/Usuários | Com motivo e evidência. | **v1** |
 | RF22 | Integração com APIs Externas | Ex.: Receita Federal, validação LGPD. | Futuro |
@@ -216,6 +221,11 @@ ser atualizados** para refletir essas tabelas. Os itens *Futuro* continuam sem s
 | `denuncias.descricao` (atributo previsto no MER e no Diagrama de Classe) | RF21 | ✅ Criada (v1) |
 | Tabela `curriculos` (entidade Currículo do MER; o arquivo fica no banco) — substitui `candidatos.curriculo_path` | RF08, RN02 | ✅ Criada (v1) |
 | Tabela `logos_empresas` (o arquivo fica no banco) — substitui `empresas.logo_path` | RF07 | ✅ Criada (v1) |
+| Tabela `categorias`, `vagas.categoria_id` e `vagas.nivel_experiencia` | RF12, UC13 | ✅ Criada (lote 1) |
+| Tabela `vagas_historico` | RF11 | ✅ Criada (lote 1) |
+| Tabela `cartas_apresentacao` | RF09 | ✅ Criada (lote 1) |
+| `vagas.visualizacoes` | RN19, UC02 | ✅ Criada (lote 1) |
+| `empresas.responsavel` | RF02 | ✅ Criada (lote 1) |
 | Tabela de avaliações/feedback | RF15, RN08 | Futuro |
 | Tabela de mensagens internas | RF24 | Futuro |
 | Tabela de tickets de suporte | RF17, RN15 | Futuro |

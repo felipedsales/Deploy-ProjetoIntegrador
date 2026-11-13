@@ -16,6 +16,8 @@ $title = 'Meu Perfil - Ferraz Conecta';
                         'perfil_atualizado' => 'Perfil atualizado com sucesso!',
                         'curriculo_enviado' => 'Currículo enviado com sucesso!',
                         'curriculo_removido' => 'Currículo removido.',
+                        'carta_enviada' => 'Carta de apresentação enviada com sucesso!',
+                        'carta_removida' => 'Carta de apresentação removida.',
                     ];
                     ?>
                     <?php if (isset($mensagens[$_GET['status'] ?? ''])): ?>
@@ -140,6 +142,39 @@ $title = 'Meu Perfil - Ferraz Conecta';
                                 <?= !empty($curriculo) ? 'Substituir currículo' : 'Enviar currículo' ?>
                             </label>
                             <input type="file" class="form-control" id="curriculo_arquivo" name="curriculo" accept=".pdf,.doc,.docx" required>
+                            <small class="text-muted">PDF, DOC ou DOCX de até 2 MB</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">Enviar</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4" id="carta">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-envelope-open-text text-primary"></i> Carta de apresentação</h5>
+                    <p class="text-muted small">Opcional. Esta é a carta padrão, usada nas candidaturas em que você não enviar outra.</p>
+
+                    <?php if (!empty($erroCarta)): ?>
+                        <div class="alert alert-danger"><?= htmlspecialchars($erroCarta) ?></div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($carta)): ?>
+                        <p class="mb-2">
+                            <span class="badge bg-success">Enviada</span>
+                            <?= htmlspecialchars($carta['nome_arquivo']) ?>
+                        </p>
+                        <div class="d-flex gap-2 mb-3">
+                            <a href="/perfil/carta" class="btn btn-outline-primary btn-sm"><i class="fas fa-download"></i> Baixar</a>
+                            <form method="POST" action="/perfil/carta/remover" onsubmit="return confirm('Remover a carta de apresentação?')">
+                                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i> Remover</button>
+                            </form>
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="POST" action="/perfil/carta" enctype="multipart/form-data">
+                        <div class="mb-2">
+                            <label for="carta_arquivo" class="form-label"><?= !empty($carta) ? 'Substituir carta' : 'Enviar carta' ?></label>
+                            <input type="file" class="form-control" id="carta_arquivo" name="carta" accept=".pdf,.doc,.docx" required>
                             <small class="text-muted">PDF, DOC ou DOCX de até 2 MB</small>
                         </div>
                         <button type="submit" class="btn btn-primary btn-sm">Enviar</button>

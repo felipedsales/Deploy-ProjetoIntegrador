@@ -39,6 +39,22 @@ $title = 'Vagas - Ferraz Conecta';
                 <div class="col-md-2">
                     <a href="/vagas" class="btn btn-outline-secondary w-100">Limpar</a>
                 </div>
+                <div class="col-md-4">
+                    <select name="categoria_id" class="form-select" aria-label="Área">
+                        <option value="">Área</option>
+                        <?php foreach ($categorias ?? [] as $categoria): ?>
+                            <option value="<?= $categoria['id'] ?>" <?= (string) ($filtros['categoria_id'] ?? '') === (string) $categoria['id'] ? 'selected' : '' ?>><?= htmlspecialchars($categoria['nome']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="nivel_experiencia" class="form-select" aria-label="Nível de experiência">
+                        <option value="">Experiência</option>
+                        <?php foreach ($niveisExperiencia ?? [] as $nivel): ?>
+                            <option value="<?= $nivel ?>" <?= ($filtros['nivel_experiencia'] ?? '') === $nivel ? 'selected' : '' ?>><?= $nivel ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </div>
         </form>
     </div>

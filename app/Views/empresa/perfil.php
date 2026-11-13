@@ -39,6 +39,12 @@ $mensagens = [
                                 value="<?= htmlspecialchars($empresa['nome'] ?? '') ?>" required>
                         </div>
 
+                        <div class="mb-3">
+                            <label for="responsavel" class="form-label required">Responsável pela conta</label>
+                            <input type="text" class="form-control" id="responsavel" name="responsavel"
+                                value="<?= htmlspecialchars($empresa['responsavel'] ?? '') ?>" required>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="email" class="form-label">Email</label>

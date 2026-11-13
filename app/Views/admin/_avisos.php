@@ -8,5 +8,6 @@
     <a href="/admin/denuncias" class="btn btn-sm btn-outline-secondary">Denúncias</a>
     <a href="/admin/vagas" class="btn btn-sm btn-outline-secondary">Vagas</a>
     <a href="/admin/usuarios" class="btn btn-sm btn-outline-secondary">Usuários</a>
+    <a href="/admin/categorias" class="btn btn-sm btn-outline-secondary">Categorias</a>
     <a href="/admin/administradores" class="btn btn-sm btn-outline-secondary">Administradores</a>
 </nav>

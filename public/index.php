@@ -39,6 +39,9 @@ $router->post('/admin/vagas/reativar', 'AdminController@reativarVaga');
 $router->get('/admin/usuarios', 'AdminController@usuarios');
 $router->post('/admin/usuarios/suspender', 'AdminController@suspenderUsuario');
 $router->post('/admin/usuarios/reativar', 'AdminController@reativarUsuario');
+$router->get('/admin/categorias', 'AdminController@categorias');
+$router->post('/admin/categorias', 'AdminController@salvarCategorias');
+$router->post('/admin/categorias/excluir', 'AdminController@excluirCategoria');
 $router->get('/admin/administradores', 'AdminController@administradores');
 $router->post('/admin/administradores', 'AdminController@cadastrarAdministrador');
 
@@ -80,6 +83,9 @@ $router->post('/perfil/atualizar', 'CandidatoController@atualizarPerfil');
 $router->get('/perfil/curriculo', 'CandidatoController@baixarCurriculo');
 $router->post('/perfil/curriculo', 'CandidatoController@enviarCurriculo');
 $router->post('/perfil/curriculo/remover', 'CandidatoController@removerCurriculo');
+$router->get('/perfil/carta', 'CandidatoController@baixarCarta');
+$router->post('/perfil/carta', 'CandidatoController@enviarCarta');
+$router->post('/perfil/carta/remover', 'CandidatoController@removerCarta');
 
 // Rotas de empresas (privadas)
 $router->get('/painel-empresa', 'EmpresaController@painel');
@@ -88,6 +94,8 @@ $router->post('/empresa/perfil', 'EmpresaController@atualizarPerfil');
 $router->post('/empresa/perfil/logo', 'EmpresaController@enviarLogo');
 $router->get('/empresa/vagas', 'EmpresaController@minhasVagas');
 $router->get('/empresa/vagas/{vagaId}/candidatos/{candidatoId}/curriculo', 'EmpresaController@baixarCurriculoCandidato');
+$router->get('/empresa/vagas/{vagaId}/candidatos/{candidatoId}/carta', 'EmpresaController@baixarCartaCandidato');
+$router->get('/empresa/relatorio', 'EmpresaController@relatorio');
 $router->get('/empresa/vagas/{id}/candidatos', 'EmpresaController@candidatosVaga');
 $router->post('/empresa/candidatos/status', 'EmpresaController@atualizarStatusCandidato');
 $router->post('/empresa/candidatos/remover', 'EmpresaController@removerCandidato');

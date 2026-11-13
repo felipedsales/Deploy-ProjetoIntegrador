@@ -20,6 +20,23 @@ $title = htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz Conecta';
                         </div>
                     </div>
 
+                    <?php if (!empty($categoria) || !empty($vaga['nivel_experiencia'])): ?>
+                        <div class="row mb-4">
+                            <?php if (!empty($categoria)): ?>
+                                <div class="col-md-6">
+                                    <h5><i class="fas fa-tag text-primary"></i> Área</h5>
+                                    <p class="text-muted"><?= htmlspecialchars($categoria['nome']) ?></p>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (!empty($vaga['nivel_experiencia'])): ?>
+                                <div class="col-md-6">
+                                    <h5><i class="fas fa-user-graduate text-primary"></i> Experiência</h5>
+                                    <p class="text-muted"><?= htmlspecialchars($vaga['nivel_experiencia']) ?></p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+
                     <?php if (!empty($vaga['data_expiracao'])): ?>
                         <div class="mb-4">
                             <h5><i class="fas fa-calendar-alt text-danger"></i> Candidaturas até</h5>
@@ -80,8 +97,13 @@ $title = htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz Conecta';
                     
                     <?php if ($this->isLoggedIn()): ?>
                         <?php if ($this->getSession('user_type') === 'candidato'): ?>
-                            <form method="POST" action="/vagas/candidatar" class="mb-3">
+                            <form method="POST" action="/vagas/candidatar" class="mb-3" enctype="multipart/form-data">
                                 <input type="hidden" name="vaga_id" value="<?= $vaga['id'] ?? '' ?>">
+                                <div class="mb-2">
+                                    <label for="carta" class="form-label small mb-1">Carta de apresentação (opcional)</label>
+                                    <input type="file" class="form-control form-control-sm" id="carta" name="carta" accept=".pdf,.doc,.docx">
+                                    <small class="text-muted">PDF, DOC ou DOCX de até 2 MB. Sem arquivo, vale a carta padrão do seu perfil, se houver.</small>
+                                </div>
                                 <button type="submit" class="btn btn-primary w-100">
                                     <i class="fas fa-paper-plane"></i> Candidatar-se
                                 </button>
@@ -198,6 +220,9 @@ $title = htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz Conecta';
     <?php
     $errorMessage = '';
     switch ($_GET['error']) {
+        case 'carta_invalida':
+            $errorMessage = 'A candidatura não foi enviada: a carta de apresentação deve ser PDF, DOC ou DOCX de até 2 MB.';
+            break;
         case 'ja_favoritada':
             $errorMessage = 'Esta vaga já está nos seus favoritos.';
             break;

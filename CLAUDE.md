@@ -98,13 +98,16 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 | Tabela | Colunas | Chaves e restrições |
 |---|---|---|
 | **candidatos** | `id`, `nome`, `email`, `senha`, `telefone`, `cpf`, `data_nascimento`, `endereco`, `status`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cpf`; `status` = conta ativa ou suspensa (RN18) |
-| **empresas** | `id`, `nome`, `email`, `senha`, `cnpj`, `telefone`, `endereco`, `descricao`, `setor`, `website`, `status`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cnpj`; `status` = conta ativa ou suspensa (RN18) |
-| **vagas** | `id`, `empresa_id`, `titulo`, `descricao`, `requisitos`, `salario`, `tipo_contrato`, `modalidade`, `localizacao`, `beneficios`, `status`, `data_expiracao`, `created_at`, `updated_at` | PK `id`; **FK** `empresa_id` → `empresas(id)` `ON DELETE CASCADE`; índices em `empresa_id`, `status` e `data_expiracao`; **`data_expiracao` implementa a RN14** |
+| **empresas** | `id`, `nome`, `responsavel`, `email`, `senha`, `cnpj`, `telefone`, `endereco`, `descricao`, `setor`, `website`, `status`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cnpj`; `status` = conta ativa ou suspensa (RN18) |
+| **vagas** | `id`, `empresa_id`, `titulo`, `descricao`, `requisitos`, `salario`, `tipo_contrato`, `modalidade`, `localizacao`, `categoria_id`, `nivel_experiencia`, `beneficios`, `status`, `data_expiracao`, `visualizacoes`, `created_at`, `updated_at` | PK `id`; **FK** `empresa_id` → `empresas(id)` `ON DELETE CASCADE`; **FK** `categoria_id` → `categorias(id)` (sem `ON DELETE`: categoria em uso não é excluída — UC13); índices em `empresa_id`, `status` e `data_expiracao`; **`data_expiracao` implementa a RN14** |
 | **candidaturas** | `id`, `vaga_id`, `candidato_id`, `status`, `data_candidatura`, `observacoes` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **`UNIQUE (vaga_id, candidato_id)` → implementa a RN04** (um candidato não se candidata duas vezes à mesma vaga) |
 | **sessoes** | `id`, `usuario_id`, `tipo_usuario`, `token`, `expira_em`, `created_at` | PK `id`; **UNIQUE** `token`; guarda o **token Bearer** da API; índices em `token` e `expira_em` |
 | **denuncias** | `id`, `vaga_id`, `candidato_id`, `motivo`, `descricao`, `status`, `created_at` | PK `id`; **FK** `vaga_id` → `vagas(id)` `ON DELETE SET NULL`; **FK** `candidato_id` → `candidatos(id)` `ON DELETE SET NULL` |
 | **curriculos** | `id`, `candidato_id`, `nome_arquivo`, `tipo`, `tamanho`, `conteudo`, `data_envio` | PK `id`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **UNIQUE** `candidato_id` (um currículo por candidato); `conteudo` guarda o arquivo (RF08, RN02) |
 | **logos_empresas** | `id`, `empresa_id`, `tipo`, `tamanho`, `conteudo`, `data_envio` | PK `id`; **FK** `empresa_id` → `empresas(id)` `CASCADE`; **UNIQUE** `empresa_id` (um logo por empresa); `conteudo` guarda a imagem (RF07) |
+| **categorias** | `id`, `nome`, `created_at` | PK `id`; **UNIQUE** `nome` (RF12, UC13) |
+| **vagas_historico** | `id`, `vaga_id`, `alteracoes`, `created_at` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; `alteracoes` é JSON `{campo: {de, para}}` (RF11) |
+| **cartas_apresentacao** | `id`, `candidato_id`, `vaga_id`, `nome_arquivo`, `tipo`, `tamanho`, `conteudo`, `data_envio` | PK `id`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; `vaga_id` nulo = carta padrão do perfil (RF09) |
 | **administradores** | `id`, `nome`, `email`, `senha`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email` (RF03, RF16) |
 | **favoritos** | `id`, `candidato_id`, `vaga_id`, `created_at` | PK `id`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **`UNIQUE (candidato_id, vaga_id)`** (RF19) |
 | **entrevistas** | `id`, `vaga_id`, `candidato_id`, `data_hora`, `local`, `status`, `created_at`, `updated_at` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; índice em `(candidato_id, data_hora)` (RF26) |
@@ -116,6 +119,7 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 |---|---|
 | `tipo_contrato` (vagas) | `CLT`, `PJ`, `Freelance`, `Estágio` |
 | `modalidade` (vagas) | `Presencial`, `Remoto`, `Híbrido` |
+| `nivel_experiencia` (vagas) | `Sem experiência`, `Júnior`, `Pleno`, `Sênior` |
 | `status` (candidatos, empresas) | `Ativa`, `Suspensa` |
 | `status` (vagas) | `Ativa`, `Inativa`, `Pausada` |
 | `status` (candidaturas) | `Pendente`, `Em análise`, `Aprovada`, `Rejeitada`, `Contratada` |
@@ -135,7 +139,8 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 A v1 entrega **somente a plataforma web** e os RFs marcados como **v1** em
 [`docs/REQUISITOS.md`](docs/REQUISITOS.md). **App mobile e API REST `/api/v1` ficam para
 depois da v1** — ver [`docs/IMPLEMENTACOES_FUTURAS.md`](docs/IMPLEMENTACOES_FUTURAS.md).
-Não implementar nada marcado como *Futuro*.
+Desde 2026-11-13 os itens *Futuro* estão sendo implementados em lotes, na ordem do plano
+daquele documento; o MER e o Diagrama de Classe serão refeitos ao final.
 
 A estrutura de banco da v1 já existe no `schema.sql` (`administradores`, `favoritos`,
 `entrevistas`, `logs_auditoria`, `curriculos`, `logos_empresas`, `vagas.data_expiracao`). Banco já existente

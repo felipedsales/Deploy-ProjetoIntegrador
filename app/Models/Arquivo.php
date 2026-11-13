@@ -26,6 +26,9 @@ class Arquivo
         ],
     ];
 
+    /** RF09 — carta de apresentação: mesmos formatos e limite do currículo. */
+    public const CARTA = self::CURRICULO;
+
     public const LOGO = [
         'tamanho_maximo' => 1024 * 1024,
         'descricao' => 'imagem PNG, JPG ou WEBP de até 1 MB',

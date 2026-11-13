@@ -150,6 +150,7 @@ class AuthController extends Controller
         if ($this->isPost()) {
             $data = [
                 'nome' => $this->getPost('razao_social'),
+                'responsavel' => $this->getPost('responsavel'),
                 'email' => $this->getPost('email'),
                 'senha' => $this->getPost('senha'),
                 'telefone' => $this->getPost('telefone'),

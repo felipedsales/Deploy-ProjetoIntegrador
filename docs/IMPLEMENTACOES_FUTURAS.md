@@ -5,7 +5,23 @@
 >
 > A lista canônica de requisitos continua sendo o [`REQUISITOS.md`](REQUISITOS.md). Este
 > documento só organiza o que ficou para depois: o que é, o que falta e do que depende.
-> Nada daqui deve ser implementado antes de a v1 estar entregue.
+> A v1 foi entregue em 2026-11-12; a implementação destes itens segue o plano abaixo.
+
+---
+
+## Plano de execução
+
+**Decisão de 2026-11-13:** os itens deste documento passam a ser implementados agora, em
+lotes, e o MER e o Diagrama de Classe são refeitos ao final. Cada lote é um pull request.
+
+| Lote | Conteúdo | Depende de | Situação |
+|---|---|---|---|
+| **1** | RF02 (responsável), RF09 (carta de apresentação), RF11 (histórico de alterações), RF12 (área e experiência) + UC13 (categorias), RF19 (alerta de expiração), RN19 + UC02 (relatório de vagas) | — | ✅ Implementado |
+| **2** | RF14 (notificações na plataforma), RF24 (mensagens internas), RF15 (feedback e avaliação), RF17 (suporte por formulário), RF16 (relatório de logs), RF23 (exportação LGPD) | — | A fazer |
+| **3** | RN17 / RN22 (confirmação de e-mail), RF05 (recuperação de senha), RNF09 e RF03 (multifator) | Serviço de envio de e-mail | Aguardando decisão |
+| **4** | RF20 (login externo), RF22 (consulta de CNPJ), RF25 (IA para currículos) | Credenciais e serviços externos | Aguardando decisão |
+| **5** | API REST `/api/v1` | Lotes 1 a 3 | A fazer |
+| **6** | App mobile (React Native / Expo) | Lote 5 | A fazer |
 
 ---
 
@@ -44,8 +60,8 @@ Em ordem sugerida de prioridade.
 | 2 | **RF05** — Recuperação de senha | Link temporário por e-mail, válido por 15 minutos. | Tabela de tokens de recuperação; telas de solicitar e redefinir senha. | Serviço de envio de e-mail |
 | 3 | **RF14** — Notificações | Aviso de mudança de status da candidatura, convite de entrevista e vagas compatíveis com o perfil (RN06). | Central de notificações na web; tabela `push_tokens` e push no app. | Fase 2 (para o push) |
 | 4 | **RF20** — Login externo | Google, Facebook, LinkedIn e código único por e-mail. | Colunas `provider` / `provider_id` em `candidatos`, no MER e no Diagrama de Classe. | — |
-| 5 | **RN19 / R18** — Métricas da empresa | Visualizações, candidaturas e taxa de retorno por vaga (UC-E02). | Contagem de visualizações por vaga; tela de relatório no painel da empresa. | — |
-| 6 | **RF09** — Carta de apresentação | Upload opcional, por vaga ou padrão no perfil. | Coluna para o arquivo em `candidaturas` e em `candidatos`. | — |
+| 5 | **RN19 / R18** — Métricas da empresa  ✅ *entregue no lote 1* | Visualizações, candidaturas e taxa de retorno por vaga (UC-E02). | Contagem de visualizações por vaga; tela de relatório no painel da empresa. | — |
+| 6 | **RF09** — Carta de apresentação  ✅ *entregue no lote 1* | Upload opcional, por vaga ou padrão no perfil. | Coluna para o arquivo em `candidaturas` e em `candidatos`. | — |
 | 7 | **RF17** — Suporte ao usuário | Formulário com acompanhamento de ticket; chatbot; resposta em até 48 h úteis (RN15). | Tabela de tickets; tela de abertura para o usuário e de atendimento para o administrador (UC-E09, UC-C06). | — |
 | 8 | **RF24** — Mensagens internas | Conversa entre empresa e candidato após candidatura aceita. | Tabela de mensagens; tela de conversa nos dois perfis. | — |
 | 9 | **RF15** — Feedback e avaliação | Feedback pós-processo e avaliações de candidatos e empresas (RN08). | Tabela de avaliações; telas de avaliar e de exibir. | — |
@@ -67,15 +83,15 @@ Estes RFs fazem parte da v1, mas com recorte. O que foi cortado fica aqui.
 
 | Requisito | Parte adiada | O que falta |
 |---|---|---|
-| **RF02** — Cadastro de empresas | Nome do responsável pela conta | Coluna em `empresas`, no MER e no Diagrama de Classe; campo no cadastro e no perfil. |
+| **RF02** — Cadastro de empresas | Nome do responsável pela conta  ✅ *entregue no lote 1* | Coluna em `empresas`, no MER e no Diagrama de Classe; campo no cadastro e no perfil. |
 | **RF03** — Cadastro de administradores | Autenticação dupla | Segundo fator no login do administrador (ver RNF09). |
 | **RF04** — Login | Redes sociais e multifator | Coberto pelo RF20 e pelo RNF09. |
-| **RF11** — Edição e exclusão de vagas | Histórico de alterações | Tabela de histórico por vaga e tela de consulta. |
-| **RF12** — Busca de vagas | Filtros por área e por experiência | Colunas em `vagas` (ou a tabela de categorias do UC-E13), no MER e no Diagrama de Classe; campos no cadastro da vaga. |
+| **RF11** — Edição e exclusão de vagas | Histórico de alterações  ✅ *entregue no lote 1* | Tabela de histórico por vaga e tela de consulta. |
+| **RF12** — Busca de vagas | Filtros por área e por experiência  ✅ *entregue no lote 1* | Colunas em `vagas` (ou a tabela de categorias do UC-E13), no MER e no Diagrama de Classe; campos no cadastro da vaga. |
 | **RF13** — Candidatura | Envio de carta de apresentação | Coberto pelo RF09. |
 | **RF16** — Painel administrativo | Relatório de logs do sistema | Tela de consulta e exportação dos logs (UC-E15, UC-C11). A gravação do log já entra na v1 pela RN07. |
 | **RF18** — Histórico de candidaturas | Mensagens da empresa | Coberto pelo RF24. |
-| **RF19** — Favoritar vagas | Alerta de expiração | Aviso quando a vaga favoritada estiver perto de vencer; depende do RF14. |
+| **RF19** — Favoritar vagas | Alerta de expiração  ✅ *entregue no lote 1* | Aviso quando a vaga favoritada estiver perto de vencer; depende do RF14. |
 
 ---
 

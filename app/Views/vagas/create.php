@@ -63,6 +63,27 @@ $title = 'Criar Nova Vaga - Ferraz Conecta';
                         </div>
 
                         <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="categoria_id" class="form-label">Categoria (área)</label>
+                                <select class="form-select" id="categoria_id" name="categoria_id">
+                                    <option value="">Não informada</option>
+                                    <?php foreach ($categorias ?? [] as $categoria): ?>
+                                        <option value="<?= $categoria['id'] ?>" <?= (string) ($vaga['categoria_id'] ?? '') === (string) $categoria['id'] ? 'selected' : '' ?>><?= htmlspecialchars($categoria['nome']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="nivel_experiencia" class="form-label">Nível de experiência</label>
+                                <select class="form-select" id="nivel_experiencia" name="nivel_experiencia">
+                                    <option value="">Não informado</option>
+                                    <?php foreach ($niveisExperiencia ?? [] as $nivel): ?>
+                                        <option value="<?= $nivel ?>" <?= ($vaga['nivel_experiencia'] ?? '') === $nivel ? 'selected' : '' ?>><?= $nivel ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label for="tipo_contrato" class="form-label required">Tipo de Contrato</label>
                                 <select class="form-select" id="tipo_contrato" name="tipo_contrato" required>

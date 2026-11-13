@@ -79,6 +79,7 @@ class EmpresaController extends Controller
         $empresaId = $this->getSession('user_id');
         $data = [
             'nome' => $this->getPost('nome'),
+            'responsavel' => $this->getPost('responsavel'),
             'telefone' => $this->getPost('telefone'),
             'endereco' => $this->getPost('endereco'),
             'descricao' => $this->getPost('descricao'),
@@ -132,6 +133,32 @@ class EmpresaController extends Controller
 
         $candidato = $this->empresaModel->getCurriculoDeCandidato($this->getSession('user_id'), $vagaId, $candidatoId);
         $this->enviarConteudo($candidato, 'curriculo_' . ($candidato['nome'] ?? ''));
+    }
+
+    /** RF09 — a empresa baixa a carta de apresentação de quem se candidatou a uma vaga dela (RN21). */
+    public function baixarCartaCandidato($vagaId, $candidatoId)
+    {
+        $this->requirePerfil('empresa');
+
+        $carta = $this->empresaModel->getCartaDeCandidato($this->getSession('user_id'), $vagaId, $candidatoId);
+        $this->enviarConteudo($carta, 'carta_' . ($carta['nome'] ?? ''));
+    }
+
+    /** RN19 / UC02 Gerar Relatório de Estatísticas de Vagas. */
+    public function relatorio()
+    {
+        $this->requirePerfil('empresa');
+
+        $filtros = [
+            'status' => (string) $this->getQuery('status', ''),
+            'de' => (string) $this->getQuery('de', ''),
+            'ate' => (string) $this->getQuery('ate', ''),
+        ];
+
+        return $this->render('empresa/relatorio', [
+            'relatorio' => $this->empresaModel->getRelatorioVagas($this->getSession('user_id'), $filtros),
+            'filtros' => $filtros
+        ]);
     }
 
     public function painel()

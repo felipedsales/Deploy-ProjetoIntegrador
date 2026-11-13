@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\Administrador;
+use App\Models\Categoria;
 
 /**
  * Painel administrativo (RF03, RF16) — UC-C10 / UC-E14 Moderar Conteúdo.
@@ -125,6 +126,52 @@ class AdminController extends Controller
             (int) $this->getPost('usuario_id')
         );
         $this->voltar('/admin/usuarios', $ok);
+    }
+
+    /** UC13 Gerenciar Categorias de Vagas. */
+    public function categorias()
+    {
+        $this->requirePerfil('administrador');
+
+        return $this->render('admin/categorias', [
+            'categorias' => (new Categoria())->listarComUso()
+        ]);
+    }
+
+    public function salvarCategorias()
+    {
+        $adminId = $this->exigirAcao();
+
+        $nomes = $_POST['nome'] ?? [];
+        $erros = $this->administradorModel->salvarCategorias(
+            $adminId,
+            is_array($nomes) ? $nomes : [],
+            (string) $this->getPost('nova', '')
+        );
+        if ($erros) {
+            return $this->render('admin/categorias', [
+                'categorias' => (new Categoria())->listarComUso(),
+                'erros' => $erros,
+                'enviado' => ['nome' => is_array($nomes) ? $nomes : [], 'nova' => (string) $this->getPost('nova', '')],
+            ]);
+        }
+
+        $this->redirect('/admin/categorias?status=ok');
+    }
+
+    public function excluirCategoria()
+    {
+        $adminId = $this->exigirAcao();
+
+        $erro = $this->administradorModel->excluirCategoria($adminId, (int) $this->getPost('categoria_id'));
+        if ($erro !== null) {
+            return $this->render('admin/categorias', [
+                'categorias' => (new Categoria())->listarComUso(),
+                'erros' => [$erro],
+            ]);
+        }
+
+        $this->redirect('/admin/categorias?status=ok');
     }
 
     public function administradores()
