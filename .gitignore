@@ -22,3 +22,7 @@
 /.vscode/
 .DS_Store
 Thumbs.db
+
+# Curriculos e logos ficam no banco. A pasta uploads/ nao e mais usada;
+# o que aparecer nela (dados pessoais) nunca deve ser versionado.
+/uploads/

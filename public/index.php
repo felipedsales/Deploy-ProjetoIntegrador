@@ -25,6 +25,22 @@ $router->get('/sobre', 'HomeController@sobre');
 // Rotas de empresas (públicas)
 $router->get('/empresas', 'EmpresaController@index');
 $router->get('/empresas/{id}', 'EmpresaController@show');
+$router->get('/empresas/{id}/logo', 'EmpresaController@logo');
+
+// Painel administrativo (RF03, RF16) — só perfil administrador (RN09)
+$router->get('/admin/login', 'AdminController@login');
+$router->post('/admin/login', 'AdminController@login');
+$router->get('/admin', 'AdminController@painel');
+$router->get('/admin/denuncias', 'AdminController@denuncias');
+$router->post('/admin/denuncias/status', 'AdminController@atualizarDenuncia');
+$router->get('/admin/vagas', 'AdminController@vagas');
+$router->post('/admin/vagas/inativar', 'AdminController@inativarVaga');
+$router->post('/admin/vagas/reativar', 'AdminController@reativarVaga');
+$router->get('/admin/usuarios', 'AdminController@usuarios');
+$router->post('/admin/usuarios/suspender', 'AdminController@suspenderUsuario');
+$router->post('/admin/usuarios/reativar', 'AdminController@reativarUsuario');
+$router->get('/admin/administradores', 'AdminController@administradores');
+$router->post('/admin/administradores', 'AdminController@cadastrarAdministrador');
 
 // Rotas de autenticação
 $router->get('/login', 'AuthController@login');
@@ -38,10 +54,9 @@ $router->post('/cadastro-empresa', 'AuthController@registerEmpresa');
 $router->get('/logout', 'AuthController@logout');
 
 // Rotas de autenticação social
-$router->get('/auth/google', 'AuthController@googleAuth');
-$router->get('/auth/google/callback', 'AuthController@googleCallback');
-$router->get('/auth/linkedin', 'AuthController@linkedinAuth');
-$router->get('/auth/linkedin/callback', 'AuthController@linkedinCallback');
+// RF20 (login externo) está fora da v1 — ver docs/IMPLEMENTACOES_FUTURAS.md.
+// As rotas /auth/google e /auth/linkedin ficam desligadas até o requisito
+// entrar no escopo e as colunas provider/provider_id existirem no schema.
 
 // Rotas de vagas
 $router->get('/vagas', 'VagaController@index');
@@ -50,6 +65,8 @@ $router->post('/vagas/criar', 'VagaController@create');
 $router->post('/vagas/candidatar', 'VagaController@candidatar');
 $router->post('/vagas/desistir', 'VagaController@desistir');
 $router->post('/vagas/denunciar', 'VagaController@denunciar');
+$router->post('/vagas/favoritar', 'VagaController@favoritar');
+$router->post('/vagas/desfavoritar', 'VagaController@desfavoritar');
 $router->get('/vagas/{id}', 'VagaController@show');
 $router->get('/vagas/{id}/editar', 'VagaController@edit');
 $router->post('/vagas/{id}/editar', 'VagaController@edit');
@@ -57,15 +74,26 @@ $router->post('/vagas/{id}/excluir', 'VagaController@delete');
 
 // Rotas de candidatos
 $router->get('/minhas-candidaturas', 'CandidatoController@minhasCandidaturas');
+$router->get('/vagas-favoritas', 'CandidatoController@vagasFavoritas');
 $router->get('/perfil', 'CandidatoController@perfil');
 $router->post('/perfil/atualizar', 'CandidatoController@atualizarPerfil');
+$router->get('/perfil/curriculo', 'CandidatoController@baixarCurriculo');
+$router->post('/perfil/curriculo', 'CandidatoController@enviarCurriculo');
+$router->post('/perfil/curriculo/remover', 'CandidatoController@removerCurriculo');
 
 // Rotas de empresas (privadas)
 $router->get('/painel-empresa', 'EmpresaController@painel');
+$router->get('/empresa/perfil', 'EmpresaController@perfil');
+$router->post('/empresa/perfil', 'EmpresaController@atualizarPerfil');
+$router->post('/empresa/perfil/logo', 'EmpresaController@enviarLogo');
 $router->get('/empresa/vagas', 'EmpresaController@minhasVagas');
+$router->get('/empresa/vagas/{vagaId}/candidatos/{candidatoId}/curriculo', 'EmpresaController@baixarCurriculoCandidato');
 $router->get('/empresa/vagas/{id}/candidatos', 'EmpresaController@candidatosVaga');
 $router->post('/empresa/candidatos/status', 'EmpresaController@atualizarStatusCandidato');
 $router->post('/empresa/candidatos/remover', 'EmpresaController@removerCandidato');
+$router->post('/empresa/entrevistas/agendar', 'EmpresaController@agendarEntrevista');
+$router->post('/empresa/entrevistas/cancelar', 'EmpresaController@cancelarEntrevista');
+$router->post('/empresa/entrevistas/finalizar', 'EmpresaController@finalizarEntrevista');
 
 // --- Rotas da API ---
 $router->get('/api/vagas', 'VagaController@apiIndex');

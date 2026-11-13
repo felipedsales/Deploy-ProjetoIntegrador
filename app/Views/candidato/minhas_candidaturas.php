@@ -34,6 +34,16 @@ $title = 'Minhas Candidaturas - Ferraz Conecta';
                             <li><strong>Data da Candidatura:</strong> <?= !empty($candidatura['data_candidatura']) ? date('d/m/Y', strtotime($candidatura['data_candidatura'])) : 'Data não disponível' ?></li>
                         </ul>
 
+                        <?php $entrevista = $entrevistas[$candidatura['vaga_id'] ?? 0] ?? null; ?>
+                        <?php if ($entrevista): ?>
+                            <div class="alert alert-<?= $entrevista['status'] === 'Agendada' ? 'primary' : 'secondary' ?> mb-0">
+                                <i class="fas fa-calendar-check"></i>
+                                <strong>Entrevista <?= htmlspecialchars(mb_strtolower($entrevista['status'])) ?>:</strong>
+                                <?= date('d/m/Y \à\s H:i', strtotime($entrevista['data_hora'])) ?> —
+                                <?= htmlspecialchars($entrevista['local']) ?>
+                            </div>
+                        <?php endif; ?>
+
                         <div class="mt-3">
                             <div class="btn-group" role="group">
                                 <a href="/vagas/<?= $candidatura['vaga_id'] ?? $candidatura['id'] ?>" class="btn btn-outline-primary">

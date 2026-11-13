@@ -121,10 +121,58 @@ abstract class Controller
         return $this->getSession('user_id') !== null;
     }
 
+    /**
+     * Entrega um arquivo guardado no banco, a quem já teve a permissão conferida.
+     *
+     * @param array|false $arquivo linha com tipo e conteudo (e nome_arquivo, no download)
+     * @param string|null $nome    nome sugerido para download, sem extensão; null
+     *                             exibe o arquivo no navegador (logo)
+     */
+    protected function enviarConteudo($arquivo, $nome = null)
+    {
+        if (!$arquivo) {
+            http_response_code(404);
+            echo 'Arquivo não encontrado.';
+            exit;
+        }
+
+        header('Content-Type: ' . $arquivo['tipo']);
+        header('Content-Length: ' . strlen($arquivo['conteudo']));
+        header('X-Content-Type-Options: nosniff');
+        if ($nome !== null) {
+            $extensao = strtolower(pathinfo($arquivo['nome_arquivo'], PATHINFO_EXTENSION));
+            $nome = trim(preg_replace('/[^A-Za-z0-9]+/', '_', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $nome)), '_');
+            header('Content-Disposition: attachment; filename="' . ($nome ?: 'arquivo') . '.' . $extensao . '"');
+        } else {
+            // A URL do logo muda a cada envio (?v=), então o navegador pode guardar a imagem.
+            header('Cache-Control: public, max-age=86400');
+        }
+        echo $arquivo['conteudo'];
+        exit;
+    }
+
     protected function requireAuth()
     {
         if (!$this->isLoggedIn()) {
             $this->redirect('/login');
+        }
+    }
+
+    /**
+     * RN21: cada perfil só acessa o que é dele. Exige usuário logado com o
+     * perfil informado ('candidato', 'empresa' ou 'administrador').
+     */
+    protected function requirePerfil($perfil)
+    {
+        $login = ['candidato' => '/login', 'empresa' => '/login-empresa', 'administrador' => '/admin/login'];
+
+        if (!$this->isLoggedIn()) {
+            $this->redirect($login[$perfil] ?? '/login');
+        }
+
+        if ($this->getSession('user_type') !== $perfil) {
+            $inicio = ['candidato' => '/', 'empresa' => '/painel-empresa', 'administrador' => '/admin'];
+            $this->redirect($inicio[$this->getSession('user_type')] ?? '/');
         }
     }
 

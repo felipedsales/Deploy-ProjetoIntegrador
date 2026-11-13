@@ -13,6 +13,10 @@
 -- Os domínios de valor (no PostgreSQL eram CREATE TYPE ... AS ENUM) agora são
 -- ENUM(...) declarados inline em cada coluna.
 
+-- Garante que os acentos dos ENUMs e dos dados sejam lidos como UTF-8, seja qual
+-- for a codificação padrão do cliente usado na importação.
+SET NAMES utf8mb4;
+
 -- Tabela de usuários (candidatos)
 CREATE TABLE IF NOT EXISTS candidatos (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -23,7 +27,8 @@ CREATE TABLE IF NOT EXISTS candidatos (
     cpf VARCHAR(14) UNIQUE,
     data_nascimento DATE,
     endereco TEXT,
-    curriculo_path VARCHAR(500),
+    -- RN18: conta suspensa pelo administrador não entra no sistema.
+    status ENUM('Ativa', 'Suspensa') NOT NULL DEFAULT 'Ativa',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -39,8 +44,9 @@ CREATE TABLE IF NOT EXISTS empresas (
     endereco TEXT,
     descricao TEXT,
     setor VARCHAR(100),
-    logo_path VARCHAR(500),
     website VARCHAR(255),
+    -- RN18: conta suspensa pelo administrador não entra no sistema.
+    status ENUM('Ativa', 'Suspensa') NOT NULL DEFAULT 'Ativa',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -58,10 +64,14 @@ CREATE TABLE IF NOT EXISTS vagas (
     localizacao VARCHAR(255),
     beneficios TEXT,
     status ENUM('Ativa', 'Inativa', 'Pausada') NOT NULL DEFAULT 'Ativa',
+    -- RN14: prazo de candidatura definido pela empresa. Só vagas com prazo
+    -- válido são exibidas; a validade mínima de 7 dias é conferida no back-end.
+    data_expiracao DATE NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     KEY idx_vagas_empresa (empresa_id),
     KEY idx_vagas_status (status),
+    KEY idx_vagas_expiracao (data_expiracao),
     CONSTRAINT fk_vagas_empresa
         FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -91,7 +101,7 @@ CREATE TABLE IF NOT EXISTS candidaturas (
 CREATE TABLE IF NOT EXISTS sessoes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
-    tipo_usuario ENUM('candidato', 'empresa') NOT NULL,
+    tipo_usuario ENUM('candidato', 'empresa', 'administrador') NOT NULL,
     token VARCHAR(255) NOT NULL UNIQUE,
     expira_em TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -105,6 +115,7 @@ CREATE TABLE IF NOT EXISTS denuncias (
     vaga_id INT,
     candidato_id INT,
     motivo TEXT NOT NULL,
+    descricao TEXT,
     status ENUM('Pendente', 'Em análise', 'Resolvida', 'Descartada') NOT NULL DEFAULT 'Pendente',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_denuncias_vaga (vaga_id),
@@ -113,4 +124,101 @@ CREATE TABLE IF NOT EXISTS denuncias (
         FOREIGN KEY (vaga_id) REFERENCES vagas (id) ON DELETE SET NULL,
     CONSTRAINT fk_denuncias_candidato
         FOREIGN KEY (candidato_id) REFERENCES candidatos (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Tabela de administradores (RF03, RF16, RN09, RN18, RN21)
+-- Perfil da equipe da Prefeitura. Fica separado de candidatos e empresas,
+-- como as demais contas do sistema.
+CREATE TABLE IF NOT EXISTS administradores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Tabela de favoritos (RF19)
+CREATE TABLE IF NOT EXISTS favoritos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    candidato_id INT NOT NULL,
+    vaga_id INT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    -- UC-C08: não é permitido favoritar a mesma vaga mais de uma vez.
+    UNIQUE KEY uq_favoritos_candidato_vaga (candidato_id, vaga_id),
+    KEY idx_favoritos_vaga (vaga_id),
+    CONSTRAINT fk_favoritos_candidato
+        FOREIGN KEY (candidato_id) REFERENCES candidatos (id) ON DELETE CASCADE,
+    CONSTRAINT fk_favoritos_vaga
+        FOREIGN KEY (vaga_id) REFERENCES vagas (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Tabela de entrevistas (RF26, UC-E06)
+-- Segue o MER: a entrevista liga um candidato a uma vaga.
+CREATE TABLE IF NOT EXISTS entrevistas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    vaga_id INT NOT NULL,
+    candidato_id INT NOT NULL,
+    data_hora DATETIME NOT NULL,
+    local VARCHAR(200) NOT NULL,
+    status ENUM('Agendada', 'Cancelada', 'Realizada') NOT NULL DEFAULT 'Agendada',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_entrevistas_vaga (vaga_id),
+    -- Usado na verificação de conflito de horário do candidato (UC-E06).
+    KEY idx_entrevistas_candidato_data (candidato_id, data_hora),
+    CONSTRAINT fk_entrevistas_vaga
+        FOREIGN KEY (vaga_id) REFERENCES vagas (id) ON DELETE CASCADE,
+    CONSTRAINT fk_entrevistas_candidato
+        FOREIGN KEY (candidato_id) REFERENCES candidatos (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Tabela de logs de auditoria (RN07)
+-- Registra quem fez, o quê e quando, para toda ação administrativa.
+-- O log não é apagado quando o administrador é removido.
+CREATE TABLE IF NOT EXISTS logs_auditoria (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    administrador_id INT,
+    acao VARCHAR(100) NOT NULL,
+    entidade VARCHAR(50) NOT NULL,
+    entidade_id INT,
+    detalhes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_logs_administrador (administrador_id),
+    KEY idx_logs_entidade (entidade, entidade_id),
+    CONSTRAINT fk_logs_administrador
+        FOREIGN KEY (administrador_id) REFERENCES administradores (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Tabela de currículos (RF08, RN02) — entidade Currículo do MER.
+-- O arquivo fica gravado no próprio banco (coluna conteudo), e não no disco do
+-- servidor: assim ele não se perde quando a aplicação é reimplantada e entra
+-- no backup do banco. Um currículo por candidato; enviar de novo substitui.
+CREATE TABLE IF NOT EXISTS curriculos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    candidato_id INT NOT NULL,
+    nome_arquivo VARCHAR(255) NOT NULL,
+    tipo VARCHAR(100) NOT NULL,
+    tamanho INT NOT NULL,
+    conteudo MEDIUMBLOB NOT NULL,
+    data_envio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_curriculos_candidato (candidato_id),
+    CONSTRAINT fk_curriculos_candidato
+        FOREIGN KEY (candidato_id) REFERENCES candidatos (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Tabela de logos das empresas (RF07).
+-- Como os currículos, o arquivo fica no banco para não se perder quando a
+-- aplicação é reimplantada. Fica em tabela própria, e não em empresas, para
+-- que as consultas de empresas não carreguem a imagem. Um logo por empresa.
+CREATE TABLE IF NOT EXISTS logos_empresas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    empresa_id INT NOT NULL,
+    tipo VARCHAR(100) NOT NULL,
+    tamanho INT NOT NULL,
+    conteudo MEDIUMBLOB NOT NULL,
+    data_envio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_logos_empresa (empresa_id),
+    CONSTRAINT fk_logos_empresa
+        FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

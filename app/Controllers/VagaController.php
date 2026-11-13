@@ -22,13 +22,8 @@ class VagaController extends Controller
     public function apiIndex()
     {
         header('Content-Type: application/json');
-        $busca = $this->getQuery('busca');
-        
-        if ($busca) {
-            $vagas = $this->vagaModel->buscarVagas($busca);
-        } else {
-            $vagas = $this->vagaModel->findAll();
-        }
+        $filtros = $this->filtrosDaBusca();
+        $vagas = $this->vagaModel->buscarVagas($filtros);
 
         echo json_encode($vagas);
         return null; // Retorna nulo para que o dispatcher não tente imprimir nada a mais
@@ -36,18 +31,27 @@ class VagaController extends Controller
 
     public function index()
     {
-        $busca = $this->getQuery('busca');
-        
-        if ($busca) {
-            $vagas = $this->vagaModel->buscarVagas($busca);
-        } else {
-            $vagas = $this->vagaModel->findAll();
-        }
+        $filtros = $this->filtrosDaBusca();
+        $vagas = $this->vagaModel->buscarVagas($filtros);
 
         return $this->render('vagas/index', [
             'vagas' => $vagas,
-            'busca' => $busca
+            'busca' => $filtros['busca'],
+            'filtros' => $filtros,
+            'tiposContrato' => Vaga::TIPOS_CONTRATO,
+            'modalidades' => Vaga::MODALIDADES
         ]);
+    }
+
+    /** RF12: filtros da busca de vagas, lidos da query string. */
+    private function filtrosDaBusca()
+    {
+        $filtros = [];
+        foreach (['busca', 'localizacao', 'tipo_contrato', 'modalidade'] as $campo) {
+            $filtros[$campo] = trim((string) $this->getQuery($campo, ''));
+        }
+
+        return $filtros;
     }
 
     public function show($id)
@@ -58,16 +62,25 @@ class VagaController extends Controller
             $this->redirect('/vagas');
         }
 
+        // RN14: vaga inativa ou fora do prazo só é exibida para a empresa dona.
+        $ehDona = $this->getSession('user_type') === 'empresa'
+            && $vaga['empresa_id'] == $this->getSession('user_id');
+        if (!$this->vagaModel->estaAtiva($vaga) && !$ehDona) {
+            $this->redirect('/vagas?error=vaga_indisponivel');
+        }
+
+        $favoritada = $this->getSession('user_type') === 'candidato'
+            && $this->candidatoModel->vagaFavoritada($this->getSession('user_id'), $vaga['id']);
+
         return $this->render('vagas/show', [
-            'vaga' => $vaga
+            'vaga' => $vaga,
+            'favoritada' => $favoritada
         ]);
     }
 
     public function candidatar()
     {
-        if (!$this->isLoggedIn()) {
-            $this->redirect('/login');
-        }
+        $this->requirePerfil('candidato');
 
         if (!$this->isPost()) {
             $this->redirect('/vagas');
@@ -76,6 +89,16 @@ class VagaController extends Controller
         $vagaId = $this->getPost('vaga_id');
         $candidatoId = $this->getSession('user_id');
 
+        // RN14: não se recebe candidatura em vaga inativa ou fora do prazo.
+        if (!$this->vagaModel->estaAtiva($this->vagaModel->findById($vagaId))) {
+            $this->redirect('/vagas?error=vaga_indisponivel');
+        }
+
+        // RF13: a candidatura envia o currículo do perfil; sem ele, não há candidatura.
+        if (!$this->candidatoModel->temCurriculo($candidatoId)) {
+            $this->redirect('/perfil?error=curriculo_obrigatorio');
+        }
+
         if ($this->candidatoModel->candidatarVaga($candidatoId, $vagaId)) {
             $this->redirect('/?status=candidatura_sucesso');
         } else {
@@ -83,11 +106,53 @@ class VagaController extends Controller
         }
     }
 
-    public function desistir()
+    /** RF19 / UC-C08 Favoritar Vagas. */
+    public function favoritar()
+    {
+        $vagaId = $this->exigirCandidatoEVaga();
+
+        // UC-C08: só se favorita vaga que está visível ao candidato (RN14).
+        if (!$this->vagaModel->estaAtiva($this->vagaModel->findById($vagaId))) {
+            $this->redirect('/vagas?error=vaga_indisponivel');
+        }
+
+        if ($this->candidatoModel->favoritarVaga($this->getSession('user_id'), $vagaId)) {
+            $this->redirect("/vagas/{$vagaId}?status=favorito_adicionado");
+        } else {
+            $this->redirect("/vagas/{$vagaId}?error=ja_favoritada");
+        }
+    }
+
+    public function desfavoritar()
+    {
+        $vagaId = $this->exigirCandidatoEVaga();
+
+        $this->candidatoModel->desfavoritarVaga($this->getSession('user_id'), $vagaId);
+
+        // Quem removeu pela lista volta para a lista; a vaga pode nem estar mais disponível.
+        if ($this->getPost('origem') === 'lista') {
+            $this->redirect('/vagas-favoritas?status=favorito_removido');
+        }
+        $this->redirect("/vagas/{$vagaId}?status=favorito_removido");
+    }
+
+    /** Ações de favorito: exige POST de um candidato logado e devolve o id da vaga. */
+    private function exigirCandidatoEVaga()
     {
         if (!$this->isLoggedIn()) {
-            $this->redirect('/minhas-candidaturas');
+            $this->redirect('/login');
         }
+
+        if ($this->getSession('user_type') !== 'candidato' || !$this->isPost()) {
+            $this->redirect('/vagas');
+        }
+
+        return (int) $this->getPost('vaga_id');
+    }
+
+    public function desistir()
+    {
+        $this->requirePerfil('candidato');
 
         if (!$this->isPost()) {
             $this->redirect('/minhas-candidaturas');
@@ -102,12 +167,7 @@ class VagaController extends Controller
 
     public function create()
     {
-        $this->requireAuth();
-        
-        // Verifica se é uma empresa
-        if ($this->getSession('user_type') !== 'empresa') {
-            $this->redirect('/login-empresa');
-        }
+        $this->requirePerfil('empresa');
         
         if ($this->isPost()) {
             // Usar o campo salario_numerico se disponível, senão converter o salario
@@ -132,19 +192,32 @@ class VagaController extends Controller
                 'localizacao' => $this->getPost('localizacao'),
                 'beneficios' => $this->getPost('beneficios'),
                 'status' => 'Ativa',
+                'data_expiracao' => $this->getPost('data_expiracao'),
                 'empresa_id' => $this->getSession('user_id'),
             ];
+
+            // RN03 e RN14: a regra fica no Model; aqui só se decide o fluxo.
+            $erros = $this->vagaModel->validar($data);
+            if ($erros) {
+                return $this->render('vagas/create', [
+                    'erros' => $erros,
+                    'vaga' => $data,
+                    'dataMinima' => $this->vagaModel->dataExpiracaoMinima(),
+                ]);
+            }
 
             $this->vagaModel->create($data);
             $this->redirect('/painel-empresa?status=vaga_criada');
         }
 
-        return $this->render('vagas/create');
+        return $this->render('vagas/create', [
+            'dataMinima' => $this->vagaModel->dataExpiracaoMinima(),
+        ]);
     }
 
     public function edit($id)
     {
-        $this->requireAuth();
+        $this->requirePerfil('empresa');
         
         $vaga = $this->vagaModel->findById($id);
         
@@ -174,21 +247,33 @@ class VagaController extends Controller
                 'modalidade' => $this->getPost('modalidade'),
                 'localizacao' => $this->getPost('localizacao'),
                 'beneficios' => $this->getPost('beneficios'),
-                'status' => $this->getPost('status', $vaga['status'])
+                'status' => $this->getPost('status', $vaga['status']),
+                'data_expiracao' => $this->getPost('data_expiracao'),
             ];
+
+            // RN03 e RN14: os 7 dias mínimos contam da publicação da vaga.
+            $erros = $this->vagaModel->validar($data, $vaga['created_at']);
+            if ($erros) {
+                return $this->render('vagas/edit', [
+                    'erros' => $erros,
+                    'vaga' => array_merge($vaga, $data),
+                    'dataMinima' => $this->vagaModel->dataExpiracaoMinima($vaga['created_at']),
+                ]);
+            }
 
             $this->vagaModel->update($id, $data);
             $this->redirect('/painel-empresa?status=vaga_atualizada');
         }
 
         return $this->render('vagas/edit', [
-            'vaga' => $vaga
+            'vaga' => $vaga,
+            'dataMinima' => $this->vagaModel->dataExpiracaoMinima($vaga['created_at']),
         ]);
     }
 
     public function delete($id)
     {
-        $this->requireAuth();
+        $this->requirePerfil('empresa');
         
         $vaga = $this->vagaModel->findById($id);
         
@@ -214,10 +299,15 @@ class VagaController extends Controller
             $this->redirect('/vagas');
         }
 
-        $vagaId = $this->getPost('vaga_id');
+        $vagaId = (int) $this->getPost('vaga_id');
         $motivo = $this->getPost('motivo');
         $descricao = $this->getPost('descricao');
         $candidatoId = $this->getSession('user_id');
+
+        // UC-C09: a denúncia só pode ser feita para conteúdo visível ao candidato.
+        if (!$this->vagaModel->estaAtiva($this->vagaModel->findById($vagaId))) {
+            $this->redirect('/vagas?error=vaga_indisponivel');
+        }
 
         // Verificar se já denunciou esta vaga
         if ($this->vagaModel->verificarDenunciaExistente($candidatoId, $vagaId)) {

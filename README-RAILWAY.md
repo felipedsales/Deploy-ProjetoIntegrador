@@ -122,6 +122,33 @@ Deploy-ProjetoIntegrador/
 - Conexão segura via SSL
 - Charset utf8mb4 para suporte completo a Unicode
 
+### Migrations de banco já existente
+
+Banco novo: basta importar `database/schema.sql`. Banco que já está em uso precisa das
+migrations de `database/migrations/`, nesta ordem, **depois de um backup**:
+
+| Arquivo | O que faz | Como roda |
+|---|---|---|
+| `2026_11_12_escopo_v1.sql` | Cria `vagas.data_expiracao`, `administradores`, `favoritos`, `entrevistas` e `logs_auditoria` | **Manual**, uma única vez, no cliente MySQL do Railway. Aplicar junto com o deploy do código que usa a data de expiração. |
+| `2026_11_12_proteger_senhas.php` | Converte em hash as senhas que estavam em texto puro (RNF03) | **Automático**: o `docker/entrypoint.sh` executa a cada start do container. Só altera o que ainda não é hash. |
+
+### Arquivos enviados (currículos e logos)
+
+Currículos e logos ficam gravados no banco (tabelas `curriculos` e `logos_empresas`): não
+dependem do disco do container, não se perdem em deploy e entram no backup do MySQL. Não é
+preciso criar volume no Railway.
+
+### Primeiro administrador
+
+O painel administrativo fica em `/admin/login`. Um administrador só é cadastrado por outro
+administrador, então o primeiro é criado pelo `database/criar_administrador.php`: defina
+`ADMIN_NOME`, `ADMIN_EMAIL` e `ADMIN_SENHA` (mínimo de 8 caracteres) nas variáveis do
+serviço e faça o deploy — o entrypoint cria a conta no start. **Depois de entrar no painel,
+remova as três variáveis.**
+
+Depois do primeiro deploy com a conversão de senhas, confira no log do serviço a linha
+`Total: N` e, no banco, que nenhuma senha ficou em texto puro.
+
 ## 🎨 Frontend
 
 O projeto mantém sua estrutura MVC original:

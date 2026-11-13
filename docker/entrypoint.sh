@@ -18,4 +18,19 @@ sed -ri "s/<VirtualHost \*:[0-9]+>/<VirtualHost *:${PORT}>/" /etc/apache2/sites-
 find /etc/apache2/mods-enabled/ -name 'mpm_*' ! -name 'mpm_prefork*' -delete 2>/dev/null || true
 a2enmod mpm_prefork >/dev/null 2>&1 || true
 
+# RNF03: converte em hash qualquer senha que ainda esteja em texto puro no
+# banco. Roda a cada start, mas só altera o que ainda não é hash; depois da
+# primeira execução não faz mais nada. Uma falha aqui (banco fora do ar, por
+# exemplo) é registrada no log e não impede o Apache de subir.
+timeout 30 php /var/www/html/database/migrations/2026_11_12_proteger_senhas.php \
+    || echo "[Ferraz Conecta] aviso: conversao de senhas nao concluida; sera tentada no proximo start."
+
+# RF03: cria o primeiro administrador a partir de ADMIN_EMAIL / ADMIN_SENHA
+# (e ADMIN_NOME), se estiverem definidas no serviço. Não faz nada quando a
+# conta já existe, e uma falha não impede o Apache de subir.
+if [ -n "${ADMIN_EMAIL:-}" ]; then
+    timeout 30 php /var/www/html/database/criar_administrador.php \
+        || echo "[Ferraz Conecta] aviso: administrador inicial nao foi criado."
+fi
+
 exec "$@"

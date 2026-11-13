@@ -42,6 +42,9 @@ $title = 'Minhas Vagas - Ferraz Conecta';
                             <li><strong>Tipo de Contrato:</strong> <?= htmlspecialchars($vaga['tipo_contrato'] ?? 'Não informado') ?></li>
                             <li><strong>Modalidade:</strong> <?= htmlspecialchars($vaga['modalidade'] ?? 'Não informado') ?></li>
                             <li><strong>Status:</strong> <?= htmlspecialchars($vaga['status'] ?? 'Não informado') ?></li>
+                            <?php if (!empty($vaga['data_expiracao'])): ?>
+                                <li><strong>Candidaturas até:</strong> <?= date('d/m/Y', strtotime($vaga['data_expiracao'])) ?><?= $vaga['data_expiracao'] < date('Y-m-d') ? ' <span class="badge bg-secondary">Prazo encerrado</span>' : '' ?></li>
+                            <?php endif; ?>
                             <?php if (!empty($vaga['created_at'])): ?>
                                 <li><strong>Data de Publicação:</strong> <?= date('d/m/Y', strtotime($vaga['created_at'])) ?></li>
                             <?php endif; ?>
