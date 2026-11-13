@@ -122,15 +122,23 @@ Deploy-ProjetoIntegrador/
 - Conexão segura via SSL
 - Charset utf8mb4 para suporte completo a Unicode
 
-### Migrations de banco já existente
+### Atualização de banco já existente
 
-Banco novo: basta importar `database/schema.sql`. Banco que já está em uso precisa das
-migrations de `database/migrations/`, nesta ordem, **depois de um backup**:
+Banco novo: basta importar `database/schema.sql`. Banco que já está em uso é atualizado
+**sozinho, no start do container**: o `docker/entrypoint.sh` executa dois scripts, que só
+alteram o que ainda falta e podem rodar quantas vezes for preciso.
 
-| Arquivo | O que faz | Como roda |
-|---|---|---|
-| `2026_11_12_escopo_v1.sql` | Cria `vagas.data_expiracao`, `administradores`, `favoritos`, `entrevistas` e `logs_auditoria` | **Manual**, uma única vez, no cliente MySQL do Railway. Aplicar junto com o deploy do código que usa a data de expiração. |
-| `2026_11_12_proteger_senhas.php` | Converte em hash as senhas que estavam em texto puro (RNF03) | **Automático**: o `docker/entrypoint.sh` executa a cada start do container. Só altera o que ainda não é hash. |
+| Script | O que faz |
+|---|---|
+| `database/migrar.php` | Leva a estrutura do banco até a do `schema.sql`: cria tabelas e colunas que faltam. Não apaga dados; as colunas antigas `curriculo_path` e `logo_path` só saem se estiverem vazias. |
+| `database/migrations/2026_11_12_proteger_senhas.php` | Converte em hash as senhas que estavam em texto puro (RNF03). |
+
+Depois de cada deploy que mexe no banco, confira no log do serviço as linhas
+`Estrutura atualizada: N alteração(ões)` (ou `Estrutura já estava atualizada`) e
+`Total: N`. Se aparecer `aviso: atualizacao da estrutura do banco nao concluida`, o banco
+estava indisponível no start: reinicie o serviço.
+
+Não é preciso cliente MySQL. Um backup antes do deploy continua sendo boa prática.
 
 ### Arquivos enviados (currículos e logos)
 
