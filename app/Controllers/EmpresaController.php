@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\Arquivo;
 use App\Models\Empresa;
 use App\Models\Entrevista;
 use App\Models\Vaga;
@@ -49,6 +50,89 @@ class EmpresaController extends Controller
             'empresa' => $empresa,
             'vagas' => $vagas
         ]);
+    }
+
+    /** RF07 / UC-E04 — perfil da empresa. */
+    public function perfil()
+    {
+        $this->requirePerfil('empresa');
+
+        return $this->render('empresa/perfil', [
+            'empresa' => $this->empresaModel->findById($this->getSession('user_id'))
+        ]);
+    }
+
+    public function atualizarPerfil()
+    {
+        $this->requirePerfil('empresa');
+
+        if (!$this->isPost()) {
+            $this->redirect('/empresa/perfil');
+        }
+
+        $empresaId = $this->getSession('user_id');
+        $data = [
+            'nome' => $this->getPost('nome'),
+            'telefone' => $this->getPost('telefone'),
+            'endereco' => $this->getPost('endereco'),
+            'descricao' => $this->getPost('descricao'),
+            'setor' => $this->getPost('setor'),
+            'website' => $this->getPost('website'),
+            'nova_senha' => (string) $this->getPost('nova_senha', '')
+        ];
+
+        $erros = $this->empresaModel->validarPerfil($data);
+        if ($erros) {
+            unset($data['nova_senha']);
+            return $this->render('empresa/perfil', [
+                'empresa' => array_merge($this->empresaModel->findById($empresaId), $data),
+                'erros' => $erros
+            ]);
+        }
+
+        $this->empresaModel->atualizarPerfil($empresaId, $data);
+        $this->setSession('user_name', trim($data['nome']));
+        $this->redirect('/empresa/perfil?status=perfil_atualizado');
+    }
+
+    /** RF07 — envio do logo da empresa. */
+    public function enviarLogo()
+    {
+        $this->requirePerfil('empresa');
+
+        if (!$this->isPost()) {
+            $this->redirect('/empresa/perfil');
+        }
+
+        $empresaId = $this->getSession('user_id');
+        $erro = $this->empresaModel->salvarLogo($empresaId, $_FILES['logo'] ?? null);
+        if ($erro !== null) {
+            return $this->render('empresa/perfil', [
+                'empresa' => $this->empresaModel->findById($empresaId),
+                'erroLogo' => $erro
+            ]);
+        }
+
+        $this->redirect('/empresa/perfil?status=logo_enviado');
+    }
+
+    /** Logo da empresa: imagem pública, exibida na página da empresa. */
+    public function logo($id)
+    {
+        $empresa = $this->empresaModel->findById($id);
+        $this->enviarArquivo(Arquivo::localizar($empresa['logo_path'] ?? null));
+    }
+
+    /** RF13 — a empresa baixa o currículo de quem se candidatou a uma vaga dela (RN21). */
+    public function baixarCurriculoCandidato($vagaId, $candidatoId)
+    {
+        $this->requirePerfil('empresa');
+
+        $candidato = $this->empresaModel->getCurriculoDeCandidato($this->getSession('user_id'), $vagaId, $candidatoId);
+        $this->enviarArquivo(
+            $candidato ? Arquivo::localizar($candidato['curriculo_path']) : null,
+            'curriculo_' . ($candidato['nome'] ?? '')
+        );
     }
 
     public function painel()

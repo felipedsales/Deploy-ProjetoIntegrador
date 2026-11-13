@@ -22,3 +22,7 @@
 /.vscode/
 .DS_Store
 Thumbs.db
+
+# Arquivos enviados pelos usuarios (curriculos e logos): dados pessoais,
+# nunca versionar.
+/uploads/*

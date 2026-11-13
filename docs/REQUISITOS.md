@@ -69,17 +69,17 @@ O que ficou fora está detalhado em **`IMPLEMENTACOES_FUTURAS.md`**.
 | Código | Nome | Descrição | Escopo |
 |---|---|---|---|
 | RF01 | Cadastro de Candidatos | Validação de CPF, e-mail único e senha segura. | **v1** |
-| RF02 | Cadastro de Empresas | CNPJ, razão social e nome do responsável pela conta. | **v1** |
+| RF02 | Cadastro de Empresas | CNPJ, razão social e nome do responsável pela conta. | **v1** — sem o nome do responsável (não há coluna em `empresas`) |
 | RF03 | Cadastro de Administradores | Autenticação dupla e permissões especiais. | **v1** — sem autenticação dupla |
 | RF04 | Login *(Include)* | E-mail/senha, redes sociais e autenticação multifator. | **v1** — só e-mail e senha; sem redes sociais e sem multifator |
 | RF05 | Recuperação de Senha *(Include)* | Envio de link temporário por e-mail (válido por 15 minutos). | Futuro |
 | RF06 | Edição de Perfil do Candidato | Atualização de dados pessoais, currículo e preferências. | **v1** |
 | RF07 | Edição de Perfil da Empresa | Alteração de dados cadastrais, logo e descrição institucional. | **v1** |
-| RF08 | Upload de Currículo | Suporte a PDF/DOC, com validação de tipo e tamanho de arquivo. | **v1** |
+| RF08 | Upload de Currículo | Suporte a PDF/DOC, com validação de tipo e tamanho de arquivo. | **v1** — PDF, DOC ou DOCX de até 2 MB |
 | RF09 | Upload de Carta de Apresentação | Upload opcional, associada à vaga ou padrão no perfil. | Futuro |
 | RF10 | Cadastro de Vagas | Descrição completa, requisitos, localização e benefícios. | **v1** |
 | RF11 | Edição/Exclusão de Vagas | Permitido com histórico de alterações. | **v1** — sem histórico de alterações |
-| RF12 | Busca de Vagas com Filtros | Filtros por área, localidade, tipo, experiência e modelo de trabalho. | **v1** |
+| RF12 | Busca de Vagas com Filtros | Filtros por área, localidade, tipo, experiência e modelo de trabalho. | **v1** — palavra-chave, localidade, tipo de contrato e modelo de trabalho; área e experiência não têm coluna em `vagas` |
 | RF13 | Candidatura em Vagas | Envio de currículo e/ou carta de apresentação. | **v1** — só currículo; carta de apresentação fica no RF09 |
 | RF14 | Notificações de Vagas | Vagas relevantes com base em perfil e histórico de candidaturas. | Futuro |
 | RF15 | Feedback e Avaliação | Feedback pós-processo e avaliações por candidatos e empresas. | Futuro |

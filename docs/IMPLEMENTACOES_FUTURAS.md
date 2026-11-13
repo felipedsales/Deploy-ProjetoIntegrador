@@ -67,9 +67,11 @@ Estes RFs fazem parte da v1, mas com recorte. O que foi cortado fica aqui.
 
 | Requisito | Parte adiada | O que falta |
 |---|---|---|
+| **RF02** — Cadastro de empresas | Nome do responsável pela conta | Coluna em `empresas`, no MER e no Diagrama de Classe; campo no cadastro e no perfil. |
 | **RF03** — Cadastro de administradores | Autenticação dupla | Segundo fator no login do administrador (ver RNF09). |
 | **RF04** — Login | Redes sociais e multifator | Coberto pelo RF20 e pelo RNF09. |
 | **RF11** — Edição e exclusão de vagas | Histórico de alterações | Tabela de histórico por vaga e tela de consulta. |
+| **RF12** — Busca de vagas | Filtros por área e por experiência | Colunas em `vagas` (ou a tabela de categorias do UC-E13), no MER e no Diagrama de Classe; campos no cadastro da vaga. |
 | **RF13** — Candidatura | Envio de carta de apresentação | Coberto pelo RF09. |
 | **RF16** — Painel administrativo | Relatório de logs do sistema | Tela de consulta e exportação dos logs (UC-E15, UC-C11). A gravação do log já entra na v1 pela RN07. |
 | **RF18** — Histórico de candidaturas | Mensagens da empresa | Coberto pelo RF24. |

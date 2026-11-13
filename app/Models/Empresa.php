@@ -23,6 +23,137 @@ class Empresa extends Model
         return parent::update($id, $this->protegerSenha($data));
     }
 
+    /**
+     * RF02 / UC-E01 — valida o cadastro da empresa.
+     * RN01: e-mail único; RN16: formato de e-mail, telefone e CNPJ; senha segura.
+     *
+     * @return array mapa campo → mensagem; vazio quando está tudo certo
+     */
+    public function validarCadastro($dados)
+    {
+        $erros = $this->validarDadosComuns($dados);
+
+        if (!Validador::email($dados['email'] ?? '')) {
+            $erros['email'] = 'Informe um e-mail válido.';
+        } elseif ($this->buscarPorEmail(trim($dados['email']))) {
+            $erros['email'] = 'Este e-mail já está cadastrado.';
+        }
+
+        if (!Validador::senha($dados['senha'] ?? '')) {
+            $erros['senha'] = Validador::REGRA_SENHA;
+        }
+
+        if (!Validador::cnpj($dados['cnpj'] ?? '')) {
+            $erros['cnpj'] = 'CNPJ inválido.';
+        } elseif ($this->db->fetch("SELECT id FROM {$this->table} WHERE cnpj = ?", [Validador::formatarCnpj($dados['cnpj'])])) {
+            $erros['cnpj'] = 'Este CNPJ já está cadastrado.';
+        }
+
+        return $erros;
+    }
+
+    /** RF07 — valida os dados que a empresa pode alterar no perfil. */
+    public function validarPerfil($dados)
+    {
+        $erros = $this->validarDadosComuns($dados);
+
+        $website = trim((string) ($dados['website'] ?? ''));
+        if ($website !== '' && (!filter_var($website, FILTER_VALIDATE_URL) || !preg_match('#^https?://#i', $website))) {
+            $erros['website'] = 'Informe o site completo, começando com http:// ou https://.';
+        }
+        if (mb_strlen(trim((string) ($dados['setor'] ?? ''))) > 100) {
+            $erros['setor'] = 'O setor deve ter no máximo 100 caracteres.';
+        }
+        if (($dados['nova_senha'] ?? '') !== '' && !Validador::senha($dados['nova_senha'])) {
+            $erros['nova_senha'] = Validador::REGRA_SENHA;
+        }
+
+        return $erros;
+    }
+
+    private function validarDadosComuns($dados)
+    {
+        $erros = [];
+
+        if (trim((string) ($dados['nome'] ?? '')) === '') {
+            $erros['nome'] = 'Informe a razão social.';
+        }
+        if (!Validador::telefone($dados['telefone'] ?? '')) {
+            $erros['telefone'] = 'Informe um telefone válido, com DDD.';
+        }
+        if (trim((string) ($dados['endereco'] ?? '')) === '') {
+            $erros['endereco'] = 'Informe o endereço.';
+        }
+
+        return $erros;
+    }
+
+    /** RF02 — grava a empresa com os dados já validados; CNPJ sempre no mesmo formato. */
+    public function cadastrar($dados)
+    {
+        return $this->create([
+            'nome' => trim($dados['nome']),
+            'email' => trim($dados['email']),
+            'senha' => $dados['senha'],
+            'telefone' => trim($dados['telefone']),
+            'cnpj' => Validador::formatarCnpj($dados['cnpj']),
+            'endereco' => trim($dados['endereco']),
+            'descricao' => trim((string) ($dados['descricao'] ?? '')),
+        ]);
+    }
+
+    /** RF07 — grava as alterações de dados cadastrais e descrição institucional. */
+    public function atualizarPerfil($empresaId, $dados)
+    {
+        $alteracoes = [
+            'nome' => trim($dados['nome']),
+            'telefone' => trim($dados['telefone']),
+            'endereco' => trim($dados['endereco']),
+            'descricao' => trim((string) ($dados['descricao'] ?? '')),
+            'setor' => trim((string) ($dados['setor'] ?? '')) ?: null,
+            'website' => trim((string) ($dados['website'] ?? '')) ?: null,
+        ];
+        if (($dados['nova_senha'] ?? '') !== '') {
+            $alteracoes['senha'] = $dados['nova_senha'];
+        }
+
+        return $this->update($empresaId, $alteracoes);
+    }
+
+    /**
+     * RF07 — recebe o logo da empresa e substitui o anterior.
+     *
+     * @return string|null mensagem de erro, ou null quando o logo foi gravado
+     */
+    public function salvarLogo($empresaId, $arquivo)
+    {
+        $resultado = Arquivo::salvar($arquivo, Arquivo::LOGO, $empresaId);
+        if (isset($resultado['erro'])) {
+            return $resultado['erro'];
+        }
+
+        $anterior = $this->findById($empresaId)['logo_path'] ?? null;
+        parent::update($empresaId, ['logo_path' => $resultado['caminho']]);
+        Arquivo::remover($anterior);
+
+        return null;
+    }
+
+    /**
+     * RF13 / RN21 — currículo de um candidato, só para a empresa dona de uma
+     * vaga à qual ele se candidatou. Devolve o candidato (id, nome,
+     * curriculo_path) ou false.
+     */
+    public function getCurriculoDeCandidato($empresaId, $vagaId, $candidatoId)
+    {
+        $sql = "SELECT c.id, c.nome, c.curriculo_path
+                FROM candidaturas cv
+                JOIN candidatos c ON c.id = cv.candidato_id
+                JOIN vagas v ON v.id = cv.vaga_id
+                WHERE cv.vaga_id = ? AND cv.candidato_id = ? AND v.empresa_id = ?";
+        return $this->db->fetch($sql, [$vagaId, $candidatoId, $empresaId]);
+    }
+
     public function buscarPorEmail($email)
     {
         $sql = "SELECT * FROM {$this->table} WHERE email = ?";

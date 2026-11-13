@@ -121,6 +121,30 @@ abstract class Controller
         return $this->getSession('user_id') !== null;
     }
 
+    /**
+     * Entrega um arquivo de uploads/ a quem já teve a permissão conferida.
+     * $nome é o nome sugerido para download; sem ele, o arquivo é exibido.
+     */
+    protected function enviarArquivo($caminhoAbsoluto, $nome = null)
+    {
+        if ($caminhoAbsoluto === null) {
+            http_response_code(404);
+            echo 'Arquivo não encontrado.';
+            exit;
+        }
+
+        header('Content-Type: ' . (new \finfo(FILEINFO_MIME_TYPE))->file($caminhoAbsoluto));
+        header('Content-Length: ' . filesize($caminhoAbsoluto));
+        header('X-Content-Type-Options: nosniff');
+        if ($nome !== null) {
+            $extensao = pathinfo($caminhoAbsoluto, PATHINFO_EXTENSION);
+            $nome = trim(preg_replace('/[^A-Za-z0-9]+/', '_', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $nome)), '_');
+            header('Content-Disposition: attachment; filename="' . ($nome ?: 'arquivo') . '.' . $extensao . '"');
+        }
+        readfile($caminhoAbsoluto);
+        exit;
+    }
+
     protected function requireAuth()
     {
         if (!$this->isLoggedIn()) {

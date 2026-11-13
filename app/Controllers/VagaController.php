@@ -22,13 +22,8 @@ class VagaController extends Controller
     public function apiIndex()
     {
         header('Content-Type: application/json');
-        $busca = $this->getQuery('busca');
-        
-        if ($busca) {
-            $vagas = $this->vagaModel->buscarVagas($busca);
-        } else {
-            $vagas = $this->vagaModel->findAll();
-        }
+        $filtros = $this->filtrosDaBusca();
+        $vagas = $this->vagaModel->buscarVagas($filtros);
 
         echo json_encode($vagas);
         return null; // Retorna nulo para que o dispatcher não tente imprimir nada a mais
@@ -36,18 +31,27 @@ class VagaController extends Controller
 
     public function index()
     {
-        $busca = $this->getQuery('busca');
-        
-        if ($busca) {
-            $vagas = $this->vagaModel->buscarVagas($busca);
-        } else {
-            $vagas = $this->vagaModel->findAll();
-        }
+        $filtros = $this->filtrosDaBusca();
+        $vagas = $this->vagaModel->buscarVagas($filtros);
 
         return $this->render('vagas/index', [
             'vagas' => $vagas,
-            'busca' => $busca
+            'busca' => $filtros['busca'],
+            'filtros' => $filtros,
+            'tiposContrato' => Vaga::TIPOS_CONTRATO,
+            'modalidades' => Vaga::MODALIDADES
         ]);
+    }
+
+    /** RF12: filtros da busca de vagas, lidos da query string. */
+    private function filtrosDaBusca()
+    {
+        $filtros = [];
+        foreach (['busca', 'localizacao', 'tipo_contrato', 'modalidade'] as $campo) {
+            $filtros[$campo] = trim((string) $this->getQuery($campo, ''));
+        }
+
+        return $filtros;
     }
 
     public function show($id)
@@ -88,6 +92,11 @@ class VagaController extends Controller
         // RN14: não se recebe candidatura em vaga inativa ou fora do prazo.
         if (!$this->vagaModel->estaAtiva($this->vagaModel->findById($vagaId))) {
             $this->redirect('/vagas?error=vaga_indisponivel');
+        }
+
+        // RF13: a candidatura envia o currículo do perfil; sem ele, não há candidatura.
+        if (!$this->candidatoModel->temCurriculo($candidatoId)) {
+            $this->redirect('/perfil?error=curriculo_obrigatorio');
         }
 
         if ($this->candidatoModel->candidatarVaga($candidatoId, $vagaId)) {

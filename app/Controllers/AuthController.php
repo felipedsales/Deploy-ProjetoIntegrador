@@ -114,14 +114,17 @@ class AuthController extends Controller
                 'endereco' => $this->getPost('endereco')
             ];
 
-            // Verifica se o email já existe
-            if ($this->candidatoModel->buscarPorEmail($data['email'])) {
+            // RF01: validação no back-end (RN01, RN16) antes de gravar.
+            $erros = $this->candidatoModel->validarCadastro($data);
+            if ($erros) {
+                unset($data['senha']);
                 return $this->render('auth/register', [
-                    'error' => 'Este email já está cadastrado'
+                    'erros' => $erros,
+                    'dados' => $data
                 ]);
             }
 
-            $userId = $this->candidatoModel->create($data);
+            $userId = $this->candidatoModel->cadastrar($data);
             
             if ($userId) {
                 $this->setSession('user_id', $userId);
@@ -155,14 +158,17 @@ class AuthController extends Controller
                 'descricao' => $this->getPost('descricao')
             ];
 
-            // Verifica se o email já existe
-            if ($this->empresaModel->buscarPorEmail($data['email'])) {
+            // RF02: validação no back-end (RN01, RN16) antes de gravar.
+            $erros = $this->empresaModel->validarCadastro($data);
+            if ($erros) {
+                unset($data['senha']);
                 return $this->render('auth/register_empresa', [
-                    'error' => 'Este email já está cadastrado'
+                    'erros' => $erros,
+                    'dados' => $data + ['razao_social' => $data['nome']]
                 ]);
             }
 
-            $userId = $this->empresaModel->create($data);
+            $userId = $this->empresaModel->cadastrar($data);
             
             if ($userId) {
                 $this->setSession('user_id', $userId);

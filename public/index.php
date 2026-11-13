@@ -25,6 +25,7 @@ $router->get('/sobre', 'HomeController@sobre');
 // Rotas de empresas (públicas)
 $router->get('/empresas', 'EmpresaController@index');
 $router->get('/empresas/{id}', 'EmpresaController@show');
+$router->get('/empresas/{id}/logo', 'EmpresaController@logo');
 
 // Painel administrativo (RF03, RF16) — só perfil administrador (RN09)
 $router->get('/admin/login', 'AdminController@login');
@@ -76,10 +77,17 @@ $router->get('/minhas-candidaturas', 'CandidatoController@minhasCandidaturas');
 $router->get('/vagas-favoritas', 'CandidatoController@vagasFavoritas');
 $router->get('/perfil', 'CandidatoController@perfil');
 $router->post('/perfil/atualizar', 'CandidatoController@atualizarPerfil');
+$router->get('/perfil/curriculo', 'CandidatoController@baixarCurriculo');
+$router->post('/perfil/curriculo', 'CandidatoController@enviarCurriculo');
+$router->post('/perfil/curriculo/remover', 'CandidatoController@removerCurriculo');
 
 // Rotas de empresas (privadas)
 $router->get('/painel-empresa', 'EmpresaController@painel');
+$router->get('/empresa/perfil', 'EmpresaController@perfil');
+$router->post('/empresa/perfil', 'EmpresaController@atualizarPerfil');
+$router->post('/empresa/perfil/logo', 'EmpresaController@enviarLogo');
 $router->get('/empresa/vagas', 'EmpresaController@minhasVagas');
+$router->get('/empresa/vagas/{vagaId}/candidatos/{candidatoId}/curriculo', 'EmpresaController@baixarCurriculoCandidato');
 $router->get('/empresa/vagas/{id}/candidatos', 'EmpresaController@candidatosVaga');
 $router->post('/empresa/candidatos/status', 'EmpresaController@atualizarStatusCandidato');
 $router->post('/empresa/candidatos/remover', 'EmpresaController@removerCandidato');

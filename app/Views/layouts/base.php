@@ -56,6 +56,7 @@
                                     <li><a class="dropdown-item" href="/painel-empresa">Painel</a></li>
                                     <li><a class="dropdown-item" href="/empresa/vagas">Minhas Vagas</a></li>
                                     <li><a class="dropdown-item" href="/vagas/criar">Nova Vaga</a></li>
+                                    <li><a class="dropdown-item" href="/empresa/perfil">Perfil da Empresa</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="/logout">Sair</a></li>
                                 </ul>

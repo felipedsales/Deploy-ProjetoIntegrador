@@ -6,6 +6,10 @@ class Vaga extends Model
 {
     protected $table = 'vagas';
 
+    /** Domínios dos ENUMs de vagas, usados nos formulários e nos filtros da busca. */
+    public const TIPOS_CONTRATO = ['CLT', 'PJ', 'Freelance', 'Estágio'];
+    public const MODALIDADES = ['Presencial', 'Remoto', 'Híbrido'];
+
     /** RN14: validade mínima, em dias, do prazo de candidatura de uma vaga. */
     public const VALIDADE_MINIMA_DIAS = 7;
 
@@ -92,16 +96,45 @@ class Vaga extends Model
         return $this->db->fetchAll($sql, [$limit]);
     }
 
-    public function buscarVagas($termo)
+    /**
+     * RF12 / UC-C03 Pesquisar Vagas — busca com filtros combináveis (RN05):
+     * palavra-chave, localidade, tipo de contrato e modalidade. Só devolve vagas
+     * ativas e dentro do prazo (RN14). Filtro vazio ou com valor fora do
+     * domínio é ignorado.
+     */
+    public function buscarVagas($filtros)
     {
-        $sql = "SELECT v.*, e.nome as empresa_nome 
-                FROM {$this->table} v 
-                JOIN empresas e ON v.empresa_id = e.id 
-                WHERE (v.titulo LIKE ? OR v.descricao LIKE ?)
-                  AND " . self::CONDICAO_ATIVA . "
+        $condicoes = [self::CONDICAO_ATIVA];
+        $parametros = [];
+
+        $termo = trim((string) ($filtros['busca'] ?? ''));
+        if ($termo !== '') {
+            $condicoes[] = '(v.titulo LIKE ? OR v.descricao LIKE ? OR v.requisitos LIKE ?)';
+            array_push($parametros, "%{$termo}%", "%{$termo}%", "%{$termo}%");
+        }
+
+        $localizacao = trim((string) ($filtros['localizacao'] ?? ''));
+        if ($localizacao !== '') {
+            $condicoes[] = 'v.localizacao LIKE ?';
+            $parametros[] = "%{$localizacao}%";
+        }
+
+        if (in_array($filtros['tipo_contrato'] ?? '', self::TIPOS_CONTRATO, true)) {
+            $condicoes[] = 'v.tipo_contrato = ?';
+            $parametros[] = $filtros['tipo_contrato'];
+        }
+
+        if (in_array($filtros['modalidade'] ?? '', self::MODALIDADES, true)) {
+            $condicoes[] = 'v.modalidade = ?';
+            $parametros[] = $filtros['modalidade'];
+        }
+
+        $sql = "SELECT v.*, e.nome as empresa_nome
+                FROM {$this->table} v
+                JOIN empresas e ON v.empresa_id = e.id
+                WHERE " . implode(' AND ', $condicoes) . "
                 ORDER BY v.created_at DESC";
-        $termo = "%{$termo}%";
-        return $this->db->fetchAll($sql, [$termo, $termo]);
+        return $this->db->fetchAll($sql, $parametros);
     }
 
     public function getVagasPorEmpresa($empresaId)

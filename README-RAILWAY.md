@@ -132,6 +132,13 @@ migrations de `database/migrations/`, nesta ordem, **depois de um backup**:
 | `2026_11_12_escopo_v1.sql` | Cria `vagas.data_expiracao`, `administradores`, `favoritos`, `entrevistas` e `logs_auditoria` | **Manual**, uma única vez, no cliente MySQL do Railway. Aplicar junto com o deploy do código que usa a data de expiração. |
 | `2026_11_12_proteger_senhas.php` | Converte em hash as senhas que estavam em texto puro (RNF03) | **Automático**: o `docker/entrypoint.sh` executa a cada start do container. Só altera o que ainda não é hash. |
 
+### Arquivos enviados (currículos e logos)
+
+Currículos e logos são gravados em `uploads/`, dentro do container. **O disco do container
+é apagado a cada deploy**: sem um volume, os arquivos enviados se perdem e os candidatos
+precisam reenviar o currículo. Para manter os arquivos, crie um **Volume** no serviço do
+Railway montado em `/var/www/html/uploads`.
+
 ### Primeiro administrador
 
 O painel administrativo fica em `/admin/login`. Um administrador só é cadastrado por outro

@@ -172,7 +172,11 @@ Regras com **reflexo direto no banco**, que quem mexe em persistência precisa t
   `candidaturas` (ver o box **"RN04 em destaque"** na seção *Modelo de dados*).
 - **RN12 — histórico de candidaturas:** `candidaturas.data_candidatura` e
   `candidaturas.status` registram data/hora e situação de cada ação.
-- **RN16 — validação de formato:** CPF, CNPJ, e-mail e telefone validados na **camada de
+- **RF08 / RF07 — arquivos:** currículos e logos ficam em `uploads/`, fora de `public/`;
+  só saem por rota que confere a permissão (`App\Models\Arquivo`). `uploads/` não é
+  versionado.
+- **RF13 — candidatura:** exige currículo anexado ao perfil (`Candidato::temCurriculo`).
+- **RN16 — validação de formato** (`App\Models\Validador`)**:** CPF, CNPJ, e-mail e telefone validados na **camada de
   negócio do back-end**, não só no formulário.
 
 - **RN14 — visibilidade de vagas ativas:** só se exibe vaga com `vagas.data_expiracao`

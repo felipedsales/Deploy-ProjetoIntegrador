@@ -23,6 +23,126 @@ class Candidato extends Model
         return parent::update($id, $this->protegerSenha($data));
     }
 
+    /**
+     * RF01 / UC-C01 — valida o cadastro do candidato.
+     * RN01: e-mail único; RN16: formato de e-mail, telefone e CPF; senha segura.
+     *
+     * @return array mapa campo → mensagem; vazio quando está tudo certo
+     */
+    public function validarCadastro($dados)
+    {
+        $erros = $this->validarPerfil($dados);
+
+        if (!Validador::email($dados['email'] ?? '')) {
+            $erros['email'] = 'Informe um e-mail válido.';
+        } elseif ($this->buscarPorEmail(trim($dados['email']))) {
+            $erros['email'] = 'Este e-mail já está cadastrado.';
+        }
+
+        if (!Validador::senha($dados['senha'] ?? '')) {
+            $erros['senha'] = Validador::REGRA_SENHA;
+        }
+
+        if (!Validador::cpf($dados['cpf'] ?? '')) {
+            $erros['cpf'] = 'CPF inválido.';
+        } elseif ($this->db->fetch("SELECT id FROM {$this->table} WHERE cpf = ?", [Validador::formatarCpf($dados['cpf'])])) {
+            $erros['cpf'] = 'Este CPF já está cadastrado.';
+        }
+
+        $nascimento = \DateTime::createFromFormat('!Y-m-d', (string) ($dados['data_nascimento'] ?? ''));
+        if (!$nascimento || $nascimento->format('Y-m-d') !== $dados['data_nascimento'] || $nascimento >= new \DateTime('today')) {
+            $erros['data_nascimento'] = 'Informe uma data de nascimento válida.';
+        }
+
+        return $erros;
+    }
+
+    /**
+     * RF06 — valida os dados que o candidato pode alterar no perfil.
+     * A nova senha é opcional; quando vem, segue a regra de senha.
+     */
+    public function validarPerfil($dados)
+    {
+        $erros = [];
+
+        if (trim((string) ($dados['nome'] ?? '')) === '') {
+            $erros['nome'] = 'Informe o nome completo.';
+        }
+        if (!Validador::telefone($dados['telefone'] ?? '')) {
+            $erros['telefone'] = 'Informe um telefone válido, com DDD.';
+        }
+        if (trim((string) ($dados['endereco'] ?? '')) === '') {
+            $erros['endereco'] = 'Informe o endereço.';
+        }
+        if (($dados['nova_senha'] ?? '') !== '' && !Validador::senha($dados['nova_senha'])) {
+            $erros['nova_senha'] = Validador::REGRA_SENHA;
+        }
+
+        return $erros;
+    }
+
+    /** RF01 — grava o candidato com os dados já validados; CPF sempre no mesmo formato. */
+    public function cadastrar($dados)
+    {
+        return $this->create([
+            'nome' => trim($dados['nome']),
+            'email' => trim($dados['email']),
+            'senha' => $dados['senha'],
+            'telefone' => trim($dados['telefone']),
+            'cpf' => Validador::formatarCpf($dados['cpf']),
+            'data_nascimento' => $dados['data_nascimento'],
+            'endereco' => trim($dados['endereco']),
+        ]);
+    }
+
+    /** RF06 — grava as alterações de perfil já validadas. */
+    public function atualizarPerfil($candidatoId, $dados)
+    {
+        $alteracoes = [
+            'nome' => trim($dados['nome']),
+            'telefone' => trim($dados['telefone']),
+            'endereco' => trim($dados['endereco']),
+        ];
+        if (($dados['nova_senha'] ?? '') !== '') {
+            $alteracoes['senha'] = $dados['nova_senha'];
+        }
+
+        return $this->update($candidatoId, $alteracoes);
+    }
+
+    /**
+     * RF08 / RN02 — recebe o currículo (PDF, DOC ou DOCX) e substitui o anterior.
+     *
+     * @return string|null mensagem de erro, ou null quando o currículo foi gravado
+     */
+    public function salvarCurriculo($candidatoId, $arquivo)
+    {
+        $resultado = Arquivo::salvar($arquivo, Arquivo::CURRICULO, $candidatoId);
+        if (isset($resultado['erro'])) {
+            return $resultado['erro'];
+        }
+
+        $anterior = $this->findById($candidatoId)['curriculo_path'] ?? null;
+        parent::update($candidatoId, ['curriculo_path' => $resultado['caminho']]);
+        Arquivo::remover($anterior);
+
+        return null;
+    }
+
+    /** RN02 — o candidato pode excluir o currículo a qualquer momento. */
+    public function removerCurriculo($candidatoId)
+    {
+        $anterior = $this->findById($candidatoId)['curriculo_path'] ?? null;
+        parent::update($candidatoId, ['curriculo_path' => null]);
+        Arquivo::remover($anterior);
+    }
+
+    /** RF13: a candidatura exige currículo anexado ao perfil. */
+    public function temCurriculo($candidatoId)
+    {
+        return Arquivo::localizar($this->findById($candidatoId)['curriculo_path'] ?? null) !== null;
+    }
+
     public function buscarPorEmail($email)
     {
         $sql = "SELECT * FROM {$this->table} WHERE email = ?";

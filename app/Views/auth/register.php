@@ -16,16 +16,27 @@ $title = 'Cadastro - Ferraz Conecta';
                     <?php endif; ?>
 
 
+                    <?php if (!empty($erros)): ?>
+                        <div class="alert alert-danger">
+                            <strong>Confira os dados informados:</strong>
+                            <ul class="mb-0">
+                                <?php foreach ($erros as $mensagem): ?>
+                                    <li><?= htmlspecialchars($mensagem) ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    <?php endif; ?>
+
                     <form method="POST" action="/cadastro">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="nome" class="form-label required">Nome Completo</label>
-                                <input type="text" class="form-control" id="nome" name="nome" required>
+                                <input type="text" class="form-control" id="nome" name="nome" value="<?= htmlspecialchars($dados['nome'] ?? '') ?>" required>
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label for="email" class="form-label required">Email</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
+                                <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($dados['email'] ?? '') ?>" required>
                             </div>
                         </div>
 
@@ -38,25 +49,25 @@ $title = 'Cadastro - Ferraz Conecta';
 
                             <div class="col-md-6 mb-3">
                                 <label for="telefone" class="form-label required">Telefone</label>
-                                <input type="tel" class="form-control" id="telefone" name="telefone" required>
+                                <input type="tel" class="form-control" id="telefone" name="telefone" value="<?= htmlspecialchars($dados['telefone'] ?? '') ?>" required>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="cpf" class="form-label required">CPF</label>
-                                <input type="text" class="form-control" id="cpf" name="cpf" required>
+                                <input type="text" class="form-control" id="cpf" name="cpf" value="<?= htmlspecialchars($dados['cpf'] ?? '') ?>" required>
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label for="data_nascimento" class="form-label required">Data de Nascimento</label>
-                                <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" required>
+                                <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="<?= htmlspecialchars($dados['data_nascimento'] ?? '') ?>" required>
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="endereco" class="form-label required">Endereço</label>
-                            <textarea class="form-control" id="endereco" name="endereco" rows="3" required></textarea>
+                            <textarea class="form-control" id="endereco" name="endereco" rows="3" required><?= htmlspecialchars($dados['endereco'] ?? '') ?></textarea>
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100 mb-3">

@@ -9,6 +9,10 @@ $title = htmlspecialchars($empresa['nome'] ?? '') . ' - Ferraz Conecta';
         <div class="col-lg-8">
             <div class="empresa-detalhes">
                 <div class="empresa-header">
+                    <?php if (!empty($empresa['logo_path'])): ?>
+                        <img src="/empresas/<?= $empresa['id'] ?>/logo?v=<?= urlencode($empresa['logo_path']) ?>"
+                            alt="Logo de <?= htmlspecialchars($empresa['nome'] ?? '') ?>" style="max-height: 80px; max-width: 200px;" class="mb-2">
+                    <?php endif; ?>
                     <h1><?= htmlspecialchars($empresa['nome'] ?? '') ?></h1>
                     <span class="empresa-badge">
                         <i class="fas fa-building"></i> Empresa Parceira

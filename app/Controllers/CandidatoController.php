@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\Arquivo;
 use App\Models\Candidato;
 use App\Models\Entrevista;
 
@@ -64,15 +65,64 @@ class CandidatoController extends Controller
         $data = [
             'nome' => $this->getPost('nome'),
             'telefone' => $this->getPost('telefone'),
-            'endereco' => $this->getPost('endereco')
+            'endereco' => $this->getPost('endereco'),
+            'nova_senha' => (string) $this->getPost('nova_senha', '')
         ];
-        
-        // Se uma nova senha foi fornecida
-        if ($this->getPost('nova_senha')) {
-            $data['senha'] = $this->getPost('nova_senha');
+
+        // RF06: a validação (RN16) fica no Model.
+        $erros = $this->candidatoModel->validarPerfil($data);
+        if ($erros) {
+            unset($data['nova_senha']);
+            return $this->render('candidato/perfil', [
+                'candidato' => array_merge($this->candidatoModel->findById($candidatoId), $data),
+                'erros' => $erros
+            ]);
         }
-        
-        $this->candidatoModel->update($candidatoId, $data);
+
+        $this->candidatoModel->atualizarPerfil($candidatoId, $data);
+        $this->setSession('user_name', trim($data['nome']));
         $this->redirect('/perfil?status=perfil_atualizado');
+    }
+
+    /** RF08 / UC-C05 — envio do currículo (substitui o anterior). */
+    public function enviarCurriculo()
+    {
+        $this->requirePerfil('candidato');
+
+        if (!$this->isPost()) {
+            $this->redirect('/perfil');
+        }
+
+        $candidatoId = $this->getSession('user_id');
+        $erro = $this->candidatoModel->salvarCurriculo($candidatoId, $_FILES['curriculo'] ?? null);
+        if ($erro !== null) {
+            return $this->render('candidato/perfil', [
+                'candidato' => $this->candidatoModel->findById($candidatoId),
+                'erroCurriculo' => $erro
+            ]);
+        }
+
+        $this->redirect('/perfil?status=curriculo_enviado');
+    }
+
+    /** RN02 — o candidato exclui o próprio currículo. */
+    public function removerCurriculo()
+    {
+        $this->requirePerfil('candidato');
+
+        if ($this->isPost()) {
+            $this->candidatoModel->removerCurriculo($this->getSession('user_id'));
+        }
+
+        $this->redirect('/perfil?status=curriculo_removido');
+    }
+
+    /** O candidato baixa o próprio currículo. */
+    public function baixarCurriculo()
+    {
+        $this->requirePerfil('candidato');
+
+        $candidato = $this->candidatoModel->findById($this->getSession('user_id'));
+        $this->enviarArquivo(Arquivo::localizar($candidato['curriculo_path'] ?? null), 'curriculo_' . $candidato['nome']);
     }
 } 
