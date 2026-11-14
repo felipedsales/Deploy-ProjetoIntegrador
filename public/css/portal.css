@@ -4,6 +4,7 @@
     --fc-heading: #102544;
     --fc-blue: #065aba;
     --fc-line: #d5dee8;
+    --fc-brand: #0d6efd;
     --fc-paper: #f7f9fc;
 }
 body > main {
@@ -84,3 +85,9 @@ main .sobre-header p { margin-left: 0; }
     main .fc-directory-search { flex-direction: column; }
     main .alert.position-fixed { max-width: calc(100% - 40px); }
 }
+
+.navbar.bg-primary, footer.fc-footer {
+    background: var(--fc-brand) !important;
+}
+.fc-footer p { color: white; margin-bottom: .25rem; }
+.fc-footer p:last-child { margin-bottom: 0; }
