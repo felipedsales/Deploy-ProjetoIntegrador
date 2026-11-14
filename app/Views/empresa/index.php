@@ -2,31 +2,22 @@
 $title = 'Empresas - Ferraz Conecta';
 ?>
 
-<section class="search-section">
-    <div class="container">
-        <h1 class="page-title">Empresas Parceiras</h1>
-        <p class="page-subtitle">Conheça as empresas que fazem parte do Ferraz Conecta e oferecem oportunidades em nossa cidade.</p>
-        
-        <form action="/empresas" method="get" class="search-form">
-            <div class="input-group">
-                <input type="text" name="busca" class="form-control" placeholder="Digite o nome da empresa ou palavra-chave" value="<?= htmlspecialchars($busca ?? '') ?>">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-search"></i> Buscar Empresas
-                </button>
-            </div>
+<div class="container fc-directory">
+    <header>
+        <h1>Empresas parceiras</h1>
+        <p>Conheça as empresas que publicam oportunidades no Ferraz Conecta.</p>
+        <form action="/empresas" method="get" class="fc-directory-search">
+            <label for="busca-empresa" class="visually-hidden">Nome da empresa ou palavra-chave</label>
+            <input id="busca-empresa" type="search" name="busca" class="form-control" placeholder="Nome da empresa ou palavra-chave" value="<?= htmlspecialchars($busca ?? '') ?>">
+            <button type="submit" class="btn btn-primary">Buscar empresas</button>
         </form>
-    </div>
-</section>
-
+    </header>
 <div class="cards-container">
     <?php if (!empty($empresas)): ?>
         <?php foreach ($empresas as $empresa): ?>
             <div class="empresa-card">
                 <div class="empresa-header">
                     <h3><?= htmlspecialchars($empresa['nome'] ?? '') ?></h3>
-                    <span class="empresa-badge">
-                        <i class="fas fa-building"></i> Empresa
-                    </span>
                 </div>
 
                 <ul class="empresa-info">
@@ -68,4 +59,5 @@ $title = 'Empresas - Ferraz Conecta';
     <a href="/vagas" class="btn btn-outline-secondary">
         <i class="fas fa-briefcase"></i> Ver Vagas
     </a>
-</div> 
+</div>
+</div>

@@ -31,6 +31,9 @@ abstract class Controller
             
             // Se não for uma view completa (sem HTML), usa o layout
             if (!str_contains($content, '<!DOCTYPE html>')) {
+                if (isset($title)) {
+                    $data['title'] = $title;
+                }
                 return $this->renderWithLayout($content, $data);
             }
             

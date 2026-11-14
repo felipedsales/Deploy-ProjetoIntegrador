@@ -20,37 +20,39 @@ $title = 'Categorias de Vagas - Ferraz Conecta';
     <p class="text-muted">As empresas escolhem uma destas categorias ao cadastrar a vaga, e os candidatos filtram a busca por elas. Altere os nomes que quiser e salve tudo de uma vez.</p>
 
     <form method="POST" action="/admin/categorias" id="form-categorias">
-        <table class="table align-middle">
-            <thead>
-                <tr><th>Nome</th><th>Vagas</th><th></th></tr>
-            </thead>
-            <tbody>
-                <?php foreach ($categorias as $categoria): ?>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr><th>Nome</th><th>Vagas</th><th></th></tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($categorias as $categoria): ?>
+                        <tr>
+                            <td>
+                                <input type="text" class="form-control" name="nome[<?= $categoria['id'] ?>]" maxlength="100" required
+                                    aria-label="Nome da categoria"
+                                    value="<?= htmlspecialchars($enviado['nome'][$categoria['id']] ?? $categoria['nome']) ?>">
+                            </td>
+                            <td><?= (int) $categoria['total_vagas'] ?></td>
+                            <td class="text-end">
+                                <button type="submit" form="excluir-<?= $categoria['id'] ?>" class="btn btn-sm btn-outline-danger"
+                                    <?= (int) $categoria['total_vagas'] > 0 || count($categorias) <= 1 ? 'disabled title="Categoria em uso ou única do sistema"' : '' ?>>
+                                    Excluir
+                                </button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
                     <tr>
                         <td>
-                            <input type="text" class="form-control" name="nome[<?= $categoria['id'] ?>]" maxlength="100" required
-                                aria-label="Nome da categoria"
-                                value="<?= htmlspecialchars($enviado['nome'][$categoria['id']] ?? $categoria['nome']) ?>">
+                            <input type="text" class="form-control" name="nova" maxlength="100" placeholder="Nova categoria (opcional)"
+                                aria-label="Nova categoria" value="<?= htmlspecialchars($enviado['nova'] ?? '') ?>">
                         </td>
-                        <td><?= (int) $categoria['total_vagas'] ?></td>
-                        <td class="text-end">
-                            <button type="submit" form="excluir-<?= $categoria['id'] ?>" class="btn btn-sm btn-outline-danger"
-                                <?= (int) $categoria['total_vagas'] > 0 || count($categorias) <= 1 ? 'disabled title="Categoria em uso ou única do sistema"' : '' ?>>
-                                Excluir
-                            </button>
-                        </td>
+                        <td></td>
+                        <td></td>
                     </tr>
-                <?php endforeach; ?>
-                <tr>
-                    <td>
-                        <input type="text" class="form-control" name="nova" maxlength="100" placeholder="Nova categoria (opcional)"
-                            aria-label="Nova categoria" value="<?= htmlspecialchars($enviado['nova'] ?? '') ?>">
-                    </td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
         <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar categorias</button>
     </form>
 
