@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Models\Endereco;
+
 use App\Models\Candidato;
 use App\Models\Entrevista;
 
@@ -69,7 +71,7 @@ class CandidatoController extends Controller
         $data = [
             'nome' => $this->getPost('nome'),
             'telefone' => $this->getPost('telefone'),
-            'endereco' => $this->getPost('endereco'),
+            'campos_endereco' => Endereco::campos($_POST),
             'nova_senha' => (string) $this->getPost('nova_senha', '')
         ];
 

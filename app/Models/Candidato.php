@@ -71,14 +71,11 @@ class Candidato extends Model
         if (!Validador::telefone($dados['telefone'] ?? '')) {
             $erros['telefone'] = 'Informe um telefone válido, com DDD.';
         }
-        if (trim((string) ($dados['endereco'] ?? '')) === '') {
-            $erros['endereco'] = 'Informe o endereço.';
-        }
         if (($dados['nova_senha'] ?? '') !== '' && !Validador::senha($dados['nova_senha'])) {
             $erros['nova_senha'] = Validador::REGRA_SENHA;
         }
 
-        return $erros;
+        return $erros + Endereco::validar($dados['campos_endereco'] ?? []);
     }
 
     /** RF01 — grava o candidato com os dados já validados; CPF sempre no mesmo formato. */
@@ -91,7 +88,6 @@ class Candidato extends Model
             'telefone' => trim($dados['telefone']),
             'cpf' => Validador::formatarCpf($dados['cpf']),
             'data_nascimento' => $dados['data_nascimento'],
-            'endereco' => trim($dados['endereco']),
         ]);
     }
 
@@ -101,13 +97,12 @@ class Candidato extends Model
         $alteracoes = [
             'nome' => trim($dados['nome']),
             'telefone' => trim($dados['telefone']),
-            'endereco' => trim($dados['endereco']),
         ];
         if (($dados['nova_senha'] ?? '') !== '') {
             $alteracoes['senha'] = $dados['nova_senha'];
         }
 
-        return $this->update($candidatoId, $alteracoes);
+        return $this->update($candidatoId, $alteracoes + Endereco::paraGravar($dados['campos_endereco'] ?? []));
     }
 
     /**

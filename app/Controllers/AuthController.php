@@ -111,7 +111,6 @@ class AuthController extends Controller
                 'telefone' => $this->getPost('telefone'),
                 'cpf' => $this->getPost('cpf'),
                 'data_nascimento' => $this->getPost('data_nascimento'),
-                'endereco' => $this->getPost('endereco')
             ];
 
             // RF01: validação no back-end (RN01, RN16) antes de gravar.
@@ -155,7 +154,6 @@ class AuthController extends Controller
                 'senha' => $this->getPost('senha'),
                 'telefone' => $this->getPost('telefone'),
                 'cnpj' => $this->getPost('cnpj'),
-                'endereco' => $this->getPost('endereco'),
                 'descricao' => $this->getPost('descricao')
             ];
 

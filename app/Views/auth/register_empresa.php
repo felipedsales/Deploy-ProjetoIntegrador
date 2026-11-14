@@ -62,10 +62,6 @@ $title = 'Cadastro Empresa - Ferraz Conecta';
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="endereco" class="form-label required">Endereço</label>
-                            <textarea class="form-control" id="endereco" name="endereco" rows="3" required><?= htmlspecialchars($dados['endereco'] ?? '') ?></textarea>
-                        </div>
 
                         <div class="mb-3">
                             <label for="descricao" class="form-label">Descrição da Empresa</label>

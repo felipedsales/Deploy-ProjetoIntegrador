@@ -65,10 +65,6 @@ $title = 'Cadastro - Ferraz Conecta';
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="endereco" class="form-label required">Endereço</label>
-                            <textarea class="form-control" id="endereco" name="endereco" rows="3" required><?= htmlspecialchars($dados['endereco'] ?? '') ?></textarea>
-                        </div>
 
                         <button type="submit" class="btn btn-primary w-100 mb-3">
                             Criar Conta

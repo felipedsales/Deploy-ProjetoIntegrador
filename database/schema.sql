@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS candidatos (
     cpf VARCHAR(14) UNIQUE,
     data_nascimento DATE,
     endereco TEXT,
+    endereco_campos TEXT,
     -- RN18: conta suspensa pelo administrador não entra no sistema.
     status ENUM('Ativa', 'Suspensa') NOT NULL DEFAULT 'Ativa',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -44,6 +45,7 @@ CREATE TABLE IF NOT EXISTS empresas (
     cnpj VARCHAR(18) UNIQUE,
     telefone VARCHAR(20),
     endereco TEXT,
+    endereco_campos TEXT,
     descricao TEXT,
     setor VARCHAR(100),
     website VARCHAR(255),

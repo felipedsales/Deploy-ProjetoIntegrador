@@ -76,7 +76,7 @@ class Empresa extends Model
             $erros['nova_senha'] = Validador::REGRA_SENHA;
         }
 
-        return $erros;
+        return $erros + Endereco::validar($dados['campos_endereco'] ?? []);
     }
 
     private function validarDadosComuns($dados)
@@ -88,9 +88,6 @@ class Empresa extends Model
         }
         if (!Validador::telefone($dados['telefone'] ?? '')) {
             $erros['telefone'] = 'Informe um telefone válido, com DDD.';
-        }
-        if (trim((string) ($dados['endereco'] ?? '')) === '') {
-            $erros['endereco'] = 'Informe o endereço.';
         }
 
         return $erros;
@@ -106,7 +103,6 @@ class Empresa extends Model
             'senha' => $dados['senha'],
             'telefone' => trim($dados['telefone']),
             'cnpj' => Validador::formatarCnpj($dados['cnpj']),
-            'endereco' => trim($dados['endereco']),
             'descricao' => trim((string) ($dados['descricao'] ?? '')),
         ]);
     }
@@ -118,7 +114,6 @@ class Empresa extends Model
             'nome' => trim($dados['nome']),
             'responsavel' => trim((string) ($dados['responsavel'] ?? '')) ?: null,
             'telefone' => trim($dados['telefone']),
-            'endereco' => trim($dados['endereco']),
             'descricao' => trim((string) ($dados['descricao'] ?? '')),
             'setor' => trim((string) ($dados['setor'] ?? '')) ?: null,
             'website' => trim((string) ($dados['website'] ?? '')) ?: null,
@@ -127,7 +122,7 @@ class Empresa extends Model
             $alteracoes['senha'] = $dados['nova_senha'];
         }
 
-        return $this->update($empresaId, $alteracoes);
+        return $this->update($empresaId, $alteracoes + Endereco::paraGravar($dados['campos_endereco'] ?? []));
     }
 
     /**

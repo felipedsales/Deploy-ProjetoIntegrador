@@ -8,6 +8,8 @@
 
 ---
 
+**RF01, RF02, RF06 e RF07 — endereço.** Candidato e empresa criam a conta sem informar endereço. No perfil, o CEP preenche rua, bairro, cidade e UF quando disponíveis. A pessoa informa o número e pode completar os dados manualmente. Endereços antigos são preservados até a atualização.
+
 ## Como esta lista foi construída
 
 | Fonte | O que trouxe |
