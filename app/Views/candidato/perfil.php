@@ -81,10 +81,7 @@ $title = 'Meu Perfil - Ferraz Conecta';
                             <small class="text-muted">A data de nascimento não pode ser alterada</small>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="endereco" class="form-label required">Endereço</label>
-                            <textarea class="form-control" id="endereco" name="endereco" rows="3" required><?= htmlspecialchars($candidato['endereco'] ?? '') ?></textarea>
-                        </div>
+                        <?php $perfilEndereco = $candidato; include __DIR__ . '/../partials/endereco.php'; ?>
 
                         <div class="mb-3">
                             <label for="nova_senha" class="form-label">Nova Senha (opcional)</label>

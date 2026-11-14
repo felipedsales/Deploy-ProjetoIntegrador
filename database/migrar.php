@@ -75,6 +75,12 @@ foreach (array_filter(array_map('trim', explode(';', $schema))) as $comando) {
     }
 }
 
+foreach (['candidatos', 'empresas'] as $tabela) {
+    if (!$coluna($tabela, 'endereco_campos')) {
+        $aplicar("endereço por CEP em {$tabela}", "ALTER TABLE {$tabela} ADD COLUMN endereco_campos TEXT NULL");
+    }
+}
+
 // 2) RN14 — prazo de candidatura da vaga. As vagas que já existem recebem 30
 //    dias a partir de hoje; depois a coluna passa a ser obrigatória.
 $dataExpiracao = $coluna('vagas', 'data_expiracao');

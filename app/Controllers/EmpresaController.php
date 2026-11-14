@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Models\Endereco;
+
 use App\Models\Empresa;
 use App\Models\Entrevista;
 use App\Models\Vaga;
@@ -81,7 +83,7 @@ class EmpresaController extends Controller
             'nome' => $this->getPost('nome'),
             'responsavel' => $this->getPost('responsavel'),
             'telefone' => $this->getPost('telefone'),
-            'endereco' => $this->getPost('endereco'),
+            'campos_endereco' => Endereco::campos($_POST),
             'descricao' => $this->getPost('descricao'),
             'setor' => $this->getPost('setor'),
             'website' => $this->getPost('website'),

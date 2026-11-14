@@ -211,15 +211,6 @@ function validarFormularioCandidato(form) {
         removerErro(dataNascimento);
     }
     
-    // Validar endereço
-    const endereco = form.querySelector('#endereco');
-    if (endereco.value.trim().length < 10) {
-        mostrarErro(endereco, 'Endereço deve ter pelo menos 10 caracteres');
-        valido = false;
-    } else {
-        removerErro(endereco);
-    }
-    
     return valido;
 }
 
@@ -270,15 +261,6 @@ function validarFormularioEmpresa(form) {
         valido = false;
     } else {
         removerErro(cnpj);
-    }
-    
-    // Validar endereço
-    const endereco = form.querySelector('#endereco');
-    if (endereco.value.trim().length < 10) {
-        mostrarErro(endereco, 'Endereço deve ter pelo menos 10 caracteres');
-        valido = false;
-    } else {
-        removerErro(endereco);
     }
     
     return valido;

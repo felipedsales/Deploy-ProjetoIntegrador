@@ -79,10 +79,7 @@ $mensagens = [
                                 value="<?= htmlspecialchars($empresa['website'] ?? '') ?>" placeholder="https://">
                         </div>
 
-                        <div class="mb-3">
-                            <label for="endereco" class="form-label required">Endereço</label>
-                            <textarea class="form-control" id="endereco" name="endereco" rows="2" required><?= htmlspecialchars($empresa['endereco'] ?? '') ?></textarea>
-                        </div>
+                        <?php $perfilEndereco = $empresa; include __DIR__ . '/../partials/endereco.php'; ?>
 
                         <div class="mb-3">
                             <label for="descricao" class="form-label">Descrição institucional</label>
