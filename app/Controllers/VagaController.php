@@ -36,6 +36,7 @@ class VagaController extends Controller
         $vagas = $this->vagaModel->buscarVagas($filtros);
 
         return $this->render('vagas/index', [
+                'extraCSS' => '<link rel="stylesheet" href="/css/oportunidades.css">',
             'vagas' => $vagas,
             'busca' => $filtros['busca'],
             'filtros' => $filtros,

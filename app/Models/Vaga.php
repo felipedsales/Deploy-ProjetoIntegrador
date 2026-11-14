@@ -182,7 +182,8 @@ class Vaga extends Model
     public function getVagasDestaque($limit = 8)
     {
         // RN14: só vagas ativas e dentro do prazo.
-        $sql = "SELECT v.* FROM {$this->table} v
+        $sql = "SELECT v.*, e.nome AS empresa_nome FROM {$this->table} v
+                LEFT JOIN empresas e ON e.id = v.empresa_id
                 WHERE " . self::CONDICAO_ATIVA . "
                 ORDER BY v.id DESC LIMIT ?";
         return $this->db->fetchAll($sql, [$limit]);

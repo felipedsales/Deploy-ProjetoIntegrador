@@ -1,0 +1,55 @@
+main:has(.fc-page) { background: #f7f9fc; padding: 0; }
+.fc-page { max-width: 1180px; margin: auto; padding: 2.25rem clamp(1rem, 4vw, 3rem); color: #172b49; }
+.fc-page h1, .fc-page h2, .fc-page h3 { color: #102544; line-height: 1.14; letter-spacing: -.025em; margin: 0; }
+.fc-page h1 { font-size: clamp(2.25rem, 4vw, 3.75rem); font-weight: 750; }
+.fc-page h2 { font-size: clamp(1.5rem, 3vw, 2rem); }
+.fc-page section { padding: 2rem 0; }
+.fc-page h2::after { content: none; }
+.fc-page a { color: #0758b8; }
+.fc-page :focus-visible { outline: 3px solid #0758b8; outline-offset: 3px; }
+.fc-hero { display: grid; grid-template-columns: 1.12fr 1fr; align-items: center; gap: 2rem; }
+.fc-hero figure { margin: 0; }
+.fc-hero img { width: 100%; height: clamp(200px, 22vw, 310px); object-fit: cover; border-radius: 16px; }
+.fc-hero figcaption { margin-top: .4rem; font-size: .75rem; color: #4e5c6f; }
+.fc-intro p { font-size: 1.12rem; margin: .85rem 0 1.4rem; }
+.fc-search { display: flex; align-items: stretch; gap: .4rem; padding: .35rem; border: 1px solid #c6d3e0; background: white; border-radius: 10px; }
+.fc-search input { flex: 1; min-width: 0; padding: .55rem; border: 0; color: #172b49; background: white; }
+.fc-page button:not(.btn-close) { background: #065aba; color: white; border: 0; border-radius: 6px; padding: .65rem 1rem; font-weight: 600; }
+.fc-page button:not(.btn-close):hover { background: #004c9e; }
+.fc-heading, .fc-filter-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.fc-heading { margin-bottom: 1rem; }
+.fc-featured { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .85rem; }
+.fc-card, .fc-filters { background: white; border: 1px solid #d5dee8; border-radius: 10px; padding: 1.2rem; }
+.fc-card { min-width: 0; position: relative; overflow-wrap: anywhere; }
+.fc-card h3 { font-size: 1.22rem; padding-right: 2rem; }
+.fc-card h3 a { color: inherit; text-decoration: none; }
+.fc-card h3 a:hover { text-decoration: underline; }
+.fc-card h3 a::after { content: '→'; position: absolute; right: 1.2rem; color: #0758b8; }
+.fc-card p { margin: .35rem 0 .8rem; }
+.fc-meta { display: flex; flex-wrap: wrap; gap: .35rem 1rem; margin: 0; padding: 0; list-style: none; color: #44566a; font-size: .93rem; }
+.fc-meta li:first-child { color: #172b49; font-weight: 650; }
+.fc-card small { display: block; margin-top: .65rem; color: #536276; }
+.fc-stats { display: flex; justify-content: space-around; gap: 1rem; flex-wrap: wrap; background: #eaf2fc; border-radius: 10px; padding: 1rem; }
+.fc-stats div { display: flex; flex-direction: column-reverse; }
+.fc-stats dd { margin: 0; font-size: 1.4rem; font-weight: bold; }
+.fc-stats dt { font-size: .9rem; font-weight: 500; }
+.fc-board { display: grid; grid-template-columns: minmax(205px, .32fr) minmax(0, 1fr); grid-template-areas: 'filters search' 'filters results'; gap: 1rem 1.5rem; grid-template-rows: auto 1fr; align-items: start; margin-top: 1.5rem; }
+.fc-board form { grid-area: search; }
+.fc-filters { grid-area: filters; }
+.fc-filters summary { font-weight: 700; font-size: 1.1rem; cursor: pointer; }
+.fc-filters label { display: block; font-weight: 600; margin: 1rem 0 .3rem; }
+.fc-filters input, .fc-filters select { display: block; width: 100%; min-height: 44px; border-radius: 5px; border: 1px solid #acbbcb; background: white; color: #172b49; padding: .45rem; }
+.fc-filter-actions { margin-top: 1rem; flex-wrap: wrap; }
+.fc-results { grid-area: results; }
+.fc-results .fc-card + .fc-card { margin-top: .7rem; }
+@media (max-width: 720px) {
+    .fc-page { padding: 1.25rem 1rem; }
+    .fc-hero, .fc-featured { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+    .fc-hero img { height: 160px; }
+    .fc-heading { align-items: baseline; flex-wrap: wrap; gap: .5rem; }
+    .fc-board { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'search' 'filters' 'results'; grid-template-rows: auto; }
+    .fc-search { flex-wrap: wrap; }
+    .fc-search input { flex-basis: 12rem; }
+    .fc-search button { flex-grow: 1; }
+    .fc-stats { justify-content: flex-start; }
+}

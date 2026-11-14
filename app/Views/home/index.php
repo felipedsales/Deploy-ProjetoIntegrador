@@ -1,91 +1,32 @@
-<?php
-$title = 'Ferraz Conecta - Página Inicial';
-?>
-
-<div id="meuCarrossel" class="carousel slide" data-bs-ride="carousel">
-    <div class="carousel-indicators">
-        <button type="button" data-bs-target="#meuCarrossel" data-bs-slide-to="0" class="active"></button>
-        <button type="button" data-bs-target="#meuCarrossel" data-bs-slide-to="1"></button>
-        <button type="button" data-bs-target="#meuCarrossel" data-bs-slide-to="2"></button>
-    </div>
-
-    <div class="carousel-inner">
-        <div class="carousel-item active">
-            <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=2070&auto=format&fit=crop" alt="Pessoas em reunião de trabalho">
-            <div class="carousel-caption">
-                <h3>Bem-vindo ao Ferraz Conecta</h3>
-                <p>A ponte direta entre os talentos da nossa cidade e as oportunidades de emprego.</p>
-            </div>
-        </div>
-
-        <div class="carousel-item">
-            <img src="https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=1974&auto=format&fit=crop" alt="Profissionais colaborando em um escritório">
-            <div class="carousel-caption">
-                <h3>Empresas e Candidatos Conectados</h3>
-                <p>Fortalecendo a economia local e valorizando nossos profissionais.</p>
-            </div>
-        </div>
-
-        <div class="carousel-item">
-            <img src="/img/pexels-pixabay-279949.jpg" alt="Mão segurando uma lâmpada, simbolizando novas ideias e oportunidades">
-            <div class="carousel-caption">
-                <h3>Sua Próxima Oportunidade Começa Aqui</h3>
-                <p>Cadastre-se e encontre a vaga ideal para você.</p>
-            </div>
-        </div>
-    </div>
-
-    <button class="carousel-control-prev" type="button" data-bs-target="#meuCarrossel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon"></span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#meuCarrossel" data-bs-slide="next">
-        <span class="carousel-control-next-icon"></span>
-    </button>
-</div>
-
-<section class="secao-sobre" id="estatisticas">
-    <div class="estatisticas-container">
-        <div class="estatistica-item">
-            <div class="estatistica-numero"><?= $totalCandidatos ?></div>
-            <div class="estatistica-label">Candidatos Cadastrados</div>
-        </div>
-        <div class="estatistica-item">
-            <div class="estatistica-numero"><?= $totalEmpresas ?></div>
-            <div class="estatistica-label">Empresas Parceiras</div>
-        </div>
-        <div class="estatistica-item">
-            <div class="estatistica-numero"><?= $totalVagas ?></div>
-            <div class="estatistica-label">Vagas Disponíveis</div>
-        </div>
-    </div>
-</section>
-
-<div class="container">
-    <?php if(isset($_GET['status']) && $_GET['status'] == 'candidatura_sucesso'): ?>
-        <div class="alert alert-success">
-            <strong>Parabéns!</strong> Sua candidatura foi realizada com sucesso. Boa sorte!
-        </div>
+<div class="fc-page">
+    <?php if (($_GET['status'] ?? '') === 'candidatura_sucesso'): ?>
+        <p class="alert alert-success" role="status">Sua candidatura foi realizada com sucesso. Boa sorte!</p>
     <?php endif; ?>
-</div>
-
-<section aria-labelledby="destaque">
-    <h2 id="destaque" class="page-title">Vagas em Destaque</h2>
-    <div class="cards-container">
-        <?php if (!empty($vagasDestaque)): ?>
-            <?php foreach ($vagasDestaque as $vaga): ?>
-                <article class='card'>
-                    <h3><?= htmlspecialchars($vaga['titulo']) ?></h3>
-                    <ul class='details'>
-                        <li><strong>Salário: R$ </strong> <?= htmlspecialchars($vaga['salario']) ?></li>
-                        <li><strong>Localização:</strong> <?= htmlspecialchars($vaga['localizacao']) ?></li>
-                    </ul>
-                    <a href='/vagas/<?= $vaga['id'] ?>' class='btn btn-primary'>Ver mais</a>
-                </article>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <div class="no-results">
-                <p>Nenhuma vaga encontrada no sistema no momento.</p>
-            </div>
-        <?php endif; ?>
+    <div class="fc-hero">
+        <div class="fc-intro">
+            <h1>Encontre sua próxima vaga</h1>
+            <p>Oportunidades de trabalho em Ferraz de Vasconcelos e região.</p>
+            <form action="/vagas" method="get" class="fc-search">
+                <label class="visually-hidden" for="busca">Cargo ou palavra-chave</label>
+                <input id="busca" type="search" name="busca" placeholder="Digite o cargo ou palavra-chave">
+                <button>Buscar vagas</button>
+            </form>
+        </div>
+        <figure>
+            <img src="/img/estacao-ferraz.webp" alt="Trem na plataforma da estação de Ferraz de Vasconcelos" width="1050" height="700">
+            <figcaption>Estação Ferraz de Vasconcelos · <a href="https://commons.wikimedia.org/wiki/File:Esta%C3%A7%C3%A3o_Ferraz_de_Vasconcelos.jpg">Governo do Estado de São Paulo</a> · <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a> (recorte)</figcaption>
+        </figure>
     </div>
-</section> 
+    <section aria-labelledby="destaque">
+        <div class="fc-heading"><h2 id="destaque">Vagas em destaque</h2><a href="/vagas">Ver todas as vagas →</a></div>
+        <div class="fc-featured">
+            <?php foreach ($vagasDestaque as $vaga) include __DIR__ . '/../partials/vaga-resumo.php'; ?>
+        </div>
+        <?php if (!$vagasDestaque): ?><p>Nenhuma vaga disponível no momento.</p><?php endif; ?>
+    </section>
+    <dl class="fc-stats" id="estatisticas">
+        <?php foreach (['Candidatos cadastrados' => $totalCandidatos, 'Empresas parceiras' => $totalEmpresas, 'Vagas disponíveis' => $totalVagas] as $label => $total): ?>
+            <div><dt><?= $label ?></dt><dd><?= (int) $total ?></dd></div>
+        <?php endforeach; ?>
+    </dl>
+</div>
