@@ -97,15 +97,6 @@
                         <li class="nav-item">
                             <a class="nav-link" href="/login">Entrar</a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="cadastroDropdown" role="button" data-bs-toggle="dropdown">
-                                Cadastrar
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="/cadastro">Candidato</a></li>
-                                <li><a class="dropdown-item" href="/cadastro-empresa">Empresa</a></li>
-                            </ul>
-                        </li>
                     <?php endif; ?>
                 </ul>
             </div>
@@ -117,9 +108,9 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-4 mt-5">
+    <footer class="fc-footer text-white text-center py-4 mt-5">
         <div class="container">
-            <p>&copy; 2024 Ferraz Conecta. Todos os direitos reservados.</p>
+            <p>&copy; <?= (new DateTimeImmutable('now', new DateTimeZone('America/Sao_Paulo')))->format('Y') ?> Ferraz Conecta. Todos os direitos reservados.</p>
             <p>Desenvolvido para a cidade de Ferraz de Vasconcelos</p>
         </div>
     </footer>

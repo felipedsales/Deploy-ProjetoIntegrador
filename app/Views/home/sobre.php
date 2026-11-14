@@ -63,4 +63,20 @@
       </div>
   </section>
 
+  <section class="secao-sobre" id="ods" aria-labelledby="titulo-ods">
+    <h2 id="titulo-ods">Objetivos de Desenvolvimento Sustentável</h2>
+    <p>O Ferraz Conecta se relaciona com dois objetivos da Agenda 2030 da ONU por meio da busca gratuita de vagas e da divulgação de oportunidades na região.</p>
+    <div class="info-grid-container">
+      <article class="info-item">
+        <h3>ODS 8 · Trabalho decente e crescimento econômico</h3>
+        <p>Quem procura emprego pode consultar o tipo de contrato, comparar salários quando informados e enviar sua candidatura. Aproximar candidatos e empregadores é a contribuição do projeto para a dimensão de acesso ao emprego da meta 8.5.</p>
+        <a href="https://brasil.un.org/pt-br/sdgs/8">Conheça o ODS 8 na ONU Brasil</a>
+      </article>
+      <article class="info-item">
+        <h3>ODS 10 · Redução das desigualdades</h3>
+        <p>Qualquer pessoa pode consultar as vagas gratuitamente, antes mesmo de criar uma conta. Reunir os anúncios em um local público facilita a busca para quem tem poucos contatos profissionais e se alinha à inclusão econômica prevista na meta 10.2.</p>
+        <a href="https://brasil.un.org/pt-br/sdgs/10">Conheça o ODS 10 na ONU Brasil</a>
+      </article>
+    </div>
+  </section>
 </div>
