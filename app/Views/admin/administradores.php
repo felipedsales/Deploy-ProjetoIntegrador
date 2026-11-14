@@ -9,20 +9,22 @@ $title = 'Administradores - Ferraz Conecta';
 
     <div class="row">
         <div class="col-lg-7 mb-4">
-            <table class="table align-middle">
-                <thead>
-                    <tr><th>Nome</th><th>Email</th><th>Cadastro</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($administradores as $administrador): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($administrador['nome']) ?></td>
-                            <td><?= htmlspecialchars($administrador['email']) ?></td>
-                            <td><?= date('d/m/Y', strtotime($administrador['created_at'])) ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr><th>Nome</th><th>Email</th><th>Cadastro</th></tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($administradores as $administrador): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($administrador['nome']) ?></td>
+                                <td><?= htmlspecialchars($administrador['email']) ?></td>
+                                <td><?= date('d/m/Y', strtotime($administrador['created_at'])) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="col-lg-5">

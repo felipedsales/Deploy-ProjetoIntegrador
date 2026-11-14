@@ -1,6 +1,6 @@
 <?php $title = 'Sobre - Ferraz Conecta'; ?>
 
-<main>
+<div class="container fc-about">
   <header class="sobre-header">
     <h1>Sobre o Ferraz Conecta</h1>
     <p>Conectando talentos e oportunidades em Ferraz de Vasconcelos</p>
@@ -8,7 +8,7 @@
 
   <section class="secao-sobre" id="proposta">
     <h2>Nossa Proposta</h2>
-    <p style="font-size: 1.1em; text-align: justify; line-height: 1.6;">
+    <p>
       O projeto Ferraz Conecta nasceu da percepção de uma necessidade clara em nossa cidade: criar uma ponte direta, eficiente e gratuita entre os cidadãos em busca de uma colocação profissional e as empresas locais que necessitam de mão de obra qualificada. Nossa proposta é usar a tecnologia como uma ferramenta de transformação social, criando um ecossistema de emprego centralizado que fortalece a economia local, valoriza nossos talentos e contribui para o desenvolvimento sustentável de Ferraz de Vasconcelos.
     </p>
   </section>
@@ -18,11 +18,11 @@
      <div class="missao-visao-container"> 
         <div class="info-item">
             <h3>Missão</h3>
-            <p style="text-align: justify;">Fortalecer a comunidade de Ferraz de Vasconcelos, facilitando o encontro entre os talentos da nossa cidade e as empresas locais, construindo uma cidade mais próspera e com mais qualidade de vida para todos.</p>
+            <p>Fortalecer a comunidade de Ferraz de Vasconcelos, facilitando o encontro entre os talentos da nossa cidade e as empresas locais, construindo uma cidade mais próspera e com mais qualidade de vida para todos.</p>
         </div>
         <div class="info-item">
             <h3>Visão</h3>
-            <p style="text-align: justify;">Ser a principal referência de empregabilidade em Ferraz de Vasconcelos, transformando o cenário profissional da cidade e sendo um catalisador para o crescimento econômico e social da nossa região.</p>
+            <p>Ser a principal referência de empregabilidade em Ferraz de Vasconcelos, transformando o cenário profissional da cidade e sendo um catalisador para o crescimento econômico e social da nossa região.</p>
         </div>
      </div>
   </section>
@@ -63,4 +63,4 @@
       </div>
   </section>
 
-</main> 
+</div>

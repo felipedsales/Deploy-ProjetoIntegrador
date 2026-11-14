@@ -1,0 +1,86 @@
+/* Elementos compartilhados das páginas MVC. As telas de busca têm seu próprio layout. */
+:root {
+    --fc-ink: #172b49;
+    --fc-heading: #102544;
+    --fc-blue: #065aba;
+    --fc-line: #d5dee8;
+    --fc-paper: #f7f9fc;
+}
+body > main {
+    background: var(--fc-paper);
+    color: var(--fc-ink);
+    padding: 0 0 2.5rem;
+}
+main > .container {
+    max-width: 1180px;
+    padding-inline: clamp(1rem, 4vw, 3rem);
+    overflow-wrap: anywhere;
+}
+main > .container:first-child { margin-top: clamp(1.5rem, 4vw, 3rem); }
+main :is(h1, h2, h3, h4, h5) { color: var(--fc-heading); letter-spacing: -.025em; }
+main :is(h1, .container > h2) { font-weight: 700; line-height: 1.15; }
+main h1 { font-size: clamp(2rem, 4vw, 3rem); }
+main .card, main .empresa-card, main .empresa-detalhes, main .vagas-empresa, main .info-item {
+    min-width: 0;
+    border: 1px solid var(--fc-line);
+    border-radius: 10px;
+    background: white;
+    box-shadow: none !important;
+    transform: none;
+}
+main .card { padding: 0; }
+main .card-body, main .empresa-card, main .info-item { padding: clamp(1rem, 2.5vw, 1.6rem); }
+main .cards-container {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    gap: 1rem;
+    padding: 0;
+}
+main .card-header, main .vagas-empresa .vagas-header {
+    background: #eaf2fc;
+    color: var(--fc-heading);
+    border-bottom: 1px solid var(--fc-line);
+}
+main .card .details li, main .empresa-card .empresa-info li { color: #44566a; }
+main .btn { border-radius: 6px; font-weight: 600; }
+main .btn-primary { background: var(--fc-blue); border-color: var(--fc-blue); color: white; }
+main .btn-primary:hover { background: #004c9e; }
+main .form-label { font-weight: 600; color: var(--fc-ink); }
+main :is(.form-control, .form-select) { border-radius: 6px; border-color: #acbbcb; }
+main :is(.form-control, .form-select):not(textarea) { min-height: 44px; }
+main :focus-visible { outline: 3px solid var(--fc-blue); outline-offset: 2px; }
+main .table-responsive { background: white; border: 1px solid var(--fc-line); border-radius: 10px; margin-bottom: 1rem; }
+main .table-responsive .table { color: var(--fc-ink); margin: 0; }
+main .table thead th { background: #eaf2fc; color: var(--fc-heading); padding-block: .8rem; }
+main .table :is(td, th) { padding-inline: .85rem; }
+main .fc-directory-search {
+    display: flex;
+    max-width: 38rem;
+    gap: .5rem;
+    margin: 1rem 0 1.5rem;
+}
+.fc-directory-search input { min-width: 0; }
+.fc-directory-search button { flex-shrink: 0; }
+main .empresa-detalhes .empresa-header { text-align: left; background: #eaf2fc; color: var(--fc-heading); }
+main .empresa-detalhes .empresa-header h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+main .empresa-detalhes .empresa-header .empresa-badge { background: white; color: var(--fc-ink); }
+main .empresa-detalhes .empresa-info-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); }
+main .sobre-header { background: transparent; color: var(--fc-ink); box-shadow: none; padding: 0; text-align: left; margin-bottom: 2rem; }
+main .sobre-header h1 { font-size: clamp(2rem, 4vw, 3rem); text-shadow: none; }
+main .sobre-header p { margin-left: 0; }
+.fc-about .secao-sobre { padding: 0; margin: 0 0 2rem; }
+.fc-about .secao-sobre > p { max-width: 78ch; line-height: 1.7; }
+.fc-about .secao-sobre h2 { font-size: 1.6rem; text-align: left; margin-bottom: 1rem; }
+.fc-about .secao-sobre h2::after, .fc-about .info-item::before { content: none; }
+.fc-about :is(.missao-visao-container, .info-grid-container) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 1rem;
+}
+.fc-about .info-item :is(h3, h4) { color: var(--fc-heading); font-size: 1.2rem; }
+@media (max-width: 720px) {
+    main .container :is(.d-flex, .btn-group), main .vaga-meta { flex-wrap: wrap; row-gap: .5rem; }
+    main .btn-group { gap: .35rem; }
+    main .btn-group > .btn { border-radius: 6px !important; }
+    main .fc-directory-search { flex-direction: column; }
+    main .alert.position-fixed { max-width: calc(100% - 40px); }
+}

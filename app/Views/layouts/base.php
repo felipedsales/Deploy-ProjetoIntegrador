@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?? 'Ferraz Conecta' ?></title>
+    <title><?= htmlspecialchars($title ?? 'Ferraz Conecta') ?></title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -14,6 +14,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/portal.css">
     
     <?php if (isset($extraCSS)): ?>
         <?= $extraCSS ?>
@@ -28,7 +29,7 @@
                 Ferraz Conecta
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Abrir ou fechar navegação">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
