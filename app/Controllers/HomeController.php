@@ -50,6 +50,7 @@ class HomeController extends Controller
             $totalVagas = $this->vagaModel->getEstatisticas();
 
             return $this->render('home/index', [
+                'extraCSS' => '<link rel="stylesheet" href="/css/oportunidades.css">',
                 'vagasDestaque' => $vagasDestaque,
                 'totalCandidatos' => $totalCandidatos,
                 'totalEmpresas' => $totalEmpresas,

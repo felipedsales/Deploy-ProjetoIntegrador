@@ -1,111 +1,59 @@
 <?php
-$title = 'Vagas - Ferraz Conecta';
+$opcoes = [
+    'tipo_contrato' => ['Tipo de contrato', array_combine($tiposContrato, $tiposContrato)],
+    'modalidade' => ['Modalidade', array_combine($modalidades, $modalidades)],
+    'categoria_id' => ['Área', array_column($categorias, 'nome', 'id')],
+    'nivel_experiencia' => ['Experiência', array_combine($niveisExperiencia, $niveisExperiencia)],
+];
+$avisos = [
+    'vaga_indisponivel' => 'Esta vaga não está mais disponível.',
+    'ja_candidatado' => 'Você já se candidatou a esta vaga anteriormente.',
+];
+$erro = $_GET['error'] ?? '';
+$mostrarData = true;
 ?>
-
-<section class="search-section">
-    <div class="container">
-        <h1 class="page-title">Nossas Vagas Abertas</h1>
-        <p class="page-subtitle">Encontre a oportunidade ideal para você em Ferraz de Vasconcelos.</p>
-        
-        <form action="/vagas" method="get" class="search-form">
-            <div class="input-group">
-                <input type="text" name="busca" class="form-control" placeholder="Digite o cargo ou palavra-chave" aria-label="Cargo ou palavra-chave" value="<?= htmlspecialchars($busca ?? '') ?>">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-search"></i> Buscar Vagas
-                </button>
-            </div>
-
-            <div class="row g-2 mt-2">
-                <div class="col-md-4">
-                    <input type="text" name="localizacao" class="form-control" placeholder="Localidade" aria-label="Localidade"
-                        value="<?= htmlspecialchars($filtros['localizacao'] ?? '') ?>">
-                </div>
-                <div class="col-md-3">
-                    <select name="tipo_contrato" class="form-select" aria-label="Tipo de contrato">
-                        <option value="">Tipo de contrato</option>
-                        <?php foreach ($tiposContrato ?? [] as $tipo): ?>
-                            <option value="<?= $tipo ?>" <?= ($filtros['tipo_contrato'] ?? '') === $tipo ? 'selected' : '' ?>><?= $tipo ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select name="modalidade" class="form-select" aria-label="Modalidade de trabalho">
-                        <option value="">Modalidade</option>
-                        <?php foreach ($modalidades ?? [] as $modalidade): ?>
-                            <option value="<?= $modalidade ?>" <?= ($filtros['modalidade'] ?? '') === $modalidade ? 'selected' : '' ?>><?= $modalidade ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <a href="/vagas" class="btn btn-outline-secondary w-100">Limpar</a>
-                </div>
-                <div class="col-md-4">
-                    <select name="categoria_id" class="form-select" aria-label="Área">
-                        <option value="">Área</option>
-                        <?php foreach ($categorias ?? [] as $categoria): ?>
-                            <option value="<?= $categoria['id'] ?>" <?= (string) ($filtros['categoria_id'] ?? '') === (string) $categoria['id'] ? 'selected' : '' ?>><?= htmlspecialchars($categoria['nome']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select name="nivel_experiencia" class="form-select" aria-label="Nível de experiência">
-                        <option value="">Experiência</option>
-                        <?php foreach ($niveisExperiencia ?? [] as $nivel): ?>
-                            <option value="<?= $nivel ?>" <?= ($filtros['nivel_experiencia'] ?? '') === $nivel ? 'selected' : '' ?>><?= $nivel ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            </div>
-        </form>
-    </div>
-</section>
-
-<?php if (isset($_GET['error']) && $_GET['error'] === 'vaga_indisponivel'): ?>
-    <div class="container">
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-triangle"></i>
-            Esta vaga não está mais disponível.
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    </div>
-<?php endif; ?>
-
-<?php if (isset($_GET['error']) && $_GET['error'] === 'ja_candidatado'): ?>
-    <div class="container">
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-triangle"></i>
-            Você já se candidatou a esta vaga anteriormente.
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    </div>
-<?php endif; ?>
-
-<div class="cards-container">
-    <?php if (!empty($vagas)): ?>
-        <?php foreach ($vagas as $vaga): ?>
-            <article class='card'>
-                <h3><?= htmlspecialchars($vaga['titulo'] ?? '') ?></h3>
-                <ul class='details'>
-                    <li><strong>Empresa:</strong> <?= htmlspecialchars($vaga['empresa_nome'] ?? 'Não informado') ?></li>
-                    <li><strong>Salário:</strong> <?= $this->formatMoney($vaga['salario'] ?? null) ?></li>
-                    <li><strong>Localização:</strong> <?= htmlspecialchars($vaga['localizacao'] ?? 'Não informado') ?></li>
-                    <li><strong>Contrato:</strong> <?= htmlspecialchars($vaga['tipo_contrato'] ?? 'Não informado') ?></li>
-                    <li><strong>Modalidade:</strong> <?= htmlspecialchars($vaga['modalidade'] ?? 'Não informado') ?></li>
-                    <?php if (!empty($vaga['created_at'])): ?>
-                        <li><strong>Publicada em:</strong> <?= date('d/m/Y', strtotime($vaga['created_at'])) ?></li>
-                    <?php endif; ?>
-                </ul>
-                <a href='/vagas/<?= $vaga['id'] ?? '' ?>' class='btn btn-primary'>Ver mais</a>
-            </article>
-        <?php endforeach; ?>
-    <?php else: ?>
-        <div class="no-results">
-            <?php if (array_filter($filtros ?? [])): ?>
-                <p>Nenhuma vaga encontrada com os filtros informados.</p>
-                <p><a href="/vagas" class="btn btn-primary">Ver todas as vagas</a></p>
-            <?php else: ?>
-                <p>Nenhuma vaga cadastrada no sistema no momento.</p>
-            <?php endif; ?>
+<div class="fc-page">
+    <h1>Vagas abertas</h1>
+    <?php if (is_string($erro) && isset($avisos[$erro])): ?>
+        <div class="alert alert-warning alert-dismissible" role="alert"><?= $avisos[$erro] ?>
+            <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Fechar"></button>
         </div>
     <?php endif; ?>
-</div> 
+    <div class="fc-board">
+        <form id="pesquisa" class="fc-search" action="/vagas" method="get">
+            <label class="visually-hidden" for="busca">Cargo ou palavra-chave</label>
+            <input id="busca" type="search" name="busca" placeholder="Digite o cargo ou palavra-chave" value="<?= htmlspecialchars($busca ?? '') ?>">
+            <button>Buscar vagas</button>
+        </form>
+        <details class="fc-filters" open>
+            <summary>Filtros</summary>
+            <label for="localizacao">Localidade</label>
+            <input id="localizacao" form="pesquisa" name="localizacao" value="<?= htmlspecialchars($filtros['localizacao'] ?? '') ?>" placeholder="Cidade ou região">
+            <?php foreach ($opcoes as $campo => [$label, $valores]): ?>
+                <label for="<?= $campo ?>"><?= $label ?></label>
+                <select id="<?= $campo ?>" name="<?= $campo ?>" form="pesquisa">
+                    <option value="">Todas as opções</option>
+                    <?php foreach ($valores as $valor => $nome): ?>
+                        <option value="<?= htmlspecialchars((string) $valor) ?>" <?= (string) ($filtros[$campo] ?? '') === (string) $valor ? 'selected' : '' ?>><?= htmlspecialchars($nome) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            <?php endforeach; ?>
+            <div class="fc-filter-actions"><button form="pesquisa">Aplicar filtros</button><a href="/vagas">Limpar</a></div>
+        </details>
+        <div class="fc-results">
+            <p><?= count($vagas) ?> <?= count($vagas) === 1 ? 'vaga encontrada' : 'vagas encontradas' ?></p>
+            <?php foreach ($vagas as $vaga) include __DIR__ . '/../partials/vaga-resumo.php'; ?>
+            <?php if (!$vagas): ?>
+                <?php if (array_filter($filtros)): ?><p>Tente outro cargo ou <a href="/vagas">limpe os filtros</a>.</p>
+                <?php else: ?><p>Nenhuma vaga disponível no momento.</p><?php endif; ?>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+<script>
+    const telaEstreita = window.matchMedia('(max-width: 720px)');
+    const filtrosVagas = document.querySelector('.fc-filters');
+    function ajustarFiltros() { filtrosVagas.open = !telaEstreita.matches; }
+    ajustarFiltros();
+    telaEstreita.addEventListener('change', ajustarFiltros);
+</script>
