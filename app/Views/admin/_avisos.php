@@ -9,5 +9,7 @@
     <a href="/admin/vagas" class="btn btn-sm btn-outline-secondary">Vagas</a>
     <a href="/admin/usuarios" class="btn btn-sm btn-outline-secondary">Usuários</a>
     <a href="/admin/categorias" class="btn btn-sm btn-outline-secondary">Categorias</a>
+    <a href="/admin/suporte" class="btn btn-sm btn-outline-secondary">Suporte</a>
+    <a href="/admin/logs" class="btn btn-sm btn-outline-secondary">Logs</a>
     <a href="/admin/administradores" class="btn btn-sm btn-outline-secondary">Administradores</a>
 </nav>

@@ -49,6 +49,9 @@ $title = 'Minhas Candidaturas - Ferraz Conecta';
                                 <a href="/vagas/<?= $candidatura['vaga_id'] ?? $candidatura['id'] ?>" class="btn btn-outline-primary">
                                     <i class="fas fa-eye"></i> Ver Vaga
                                 </a>
+                                <a href="/candidaturas/<?= $candidatura['candidatura_id'] ?>/conversa" class="btn btn-outline-secondary">
+                                    <i class="fas fa-comments"></i> Mensagens e avaliação
+                                </a>
                                 
                                 <form method="POST" action="/vagas/desistir" class="d-inline" 
                                     onsubmit="return confirm('Tem certeza que deseja desistir desta candidatura?')">

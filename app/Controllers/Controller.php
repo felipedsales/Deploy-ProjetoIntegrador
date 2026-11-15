@@ -46,6 +46,16 @@ abstract class Controller
 
     protected function renderWithLayout($content, $data = [])
     {
+        // RF14: quantidade de notificações não lidas, exibida no menu.
+        if (in_array($_SESSION['user_type'] ?? '', ['candidato', 'empresa'], true) && isset($_SESSION['user_id'])) {
+            try {
+                $data['notificacoesNaoLidas'] = (new \App\Models\Notificacao())
+                    ->contarNaoLidas($_SESSION['user_type'], $_SESSION['user_id']);
+            } catch (\Throwable $e) {
+                $data['notificacoesNaoLidas'] = 0; // o menu não pode derrubar a página
+            }
+        }
+
         // Extrai os dados para variáveis
         extract($data);
         

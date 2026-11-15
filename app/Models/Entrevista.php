@@ -81,6 +81,16 @@ class Entrevista extends Model
             ]);
         }
 
+        // RF14: o candidato é avisado do agendamento ou do reagendamento.
+        $vaga = $this->db->fetch("SELECT titulo FROM vagas WHERE id = ?", [$vagaId]);
+        (new Notificacao())->criar(
+            'candidato',
+            $candidatoId,
+            $atual ? 'Entrevista reagendada' : 'Entrevista agendada',
+            "Entrevista para a vaga \"{$vaga['titulo']}\" em " . $dataHora->format('d/m/Y \\à\\s H:i') . ". Local: {$local}",
+            '/minhas-candidaturas'
+        );
+
         return [];
     }
 
@@ -108,7 +118,24 @@ class Entrevista extends Model
     /** Cancela uma entrevista agendada de uma vaga da empresa. */
     public function cancelar($empresaId, $entrevistaId)
     {
-        return $this->encerrar($empresaId, $entrevistaId, 'Cancelada', '');
+        $cancelada = $this->encerrar($empresaId, $entrevistaId, 'Cancelada', '');
+
+        // RF14: o candidato é avisado do cancelamento.
+        if ($cancelada) {
+            $entrevista = $this->db->fetch(
+                "SELECT e.candidato_id, v.titulo FROM {$this->table} e JOIN vagas v ON v.id = e.vaga_id WHERE e.id = ?",
+                [$entrevistaId]
+            );
+            (new Notificacao())->criar(
+                'candidato',
+                $entrevista['candidato_id'],
+                'Entrevista cancelada',
+                "A entrevista para a vaga \"{$entrevista['titulo']}\" foi cancelada pela empresa.",
+                '/minhas-candidaturas'
+            );
+        }
+
+        return $cancelada;
     }
 
     /** Marca como realizada uma entrevista agendada cujo horário já chegou. */

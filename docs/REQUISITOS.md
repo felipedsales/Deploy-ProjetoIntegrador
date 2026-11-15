@@ -88,17 +88,17 @@ O que ficou fora está detalhado em **`IMPLEMENTACOES_FUTURAS.md`**.
 | RF11 | Edição/Exclusão de Vagas | Permitido com histórico de alterações. | **v1** + ✅ histórico de alterações (lote 1) |
 | RF12 | Busca de Vagas com Filtros | Filtros por área, localidade, tipo, experiência e modelo de trabalho. | **v1** + ✅ filtros por área (categoria) e por experiência (lote 1) |
 | RF13 | Candidatura em Vagas | Envio de currículo e/ou carta de apresentação. | **v1** — só currículo; carta de apresentação fica no RF09 |
-| RF14 | Notificações de Vagas | Vagas relevantes com base em perfil e histórico de candidaturas. | Futuro |
-| RF15 | Feedback e Avaliação | Feedback pós-processo e avaliações por candidatos e empresas. | Futuro |
-| RF16 | Painel Administrativo | Gestão de usuários, vagas, denúncias e logs do sistema. | **v1** — moderação de denúncias, vagas e usuários; sem logs do sistema |
-| RF17 | Suporte ao Usuário | Chatbot e formulário com acompanhamento de ticket. | Futuro |
+| RF14 | Notificações de Vagas | Vagas relevantes com base em perfil e histórico de candidaturas. | ✅ Entregue (lote 2) — notificações na plataforma; push fica para o app mobile |
+| RF15 | Feedback e Avaliação | Feedback pós-processo e avaliações por candidatos e empresas. | ✅ Entregue (lote 2) |
+| RF16 | Painel Administrativo | Gestão de usuários, vagas, denúncias e logs do sistema. | **v1** + ✅ relatório de logs com exportação CSV (lote 2) |
+| RF17 | Suporte ao Usuário | Chatbot e formulário com acompanhamento de ticket. | ✅ Entregue (lote 2) — formulário com acompanhamento; sem chatbot |
 | RF18 | Histórico de Candidaturas | Status atualizado e mensagens da empresa. | **v1** — só status; mensagens da empresa ficam no RF24 |
 | RF19 | Favoritar Vagas | Salvar para ver depois, com alerta de expiração. | **v1** + ✅ alerta de expiração na lista de favoritos (lote 1) |
 | RF20 | Login Externo *(Include)* | Google, Facebook, LinkedIn e código único por e-mail. | Futuro |
 | RF21 | Denúncia de Conteúdo/Usuários | Com motivo e evidência. | **v1** |
 | RF22 | Integração com APIs Externas | Ex.: Receita Federal, validação LGPD. | Futuro |
-| RF23 | Exportação de Dados (LGPD) | Feita pelo próprio usuário. | Futuro |
-| RF24 | Mensagens Internas | Comunicação entre empresa e candidato após candidatura aceita. | Futuro |
+| RF23 | Exportação de Dados (LGPD) | Feita pelo próprio usuário. | ✅ Entregue (lote 2) — arquivo JSON |
+| RF24 | Mensagens Internas | Comunicação entre empresa e candidato após candidatura aceita. | ✅ Entregue (lote 2) |
 | RF25 | IA para Currículos *(opcional)* | Análise automática de currículos para sugestão de vagas e ranqueamento. | Futuro |
 | RF26 | Agendamento de Entrevistas | Ferramenta para agendamento entre empresa e candidato. | **v1** |
 
@@ -228,6 +228,10 @@ ser atualizados** para refletir essas tabelas. Os itens *Futuro* continuam sem s
 | Tabela `cartas_apresentacao` | RF09 | ✅ Criada (lote 1) |
 | `vagas.visualizacoes` | RN19, UC02 | ✅ Criada (lote 1) |
 | `empresas.responsavel` | RF02 | ✅ Criada (lote 1) |
+| Tabela `notificacoes` | RF14, RN06 | ✅ Criada (lote 2) |
+| Tabela `mensagens` | RF24 | ✅ Criada (lote 2) |
+| Tabela `avaliacoes` | RF15, RN08 | ✅ Criada (lote 2) |
+| Tabela `tickets_suporte` | RF17, RN15 | ✅ Criada (lote 2) |
 | Tabela de avaliações/feedback | RF15, RN08 | Futuro |
 | Tabela de mensagens internas | RF24 | Futuro |
 | Tabela de tickets de suporte | RF17, RN15 | Futuro |

@@ -261,6 +261,83 @@ class Administrador extends Model
         return null;
     }
 
+    /**
+     * RF17 / UC-E09 — responde um pedido de suporte, registra no log e avisa o usuário.
+     *
+     * @return string|null mensagem de erro, ou null quando a resposta foi gravada
+     */
+    public function responderTicket($adminId, $ticketId, $resposta)
+    {
+        $resposta = trim((string) $resposta);
+        if ($resposta === '' || mb_strlen($resposta) > 5000) {
+            return 'Escreva a resposta, com até 5000 caracteres.';
+        }
+
+        $ticket = $this->db->fetch("SELECT id, tipo_usuario, usuario_id, assunto FROM tickets_suporte WHERE id = ?", [$ticketId]);
+        if (!$ticket) {
+            return 'Pedido de suporte não encontrado.';
+        }
+
+        $this->emTransacao(function () use ($adminId, $ticket, $resposta) {
+            $this->db->query(
+                "UPDATE tickets_suporte SET resposta = ?, status = 'Respondido', administrador_id = ?, respondido_em = NOW() WHERE id = ?",
+                [$resposta, $adminId, $ticket['id']]
+            );
+            $this->registrarLog($adminId, 'responder_suporte', 'tickets_suporte', $ticket['id'], $ticket['assunto']);
+
+            return true;
+        });
+
+        (new Notificacao())->criar(
+            $ticket['tipo_usuario'],
+            $ticket['usuario_id'],
+            'Suporte respondeu',
+            "Seu pedido \"{$ticket['assunto']}\" foi respondido.",
+            '/suporte'
+        );
+
+        return null;
+    }
+
+    /**
+     * RF16 / UC-E15 — relatório dos logs de auditoria, com filtros opcionais por
+     * administrador, ação e período. Limitado aos 1000 registros mais recentes.
+     */
+    public function listarLogs($filtros = [])
+    {
+        $condicoes = ['1 = 1'];
+        $parametros = [];
+
+        if ((int) ($filtros['administrador_id'] ?? 0) > 0) {
+            $condicoes[] = 'l.administrador_id = ?';
+            $parametros[] = (int) $filtros['administrador_id'];
+        }
+        if (trim((string) ($filtros['acao'] ?? '')) !== '') {
+            $condicoes[] = 'l.acao = ?';
+            $parametros[] = trim($filtros['acao']);
+        }
+        foreach (['de' => '>=', 'ate' => '<='] as $campo => $operador) {
+            $data = \DateTime::createFromFormat('!Y-m-d', (string) ($filtros[$campo] ?? ''));
+            if ($data) {
+                $condicoes[] = "DATE(l.created_at) {$operador} ?";
+                $parametros[] = $data->format('Y-m-d');
+            }
+        }
+
+        $sql = "SELECT l.id, l.created_at, a.nome AS administrador, l.acao, l.entidade, l.entidade_id, l.detalhes
+                FROM logs_auditoria l
+                LEFT JOIN administradores a ON a.id = l.administrador_id
+                WHERE " . implode(' AND ', $condicoes) . "
+                ORDER BY l.id DESC LIMIT 1000";
+        return $this->db->fetchAll($sql, $parametros);
+    }
+
+    /** Ações que já aparecem no log, para o filtro do relatório. */
+    public function listarAcoesDoLog()
+    {
+        return array_column($this->db->fetchAll("SELECT DISTINCT acao FROM logs_auditoria ORDER BY acao"), 'acao');
+    }
+
     /** RF16 (Diagrama de Classe: gerenciarUsuarios) — candidatos e empresas cadastrados. */
     public function gerenciarUsuarios()
     {

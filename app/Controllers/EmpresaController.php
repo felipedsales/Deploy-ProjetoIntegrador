@@ -50,7 +50,9 @@ class EmpresaController extends Controller
         return $this->render('empresa/show', [
             'empresa' => $empresa,
             'vagas' => $vagas,
-            'logo' => $this->empresaModel->getResumoLogo($id)
+            'logo' => $this->empresaModel->getResumoLogo($id),
+            // RF15: reputação da empresa, a partir das avaliações dos candidatos.
+            'reputacao' => (new \App\Models\Candidatura())->getReputacaoEmpresa($id)
         ]);
     }
 

@@ -14,6 +14,13 @@ $title = htmlspecialchars($empresa['nome'] ?? '') . ' - Ferraz Conecta';
                             alt="Logo de <?= htmlspecialchars($empresa['nome'] ?? '') ?>" style="max-height: 80px; max-width: 200px;" class="mb-2">
                     <?php endif; ?>
                     <h1><?= htmlspecialchars($empresa['nome'] ?? '') ?></h1>
+                    <?php if (!empty($reputacao['total'])): ?>
+                        <p class="mb-2" aria-label="Avaliação média <?= htmlspecialchars((string) $reputacao['media']) ?> de 5">
+                            <span class="text-warning"><?= str_repeat('★', (int) round($reputacao['media'])) . str_repeat('☆', 5 - (int) round($reputacao['media'])) ?></span>
+                            <?= number_format((float) $reputacao['media'], 1, ',', '') ?> de 5
+                            <span class="text-muted">(<?= (int) $reputacao['total'] ?> avaliação(ões) de candidatos)</span>
+                        </p>
+                    <?php endif; ?>
                     <span class="empresa-badge">
                         <i class="fas fa-building"></i> Empresa Parceira
                     </span>

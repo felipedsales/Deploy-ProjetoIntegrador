@@ -278,7 +278,7 @@ class Empresa extends Model
         // Colunas explícitas: a senha do candidato não vai para a tela, e o
         // status é o da candidatura (candidatos também tem coluna status).
         $sql = "SELECT c.id, c.nome, c.email, c.telefone, c.cpf, c.data_nascimento, c.endereco,
-                       cu.id AS curriculo_id, cv.data_candidatura, cv.status,
+                       cu.id AS curriculo_id, cv.id AS candidatura_id, cv.data_candidatura, cv.status,
                        EXISTS (SELECT 1 FROM cartas_apresentacao ca
                                WHERE ca.candidato_id = c.id
                                  AND (ca.vaga_id = cv.vaga_id OR ca.vaga_id IS NULL)) AS tem_carta
@@ -297,7 +297,21 @@ class Empresa extends Model
         $sql = "UPDATE candidaturas SET status = ?
                 WHERE candidato_id = ? AND vaga_id = ?
                   AND vaga_id IN (SELECT id FROM vagas WHERE empresa_id = ?)";
-        return $this->db->query($sql, [$status, $candidatoId, $vagaId, $empresaId]);
+        $alterada = $this->db->query($sql, [$status, $candidatoId, $vagaId, $empresaId]);
+
+        // RF14: o candidato é avisado da mudança de status.
+        if ($alterada->rowCount() > 0) {
+            $vaga = $this->db->fetch("SELECT titulo FROM vagas WHERE id = ?", [$vagaId]);
+            (new Notificacao())->criar(
+                'candidato',
+                $candidatoId,
+                'Candidatura atualizada',
+                "Sua candidatura à vaga \"{$vaga['titulo']}\" agora está: {$status}.",
+                '/minhas-candidaturas'
+            );
+        }
+
+        return $alterada;
     }
 
     /** RN21: a empresa só remove candidaturas das próprias vagas. */

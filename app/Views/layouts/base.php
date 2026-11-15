@@ -48,6 +48,16 @@
                 
                 <ul class="navbar-nav ms-auto">
                     <?php if (isset($_SESSION['user_id'])): ?>
+                        <?php if (in_array($_SESSION['user_type'] ?? '', ['candidato', 'empresa'], true)): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/notificacoes" aria-label="Notificações<?= !empty($notificacoesNaoLidas) ? ': ' . (int) $notificacoesNaoLidas . ' não lidas' : '' ?>">
+                                    <i class="fas fa-bell"></i>
+                                    <?php if (!empty($notificacoesNaoLidas)): ?>
+                                        <span class="badge bg-danger"><?= (int) $notificacoesNaoLidas ?></span>
+                                    <?php endif; ?>
+                                </a>
+                            </li>
+                        <?php endif; ?>
                         <?php if (($_SESSION['user_type'] ?? '') === 'empresa'): ?>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="empresaDropdown" role="button" data-bs-toggle="dropdown">
@@ -59,6 +69,9 @@
                                     <li><a class="dropdown-item" href="/vagas/criar">Nova Vaga</a></li>
                                     <li><a class="dropdown-item" href="/empresa/relatorio">Relatório de Vagas</a></li>
                                     <li><a class="dropdown-item" href="/empresa/perfil">Perfil da Empresa</a></li>
+                                    <li><a class="dropdown-item" href="/notificacoes">Notificações</a></li>
+                                    <li><a class="dropdown-item" href="/suporte">Suporte</a></li>
+                                    <li><a class="dropdown-item" href="/meus-dados/exportar">Exportar meus dados</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="/logout">Sair</a></li>
                                 </ul>
@@ -74,6 +87,8 @@
                                     <li><a class="dropdown-item" href="/admin/vagas">Vagas</a></li>
                                     <li><a class="dropdown-item" href="/admin/usuarios">Usuários</a></li>
                                     <li><a class="dropdown-item" href="/admin/categorias">Categorias</a></li>
+                                    <li><a class="dropdown-item" href="/admin/suporte">Suporte</a></li>
+                                    <li><a class="dropdown-item" href="/admin/logs">Logs</a></li>
                                     <li><a class="dropdown-item" href="/admin/administradores">Administradores</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="/logout">Sair</a></li>
@@ -88,6 +103,9 @@
                                     <li><a class="dropdown-item" href="/perfil">Meu Perfil</a></li>
                                     <li><a class="dropdown-item" href="/minhas-candidaturas">Minhas Candidaturas</a></li>
                                     <li><a class="dropdown-item" href="/vagas-favoritas">Vagas Favoritas</a></li>
+                                    <li><a class="dropdown-item" href="/notificacoes">Notificações</a></li>
+                                    <li><a class="dropdown-item" href="/suporte">Suporte</a></li>
+                                    <li><a class="dropdown-item" href="/meus-dados/exportar">Exportar meus dados</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="/logout">Sair</a></li>
                                 </ul>

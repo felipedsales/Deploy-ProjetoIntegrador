@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Administrador;
 use App\Models\Categoria;
+use App\Models\Suporte;
 
 /**
  * Painel administrativo (RF03, RF16) — UC-C10 / UC-E14 Moderar Conteúdo.
@@ -172,6 +173,64 @@ class AdminController extends Controller
         }
 
         $this->redirect('/admin/categorias?status=ok');
+    }
+
+    /** RF17 / UC-E09 — pedidos de suporte. */
+    public function suporte()
+    {
+        $this->requirePerfil('administrador');
+
+        return $this->render('admin/suporte', ['tickets' => (new Suporte())->listarTodos()]);
+    }
+
+    public function responderTicket()
+    {
+        $adminId = $this->exigirAcao();
+
+        $erro = $this->administradorModel->responderTicket($adminId, (int) $this->getPost('ticket_id'), $this->getPost('resposta'));
+        if ($erro !== null) {
+            return $this->render('admin/suporte', ['tickets' => (new Suporte())->listarTodos(), 'erros' => [$erro]]);
+        }
+
+        $this->redirect('/admin/suporte?status=ok');
+    }
+
+    /** RF16 / UC-E15 — relatório de logs de auditoria; com ?formato=csv, exporta. */
+    public function logs()
+    {
+        $this->requirePerfil('administrador');
+
+        $filtros = [];
+        foreach (['administrador_id', 'acao', 'de', 'ate'] as $campo) {
+            $filtros[$campo] = (string) $this->getQuery($campo, '');
+        }
+        $logs = $this->administradorModel->listarLogs($filtros);
+
+        if ($this->getQuery('formato') === 'csv') {
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="logs-auditoria-' . date('Y-m-d') . '.csv"');
+            $saida = fopen('php://output', 'w');
+            fwrite($saida, "\xEF\xBB\xBF"); // BOM: o Excel abre os acentos corretamente
+            fputcsv($saida, ['Data e hora', 'Administrador', 'Ação', 'Entidade', 'Registro', 'Detalhes'], ';');
+            foreach ($logs as $log) {
+                fputcsv($saida, [
+                    date('d/m/Y H:i:s', strtotime($log['created_at'])),
+                    $log['administrador'] ?? 'removido',
+                    $log['acao'],
+                    $log['entidade'],
+                    $log['entidade_id'],
+                    $log['detalhes'],
+                ], ';');
+            }
+            exit;
+        }
+
+        return $this->render('admin/logs', [
+            'logs' => $logs,
+            'filtros' => $filtros,
+            'administradores' => $this->administradorModel->listar(),
+            'acoes' => $this->administradorModel->listarAcoesDoLog(),
+        ]);
     }
 
     public function administradores()

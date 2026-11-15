@@ -17,11 +17,15 @@ lotes, e o MER e o Diagrama de Classe são refeitos ao final. Cada lote é um pu
 | Lote | Conteúdo | Depende de | Situação |
 |---|---|---|---|
 | **1** | RF02 (responsável), RF09 (carta de apresentação), RF11 (histórico de alterações), RF12 (área e experiência) + UC13 (categorias), RF19 (alerta de expiração), RN19 + UC02 (relatório de vagas) | — | ✅ Implementado |
-| **2** | RF14 (notificações na plataforma), RF24 (mensagens internas), RF15 (feedback e avaliação), RF17 (suporte por formulário), RF16 (relatório de logs), RF23 (exportação LGPD) | — | A fazer |
-| **3** | RN17 / RN22 (confirmação de e-mail), RF05 (recuperação de senha), RNF09 e RF03 (multifator) | Serviço de envio de e-mail | Aguardando decisão |
-| **4** | RF20 (login externo), RF22 (consulta de CNPJ), RF25 (IA para currículos) | Credenciais e serviços externos | Aguardando decisão |
+| **2** | RF14 (notificações na plataforma), RF24 (mensagens internas), RF15 (feedback e avaliação), RF17 (suporte por formulário), RF16 (relatório de logs), RF23 (exportação LGPD) | — | ✅ Implementado |
+| **3** | RN17 / RN22 (confirmação de e-mail), RF05 (recuperação de senha), RNF09 e RF03 (multifator) | Serviço de e-mail: **Brevo** (decidido em 2026-11-15); chave em `BREVO_API_KEY` | A fazer |
+| **4** | RF25 (ranqueamento de currículos **por regras**, sem IA) | — | A fazer |
 | **5** | API REST `/api/v1` | Lotes 1 a 3 | A fazer |
 | **6** | App mobile (React Native / Expo) | Lote 5 | A fazer |
+
+**Fora do plano por enquanto** (decisão de 2026-11-15): RF20 (login externo) e RF22
+(consulta de CNPJ). A análise de currículos **por IA** fica como implementação futura; a
+comparação de custos está em `ANALISE_CUSTOS_IA.md`.
 
 ---
 

@@ -89,6 +89,9 @@ $title = 'Candidatos - ' . htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz 
 
                         <div class="mt-3">
                             <div class="btn-group" role="group">
+                                <a href="/candidaturas/<?= $candidato['candidatura_id'] ?>/conversa" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-comments"></i> Mensagens e avaliação
+                                </a>
                                 <form method="POST" action="/empresa/candidatos/status" class="d-inline">
                                     <input type="hidden" name="candidato_id" value="<?= $candidato['id'] ?>">
                                     <input type="hidden" name="vaga_id" value="<?= $vaga['id'] ?>">
