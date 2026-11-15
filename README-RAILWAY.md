@@ -157,6 +157,26 @@ remova as três variáveis.**
 Depois do primeiro deploy com a conversão de senhas, confira no log do serviço a linha
 `Total: N` e, no banco, que nenhuma senha ficou em texto puro.
 
+### Envio de e-mail (Brevo)
+
+Confirmação de e-mail (RN22), recuperação de senha (RF05) e o código do segundo fator do
+administrador (RNF09) dependem destas variáveis no serviço:
+
+| Variável | Valor |
+|---|---|
+| `BREVO_API_KEY` | Chave de API do Brevo (não a de SMTP). |
+| `BREVO_REMETENTE_EMAIL` | E-mail remetente verificado no Brevo (Settings > Senders). |
+| `BREVO_REMETENTE_NOME` | Opcional; padrão `Ferraz Conecta`. |
+| `APP_URL` | Endereço público da aplicação, usado nos links dos e-mails. |
+
+No Brevo, o bloqueio de IPs desconhecidos para chaves de API precisa ficar **desativado**
+(Settings > Security > Authorized IPs): o Railway não tem IP de saída fixo no plano Hobby.
+
+Sem `BREVO_API_KEY` ou sem `BREVO_REMETENTE_EMAIL` o envio fica desligado: a conta nasce
+confirmada, a recuperação de senha fica indisponível e o administrador entra só com a senha.
+Com o envio ligado, o e-mail de cada administrador precisa ser uma caixa de entrada real,
+porque o código de acesso é enviado para ele.
+
 ## 🎨 Frontend
 
 O projeto mantém sua estrutura MVC original:

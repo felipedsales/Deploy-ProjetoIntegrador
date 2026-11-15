@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\Acesso;
 use App\Models\Candidato;
 use App\Models\Empresa;
 use App\Models\SocialAuth;
@@ -11,12 +12,14 @@ class AuthController extends Controller
     private $candidatoModel;
     private $empresaModel;
     private $socialAuth;
+    private $acesso;
 
     public function __construct()
     {
         $this->candidatoModel = new Candidato();
         $this->empresaModel = new Empresa();
         $this->socialAuth = new SocialAuth();
+        $this->acesso = new Acesso();
     }
 
     public function login()
@@ -42,6 +45,11 @@ class AuthController extends Controller
                 return $this->render('auth/login', [
                     'error' => 'Sua conta está suspensa. Entre em contato com a Prefeitura.'
                 ]);
+            }
+
+            // RN22: a conta só entra depois de confirmar o e-mail.
+            if ($user && $this->acesso->emailPendente($user)) {
+                return $this->render('auth/confirmacao_pendente', ['email' => $user['email'], 'tipo' => $tipo]);
             }
 
             if ($user) {
@@ -80,6 +88,11 @@ class AuthController extends Controller
                 return $this->render('auth/login_empresa', [
                     'error' => 'Sua conta está suspensa. Entre em contato com a Prefeitura.'
                 ]);
+            }
+
+            // RN22: a conta só entra depois de confirmar o e-mail.
+            if ($user && $this->acesso->emailPendente($user)) {
+                return $this->render('auth/confirmacao_pendente', ['email' => $user['email'], 'tipo' => 'empresa']);
             }
 
             if ($user) {
@@ -125,6 +138,13 @@ class AuthController extends Controller
 
             $userId = $this->candidatoModel->cadastrar($data);
             
+            // RN22: com serviço de e-mail, a conta só é ativada pelo link enviado.
+            if ($userId && ($envio = $this->acesso->iniciarConfirmacao('candidato', $userId)) !== 'confirmada') {
+                return $this->render('auth/confirmacao_pendente', [
+                    'email' => $data['email'], 'tipo' => 'candidato', 'recemCriada' => true, 'envio' => $envio
+                ]);
+            }
+
             if ($userId) {
                 $this->setSession('user_id', $userId);
                 $this->setSession('user_type', 'candidato');
@@ -169,6 +189,13 @@ class AuthController extends Controller
 
             $userId = $this->empresaModel->cadastrar($data);
             
+            // RN22: com serviço de e-mail, a conta só é ativada pelo link enviado.
+            if ($userId && ($envio = $this->acesso->iniciarConfirmacao('empresa', $userId)) !== 'confirmada') {
+                return $this->render('auth/confirmacao_pendente', [
+                    'email' => $data['email'], 'tipo' => 'empresa', 'recemCriada' => true, 'envio' => $envio
+                ]);
+            }
+
             if ($userId) {
                 $this->setSession('user_id', $userId);
                 $this->setSession('user_type', 'empresa');
@@ -182,6 +209,62 @@ class AuthController extends Controller
         }
 
         return $this->render('auth/register_empresa');
+    }
+
+    /** RN22 — link de confirmação recebido por e-mail. */
+    public function confirmarEmail($token)
+    {
+        $perfil = $this->acesso->confirmarEmail($token);
+        if (!$perfil) {
+            return $this->render('auth/confirmacao_pendente', ['linkInvalido' => true]);
+        }
+
+        $this->redirect(($perfil === 'empresa' ? '/login-empresa' : '/login') . '?status=email_confirmado');
+    }
+
+    /** RN22 — reenvio do link de confirmação. A resposta é a mesma exista ou não a conta. */
+    public function reenviarConfirmacao()
+    {
+        $tipo = $this->getPost('tipo') === 'empresa' ? 'empresa' : 'candidato';
+        $email = trim((string) $this->getPost('email'));
+        $this->acesso->reenviarConfirmacao($tipo, $email);
+
+        return $this->render('auth/confirmacao_pendente', ['email' => $email, 'tipo' => $tipo, 'reenviado' => true]);
+    }
+
+    /** RF05 — pedido do link de redefinição de senha. */
+    public function recuperarSenha()
+    {
+        $dados = ['disponivel' => $this->acesso->recuperacaoDisponivel()];
+
+        if ($this->isPost() && $dados['disponivel']) {
+            $tipo = in_array($this->getPost('tipo'), ['candidato', 'empresa', 'administrador'], true)
+                ? $this->getPost('tipo')
+                : 'candidato';
+            $this->acesso->solicitarRecuperacao($tipo, $this->getPost('email'));
+            $dados['enviado'] = true;
+        }
+
+        return $this->render('auth/recuperar_senha', $dados);
+    }
+
+    /** RF05 — troca da senha a partir do link, válido por 15 minutos. */
+    public function redefinirSenha($token)
+    {
+        if (!$this->acesso->linkRecuperacaoValido($token)) {
+            return $this->render('auth/redefinir_senha', ['linkInvalido' => true]);
+        }
+
+        if ($this->isPost()) {
+            $erros = $this->acesso->redefinirSenha($token, $this->getPost('senha'), $this->getPost('confirmacao'));
+            if (!$erros) {
+                $this->redirect('/login?status=senha_redefinida');
+            }
+
+            return $this->render('auth/redefinir_senha', ['token' => $token, 'erros' => $erros]);
+        }
+
+        return $this->render('auth/redefinir_senha', ['token' => $token]);
     }
 
     public function logout()

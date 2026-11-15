@@ -30,6 +30,9 @@ $router->get('/empresas/{id}/logo', 'EmpresaController@logo');
 // Painel administrativo (RF03, RF16) — só perfil administrador (RN09)
 $router->get('/admin/login', 'AdminController@login');
 $router->post('/admin/login', 'AdminController@login');
+// RNF09 / RF03 — segundo fator do administrador
+$router->get('/admin/verificacao', 'AdminController@verificacao');
+$router->post('/admin/verificacao', 'AdminController@verificacao');
 $router->get('/admin', 'AdminController@painel');
 $router->get('/admin/denuncias', 'AdminController@denuncias');
 $router->post('/admin/denuncias/status', 'AdminController@atualizarDenuncia');
@@ -58,6 +61,13 @@ $router->post('/cadastro', 'AuthController@register');
 $router->get('/cadastro-empresa', 'AuthController@registerEmpresa');
 $router->post('/cadastro-empresa', 'AuthController@registerEmpresa');
 $router->get('/logout', 'AuthController@logout');
+// RN22 (confirmação de e-mail) e RF05 (recuperação de senha)
+$router->post('/confirmar-email/reenviar', 'AuthController@reenviarConfirmacao');
+$router->get('/confirmar-email/{token}', 'AuthController@confirmarEmail');
+$router->get('/recuperar-senha', 'AuthController@recuperarSenha');
+$router->post('/recuperar-senha', 'AuthController@recuperarSenha');
+$router->get('/redefinir-senha/{token}', 'AuthController@redefinirSenha');
+$router->post('/redefinir-senha/{token}', 'AuthController@redefinirSenha');
 
 // Rotas de autenticação social
 // RF20 (login externo) está fora da v1 — ver docs/IMPLEMENTACOES_FUTURAS.md.

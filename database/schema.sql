@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS candidatos (
     endereco_campos TEXT,
     -- RN18: conta suspensa pelo administrador não entra no sistema.
     status ENUM('Ativa', 'Suspensa') NOT NULL DEFAULT 'Ativa',
+    -- RN22: a conta só entra no sistema depois de confirmar o e-mail.
+    email_confirmado TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -51,6 +53,8 @@ CREATE TABLE IF NOT EXISTS empresas (
     website VARCHAR(255),
     -- RN18: conta suspensa pelo administrador não entra no sistema.
     status ENUM('Ativa', 'Suspensa') NOT NULL DEFAULT 'Ativa',
+    -- RN22: a conta só entra no sistema depois de confirmar o e-mail.
+    email_confirmado TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -335,4 +339,21 @@ CREATE TABLE IF NOT EXISTS tickets_suporte (
     KEY idx_tickets_status (status),
     CONSTRAINT fk_tickets_administrador
         FOREIGN KEY (administrador_id) REFERENCES administradores (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Códigos enviados por e-mail (RN22, RF05, RNF09): link de confirmação de conta,
+-- link de recuperação de senha e código do segundo fator do administrador.
+-- Só o hash do código é guardado; cada código vale uma vez e tem validade.
+CREATE TABLE IF NOT EXISTS tokens_email (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tipo_usuario ENUM('candidato', 'empresa', 'administrador') NOT NULL,
+    usuario_id INT NOT NULL,
+    finalidade ENUM('confirmacao', 'recuperacao', 'multifator') NOT NULL,
+    token_hash CHAR(64) NOT NULL,
+    tentativas TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    expira_em DATETIME NOT NULL,
+    usado_em DATETIME,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_tokens_email_hash (token_hash),
+    KEY idx_tokens_email_usuario (tipo_usuario, usuario_id, finalidade)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

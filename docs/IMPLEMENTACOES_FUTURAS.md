@@ -18,10 +18,14 @@ lotes, e o MER e o Diagrama de Classe são refeitos ao final. Cada lote é um pu
 |---|---|---|---|
 | **1** | RF02 (responsável), RF09 (carta de apresentação), RF11 (histórico de alterações), RF12 (área e experiência) + UC13 (categorias), RF19 (alerta de expiração), RN19 + UC02 (relatório de vagas) | — | ✅ Implementado |
 | **2** | RF14 (notificações na plataforma), RF24 (mensagens internas), RF15 (feedback e avaliação), RF17 (suporte por formulário), RF16 (relatório de logs), RF23 (exportação LGPD) | — | ✅ Implementado |
-| **3** | RN17 / RN22 (confirmação de e-mail), RF05 (recuperação de senha), RNF09 e RF03 (multifator) | Serviço de e-mail: **Brevo** (decidido em 2026-11-15); chave em `BREVO_API_KEY` | A fazer |
+| **3** | RN17 / RN22 (confirmação de e-mail), RF05 (recuperação de senha), RNF09 e RF03 (multifator) | Serviço de e-mail: **Brevo** (decidido em 2026-11-15); chave em `BREVO_API_KEY` | ✅ Implementado — multifator só por código de e-mail e só para o administrador |
 | **4** | RF25 (ranqueamento de currículos **por regras**, sem IA) | — | A fazer |
 | **5** | API REST `/api/v1` | Lotes 1 a 3 | A fazer |
 | **6** | App mobile (React Native / Expo) | Lote 5 | A fazer |
+
+**Pendências do lote 3** (RNF09): o multifator por **app autenticador** e o segundo fator
+opcional para candidato e empresa não foram implementados; hoje o segundo fator é o código
+por e-mail, obrigatório para o administrador.
 
 **Fora do plano por enquanto** (decisão de 2026-11-15): RF20 (login externo) e RF22
 (consulta de CNPJ). A análise de currículos **por IA** fica como implementação futura; a
@@ -60,8 +64,8 @@ Em ordem sugerida de prioridade.
 
 | # | Requisito | O que é | O que falta | Depende de |
 |---|---|---|---|---|
-| 1 | **RN17 / RN22** — Confirmação de e-mail | Conta só ativa após confirmar o e-mail; candidatura exige e-mail verificado. | Colunas `email_confirmado` em `candidatos` e `empresas`; envio de e-mail com link de confirmação. | Serviço de envio de e-mail |
-| 2 | **RF05** — Recuperação de senha | Link temporário por e-mail, válido por 15 minutos. | Tabela de tokens de recuperação; telas de solicitar e redefinir senha. | Serviço de envio de e-mail |
+| 1 | **RN17 / RN22** — Confirmação de e-mail  ✅ *entregue no lote 3* | Conta só ativa após confirmar o e-mail; candidatura exige e-mail verificado. | Colunas `email_confirmado` em `candidatos` e `empresas`; envio de e-mail com link de confirmação. | Serviço de envio de e-mail |
+| 2 | **RF05** — Recuperação de senha  ✅ *entregue no lote 3* | Link temporário por e-mail, válido por 15 minutos. | Tabela de tokens de recuperação; telas de solicitar e redefinir senha. | Serviço de envio de e-mail |
 | 3 | **RF14** — Notificações | Aviso de mudança de status da candidatura, convite de entrevista e vagas compatíveis com o perfil (RN06). | Central de notificações na web; tabela `push_tokens` e push no app. | Fase 2 (para o push) |
 | 4 | **RF20** — Login externo | Google, Facebook, LinkedIn e código único por e-mail. | Colunas `provider` / `provider_id` em `candidatos`, no MER e no Diagrama de Classe. | — |
 | 5 | **RN19 / R18** — Métricas da empresa  ✅ *entregue no lote 1* | Visualizações, candidaturas e taxa de retorno por vaga (UC-E02). | Contagem de visualizações por vaga; tela de relatório no painel da empresa. | — |

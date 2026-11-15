@@ -15,6 +15,12 @@ $title = 'Login Empresa - Ferraz Conecta';
                         </div>
                     <?php endif; ?>
 
+                    <?php if (($_GET['status'] ?? '') === 'email_confirmado'): ?>
+                        <div class="alert alert-success">E-mail confirmado. Sua conta está ativa: é só entrar.</div>
+                    <?php elseif (($_GET['status'] ?? '') === 'senha_redefinida'): ?>
+                        <div class="alert alert-success">Senha redefinida. Entre com a nova senha.</div>
+                    <?php endif; ?>
+
                     <form method="POST" action="/login-empresa">
                         <div class="mb-3">
                             <label for="email" class="form-label required">Email</label>
@@ -30,6 +36,8 @@ $title = 'Login Empresa - Ferraz Conecta';
                             Entrar como Empresa
                         </button>
                     </form>
+
+                    <p class="text-center mb-3"><a href="/recuperar-senha">Esqueci minha senha</a></p>
 
                     <div class="text-center">
                         <p class="mb-2">Não tem uma conta empresarial?</p>
