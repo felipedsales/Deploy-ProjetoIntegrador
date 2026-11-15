@@ -108,6 +108,10 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 | **categorias** | `id`, `nome`, `created_at` | PK `id`; **UNIQUE** `nome` (RF12, UC13) |
 | **vagas_historico** | `id`, `vaga_id`, `alteracoes`, `created_at` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; `alteracoes` é JSON `{campo: {de, para}}` (RF11) |
 | **cartas_apresentacao** | `id`, `candidato_id`, `vaga_id`, `nome_arquivo`, `tipo`, `tamanho`, `conteudo`, `data_envio` | PK `id`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; `vaga_id` nulo = carta padrão do perfil (RF09) |
+| **notificacoes** | `id`, `tipo_usuario`, `usuario_id`, `titulo`, `mensagem`, `link`, `lida`, `created_at` | PK `id`; índice em `(tipo_usuario, usuario_id, lida)` (RF14) |
+| **mensagens** | `id`, `candidatura_id`, `remetente`, `texto`, `created_at` | PK `id`; **FK** `candidatura_id` → `candidaturas(id)` `CASCADE` (RF24) |
+| **avaliacoes** | `id`, `candidatura_id`, `autor`, `nota`, `comentario`, `created_at` | PK `id`; **FK** `candidatura_id` → `candidaturas(id)` `CASCADE`; **UNIQUE** `(candidatura_id, autor)` (RF15) |
+| **tickets_suporte** | `id`, `tipo_usuario`, `usuario_id`, `assunto`, `mensagem`, `status`, `resposta`, `administrador_id`, `respondido_em`, `created_at` | PK `id`; **FK** `administrador_id` → `administradores(id)` `SET NULL` (RF17, RN15) |
 | **administradores** | `id`, `nome`, `email`, `senha`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email` (RF03, RF16) |
 | **favoritos** | `id`, `candidato_id`, `vaga_id`, `created_at` | PK `id`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **`UNIQUE (candidato_id, vaga_id)`** (RF19) |
 | **entrevistas** | `id`, `vaga_id`, `candidato_id`, `data_hora`, `local`, `status`, `created_at`, `updated_at` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; índice em `(candidato_id, data_hora)` (RF26) |
@@ -196,6 +200,11 @@ Regras com **reflexo direto no banco**, que quem mexe em persistência precisa t
 - **RF26 — entrevistas:** conflito de horário conferido em `Entrevista::agendamento`
   (empresa ou candidato com outra entrevista `Agendada` a menos de 60 minutos); a
   entrevista agendada é cancelada quando a candidatura deixa de existir.
+- **RF14 — notificações:** quem gera o evento chama `Notificacao::criar()` no Model
+  (status da candidatura, entrevista, mensagem, suporte, vaga da mesma área — RN06).
+- **RF24 / RF15 — mensagens e avaliação:** sempre a partir de
+  `Candidatura::buscarParaUsuario()`, que só devolve a candidatura a quem participa dela.
+  Mensagens só com candidatura `Aprovada` ou `Contratada`; avaliação só pós-processo.
 - **RN18 — suspensão de contas:** só o administrador muda `candidatos.status` /
   `empresas.status`; conta `Suspensa` não faz login.
 - **RN21 — permissões por perfil:** todo controller de área restrita começa com

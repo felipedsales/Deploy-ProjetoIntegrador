@@ -223,7 +223,8 @@ class VagaController extends Controller
                 ]);
             }
 
-            $this->vagaModel->create($data);
+            // RF14 / RN06: a publicação avisa candidatos com histórico na mesma área.
+            $this->vagaModel->publicar($data);
             $this->redirect('/painel-empresa?status=vaga_criada');
         }
 

@@ -276,3 +276,63 @@ CREATE TABLE IF NOT EXISTS cartas_apresentacao (
     CONSTRAINT fk_cartas_vaga
         FOREIGN KEY (vaga_id) REFERENCES vagas (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Notificações na plataforma (RF14, RN06). Uma linha por aviso a um candidato
+-- ou a uma empresa; `link` aponta para a tela que trata do assunto.
+CREATE TABLE IF NOT EXISTS notificacoes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tipo_usuario ENUM('candidato', 'empresa') NOT NULL,
+    usuario_id INT NOT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    mensagem VARCHAR(500) NOT NULL,
+    link VARCHAR(255),
+    lida TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_notificacoes_usuario (tipo_usuario, usuario_id, lida)
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Mensagens internas (RF24): conversa entre a empresa e o candidato de uma
+-- candidatura aceita.
+CREATE TABLE IF NOT EXISTS mensagens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    candidatura_id INT NOT NULL,
+    remetente ENUM('candidato', 'empresa') NOT NULL,
+    texto TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_mensagens_candidatura (candidatura_id),
+    CONSTRAINT fk_mensagens_candidatura
+        FOREIGN KEY (candidatura_id) REFERENCES candidaturas (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Feedback e avaliação (RF15, RN08): depois do processo seletivo, o candidato
+-- avalia a empresa e a empresa dá o retorno ao candidato. Uma por autor.
+CREATE TABLE IF NOT EXISTS avaliacoes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    candidatura_id INT NOT NULL,
+    autor ENUM('candidato', 'empresa') NOT NULL,
+    nota TINYINT NOT NULL,
+    comentario TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_avaliacoes_candidatura_autor (candidatura_id, autor),
+    CONSTRAINT fk_avaliacoes_candidatura
+        FOREIGN KEY (candidatura_id) REFERENCES candidaturas (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Suporte ao usuário (RF17, RN15): pedido aberto por candidato ou empresa e
+-- respondido por um administrador.
+CREATE TABLE IF NOT EXISTS tickets_suporte (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tipo_usuario ENUM('candidato', 'empresa') NOT NULL,
+    usuario_id INT NOT NULL,
+    assunto VARCHAR(150) NOT NULL,
+    mensagem TEXT NOT NULL,
+    status ENUM('Aberto', 'Respondido') NOT NULL DEFAULT 'Aberto',
+    resposta TEXT,
+    administrador_id INT,
+    respondido_em DATETIME,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_tickets_usuario (tipo_usuario, usuario_id),
+    KEY idx_tickets_status (status),
+    CONSTRAINT fk_tickets_administrador
+        FOREIGN KEY (administrador_id) REFERENCES administradores (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

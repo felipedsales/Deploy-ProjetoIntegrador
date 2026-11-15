@@ -258,7 +258,7 @@ class Candidato extends Model
 
     public function getMinhasCandidaturas($candidatoId)
     {
-        $sql = "SELECT v.*, v.id as vaga_id, e.nome, cv.data_candidatura, cv.status
+        $sql = "SELECT v.*, v.id as vaga_id, e.nome, cv.id AS candidatura_id, cv.data_candidatura, cv.status
                 FROM candidaturas cv
                 JOIN vagas v ON cv.vaga_id = v.id
                 JOIN empresas e ON v.empresa_id = e.id
@@ -279,7 +279,21 @@ class Candidato extends Model
 
         try {
             $sql = "INSERT INTO candidaturas (vaga_id, candidato_id, status, data_candidatura) VALUES (?, ?, 'Pendente', NOW())";
-            return $this->db->query($sql, [$vagaId, $candidatoId]);
+            $candidatura = $this->db->query($sql, [$vagaId, $candidatoId]);
+
+            // RF14: a empresa é avisada da nova candidatura.
+            $vaga = $this->db->fetch("SELECT titulo, empresa_id FROM vagas WHERE id = ?", [$vagaId]);
+            if ($vaga) {
+                (new Notificacao())->criar(
+                    'empresa',
+                    $vaga['empresa_id'],
+                    'Nova candidatura',
+                    "A vaga \"{$vaga['titulo']}\" recebeu uma nova candidatura.",
+                    "/empresa/vagas/{$vagaId}/candidatos"
+                );
+            }
+
+            return $candidatura;
         } catch (\PDOException $e) {
             // RN04: a UNIQUE (vaga_id, candidato_id) é a implementação física da regra.
             // Não confiar só na checagem acima — outra requisição concorrente pode ter

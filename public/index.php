@@ -42,6 +42,9 @@ $router->post('/admin/usuarios/reativar', 'AdminController@reativarUsuario');
 $router->get('/admin/categorias', 'AdminController@categorias');
 $router->post('/admin/categorias', 'AdminController@salvarCategorias');
 $router->post('/admin/categorias/excluir', 'AdminController@excluirCategoria');
+$router->get('/admin/suporte', 'AdminController@suporte');
+$router->post('/admin/suporte/responder', 'AdminController@responderTicket');
+$router->get('/admin/logs', 'AdminController@logs');
 $router->get('/admin/administradores', 'AdminController@administradores');
 $router->post('/admin/administradores', 'AdminController@cadastrarAdministrador');
 
@@ -78,6 +81,15 @@ $router->post('/vagas/{id}/excluir', 'VagaController@delete');
 // Rotas de candidatos
 $router->get('/minhas-candidaturas', 'CandidatoController@minhasCandidaturas');
 $router->get('/vagas-favoritas', 'CandidatoController@vagasFavoritas');
+// Conta — recursos comuns a candidato e empresa (RF14, RF15, RF17, RF23, RF24)
+$router->get('/notificacoes', 'ContaController@notificacoes');
+$router->get('/candidaturas/{id}/conversa', 'ContaController@conversa');
+$router->post('/candidaturas/{id}/mensagens', 'ContaController@enviarMensagem');
+$router->post('/candidaturas/{id}/avaliacao', 'ContaController@avaliar');
+$router->get('/suporte', 'ContaController@suporte');
+$router->post('/suporte', 'ContaController@suporte');
+$router->get('/meus-dados/exportar', 'ContaController@exportarDados');
+
 $router->get('/perfil', 'CandidatoController@perfil');
 $router->post('/perfil/atualizar', 'CandidatoController@atualizarPerfil');
 $router->get('/perfil/curriculo', 'CandidatoController@baixarCurriculo');

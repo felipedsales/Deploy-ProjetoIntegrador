@@ -172,6 +172,34 @@ class Vaga extends Model
         return $linhas;
     }
 
+    /**
+     * RF10 + RF14 / RN06 — publica a vaga e avisa os candidatos cujo histórico
+     * (candidaturas e favoritos) inclui vagas da mesma categoria.
+     */
+    public function publicar($dados)
+    {
+        $vagaId = $this->create($dados);
+
+        if (!empty($dados['categoria_id'])) {
+            $sql = "INSERT INTO notificacoes (tipo_usuario, usuario_id, titulo, mensagem, link)
+                    SELECT 'candidato', h.candidato_id, 'Nova vaga na sua área', ?, ?
+                    FROM (
+                        SELECT cv.candidato_id FROM candidaturas cv JOIN vagas v ON v.id = cv.vaga_id WHERE v.categoria_id = ?
+                        UNION
+                        SELECT f.candidato_id FROM favoritos f JOIN vagas v ON v.id = f.vaga_id WHERE v.categoria_id = ?
+                    ) h
+                    JOIN candidatos c ON c.id = h.candidato_id AND c.status = 'Ativa'";
+            $this->db->query($sql, [
+                mb_substr("Foi publicada a vaga \"{$dados['titulo']}\", da mesma área de vagas que você acompanhou.", 0, 500),
+                "/vagas/{$vagaId}",
+                $dados['categoria_id'],
+                $dados['categoria_id'],
+            ]);
+        }
+
+        return $vagaId;
+    }
+
     /** RN19 — conta uma visualização, sem mexer na data de atualização da vaga. */
     public function registrarVisualizacao($vagaId)
     {
