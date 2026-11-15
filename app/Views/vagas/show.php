@@ -223,6 +223,9 @@ $title = htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz Conecta';
         case 'carta_invalida':
             $errorMessage = 'A candidatura não foi enviada: a carta de apresentação deve ser PDF, DOC ou DOCX de até 2 MB.';
             break;
+        case 'email_nao_confirmado':
+            $errorMessage = 'Confirme seu e-mail para se candidatar.';
+            break;
         case 'ja_favoritada':
             $errorMessage = 'Esta vaga já está nos seus favoritos.';
             break;

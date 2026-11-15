@@ -17,7 +17,7 @@
  *     php database/migrar.php
  *
  * Atende: RN14, RF03, RF16, RN07, RN18, RF19, RF21, RF26, RF08, RF07, RF02,
- * RF09, RF11, RF12, RN19.
+ * RF09, RF11, RF12, RN19, RN22.
  */
 
 if (PHP_SAPI !== 'cli') {
@@ -171,7 +171,22 @@ if (!$coluna('vagas', 'visualizacoes')) {
     $aplicar('coluna vagas.visualizacoes', 'ALTER TABLE vagas ADD COLUMN visualizacoes INT NOT NULL DEFAULT 0 AFTER data_expiracao');
 }
 
-// 10) UC13 — o sistema não pode ficar sem categorias: lista inicial, que o
+// 10) RN22 — confirmação de e-mail. As contas que já existiam foram criadas
+//     antes da regra e continuam entrando: ficam marcadas como confirmadas.
+foreach (['candidatos', 'empresas'] as $tabela) {
+    if (!$coluna($tabela, 'email_confirmado')) {
+        $aplicar(
+            "coluna {$tabela}.email_confirmado",
+            "ALTER TABLE {$tabela} ADD COLUMN email_confirmado TINYINT(1) NOT NULL DEFAULT 0 AFTER status"
+        );
+        $aplicar(
+            "contas existentes de {$tabela} marcadas como confirmadas",
+            "UPDATE {$tabela} SET email_confirmado = 1, updated_at = updated_at"
+        );
+    }
+}
+
+// 11) UC13 — o sistema não pode ficar sem categorias: lista inicial, que o
 //     administrador ajusta depois em /admin/categorias.
 if ((int) $db->fetch('SELECT COUNT(*) AS total FROM categorias')['total'] === 0) {
     $iniciais = [

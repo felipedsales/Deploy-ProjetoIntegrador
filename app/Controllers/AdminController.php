@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\Acesso;
 use App\Models\Administrador;
 use App\Models\Categoria;
 use App\Models\Suporte;
@@ -33,14 +34,60 @@ class AdminController extends Controller
                 return $this->render('admin/login', ['error' => 'Email ou senha incorretos']);
             }
 
-            session_regenerate_id(true);
-            $this->setSession('user_id', $admin['id']);
-            $this->setSession('user_type', 'administrador');
-            $this->setSession('user_name', $admin['nome']);
-            $this->redirect('/admin');
+            // RNF09 / RF03: com serviço de e-mail, a senha é só o primeiro fator.
+            $acesso = new Acesso();
+            if ($acesso->multifatorExigido()) {
+                $envio = $acesso->enviarCodigoMultifator($admin['id']);
+                if ($envio === 'falha_envio') {
+                    return $this->render('admin/login', [
+                        'error' => 'Não foi possível enviar o código de acesso. Tente novamente em instantes.'
+                    ]);
+                }
+                session_regenerate_id(true);
+                $this->setSession('multifator_admin', ['id' => $admin['id'], 'nome' => $admin['nome']]);
+                $this->redirect('/admin/verificacao');
+            }
+
+            $this->entrar($admin);
         }
 
         return $this->render('admin/login');
+    }
+
+    /** RNF09 / RF03 — segundo fator: código de 6 dígitos enviado por e-mail. */
+    public function verificacao()
+    {
+        $pendente = $this->getSession('multifator_admin');
+        if (!$pendente) {
+            $this->redirect('/admin/login');
+        }
+
+        if ($this->isPost()) {
+            $acesso = new Acesso();
+
+            if ($this->getPost('acao') === 'reenviar') {
+                $envio = $acesso->enviarCodigoMultifator($pendente['id']);
+                return $this->render('admin/verificacao', ['envio' => $envio]);
+            }
+
+            if ($acesso->conferirCodigoMultifator($pendente['id'], $this->getPost('codigo'))) {
+                unset($_SESSION['multifator_admin']);
+                $this->entrar($pendente);
+            }
+
+            return $this->render('admin/verificacao', ['error' => 'Código incorreto ou expirado.']);
+        }
+
+        return $this->render('admin/verificacao');
+    }
+
+    private function entrar($admin)
+    {
+        session_regenerate_id(true);
+        $this->setSession('user_id', $admin['id']);
+        $this->setSession('user_type', 'administrador');
+        $this->setSession('user_name', $admin['nome']);
+        $this->redirect('/admin');
     }
 
     public function painel()

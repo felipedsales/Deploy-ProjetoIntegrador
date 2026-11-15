@@ -4,7 +4,7 @@
 > card do Trello e commit deve referenciar os códigos definidos aqui.
 >
 > Consolidado a partir de `Projeto_Integrador_-_FATEC_2024.docx` (base) e `RFRNFRN.xlsx`
-> (complementos). Versão 1.2 (2026-11-13) — v1 entregue; itens futuros em implementação por lotes (ver também `IMPLEMENTACOES_FUTURAS.md`) e estrutura de banco da v1 criada; pendente de validação com o orientador.
+> (complementos). Versão 1.3 (2026-11-15) — v1 entregue; itens futuros em implementação por lotes (ver também `IMPLEMENTACOES_FUTURAS.md`) e estrutura de banco da v1 criada; pendente de validação com o orientador.
 
 ---
 
@@ -53,10 +53,10 @@ Requisitos Funcionais.
 
 - **App mobile (React Native / Expo) e API REST `/api/v1`** — implementados depois da
   entrega completa da plataforma web. Na v1 o candidato usa a web.
-- RF05 (recuperação de senha), RF09 (carta de apresentação), RF14 (notificações),
+- RF05 (recuperação de senha — ✅ lote 3), RF09 (carta de apresentação), RF14 (notificações),
   RF15 (feedback), RF17 (suporte), RF20 (login externo), RF22 (APIs externas),
   RF23 (exportação LGPD), RF24 (mensagens internas), RF25 (IA de currículos).
-- RNF09 (multifator), RNF04 (microsserviços). *(RN19 / R18, métricas da empresa: ✅ entregue no lote 1.)*
+- RNF09 (multifator — ✅ lote 3, por código de e-mail para o administrador), RNF04 (microsserviços). *(RN19 / R18, métricas da empresa: ✅ entregue no lote 1.)*
 
 **RNs e RNFs:** acompanham o RF a que estão ligadas na matriz de rastreabilidade, com
 três ajustes decididos em 2026-11-12:
@@ -65,7 +65,7 @@ três ajustes decididos em 2026-11-12:
 |---|---|
 | RN07 — ações administrativas registradas | **v1**, em forma simples: tabela de log gravando quem fez, o quê e quando. Sem tela de relatório de logs. |
 | RN14 — validade mínima de 7 dias da vaga | **v1**: coluna `vagas.data_expiracao`; vaga vencida deixa de ser exibida. |
-| RN17 / RN22 — e-mail confirmado | **Futuro**: dependem de envio de e-mail. Na v1 a conta fica ativa no cadastro e a candidatura exige apenas currículo anexado. |
+| RN17 / RN22 — e-mail confirmado | ✅ **Lote 3** (2026-11-15): com o serviço de e-mail (Brevo) configurado, a conta só entra depois de confirmar o e-mail e a candidatura exige e-mail verificado. Contas criadas antes da regra ficam confirmadas. Sem serviço de e-mail configurado, a conta nasce confirmada. |
 
 O que ficou fora está detalhado em **`IMPLEMENTACOES_FUTURAS.md`**.
 
@@ -77,9 +77,9 @@ O que ficou fora está detalhado em **`IMPLEMENTACOES_FUTURAS.md`**.
 |---|---|---|---|
 | RF01 | Cadastro de Candidatos | Validação de CPF, e-mail único e senha segura. | **v1** |
 | RF02 | Cadastro de Empresas | CNPJ, razão social e nome do responsável pela conta. | **v1** + ✅ nome do responsável (lote 1) |
-| RF03 | Cadastro de Administradores | Autenticação dupla e permissões especiais. | **v1** — sem autenticação dupla |
+| RF03 | Cadastro de Administradores | Autenticação dupla e permissões especiais. | **v1** + ✅ autenticação dupla por código de e-mail (lote 3) |
 | RF04 | Login *(Include)* | E-mail/senha, redes sociais e autenticação multifator. | **v1** — só e-mail e senha; sem redes sociais e sem multifator |
-| RF05 | Recuperação de Senha *(Include)* | Envio de link temporário por e-mail (válido por 15 minutos). | Futuro |
+| RF05 | Recuperação de Senha *(Include)* | Envio de link temporário por e-mail (válido por 15 minutos). | ✅ lote 3 |
 | RF06 | Edição de Perfil do Candidato | Atualização de dados pessoais, currículo e preferências. | **v1** |
 | RF07 | Edição de Perfil da Empresa | Alteração de dados cadastrais, logo e descrição institucional. | **v1** |
 | RF08 | Upload de Currículo | Suporte a PDF/DOC, com validação de tipo e tamanho de arquivo. | **v1** — PDF, DOC ou DOCX de até 2 MB |
@@ -214,7 +214,8 @@ ser atualizados** para refletir essas tabelas. Os itens *Futuro* continuam sem s
 | Tabela `favoritos` | RF19 | ✅ Criada (v1) |
 | Tabela `entrevistas` | RF26, UC-E06 | ✅ Criada (v1) |
 | `vagas.data_expiracao` | **RN14** (validade mínima de 7 dias) | ✅ Criada (v1) |
-| `candidatos.email_confirmado` / `empresas.email_confirmado` | **RN22** | Futuro |
+| `candidatos.email_confirmado` / `empresas.email_confirmado` | **RN22**, RN17 | ✅ Criada (lote 3) |
+| Tabela `tokens_email` (link de confirmação, link de recuperação e código do segundo fator) | RN22, RF05, RNF09, RF03 | ✅ Criada (lote 3) |
 | Tabela `administradores` e valor `administrador` em `sessoes.tipo_usuario` | RF03, RF16, RN09, RN18, RN21 | ✅ Criada (v1) |
 | `candidatos.status` / `empresas.status` (conta ativa ou suspensa) | RN18 | ✅ Criada (v1) |
 | Colunas `provider` / `provider_id` (já usadas no Model) | RF20 | Futuro |
@@ -257,4 +258,4 @@ ser atualizados** para refletir essas tabelas. Os itens *Futuro* continuam sem s
    dados de exemplo movidos para `database/seed.sql`, e removidos o driver
    `pdo_pgsql` (Dockerfile) e o ramo `pgsql` de `app/Models/Database.php`.
 6. **RNs que dependem de recurso fora da v1** — **Resolvido em 2026-11-12:** RN07 e RN14
-   entram na v1 em forma simples; RN17 e RN22 ficam como Futuro. Ver seção "Escopo da v1".
+   entram na v1 em forma simples; RN17 e RN22 foram entregues no lote 3. Ver seção "Escopo da v1".

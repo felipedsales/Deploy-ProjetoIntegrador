@@ -28,6 +28,8 @@ $title = 'Acesso Administrativo - Ferraz Conecta';
 
                         <button type="submit" class="btn btn-primary w-100">Entrar</button>
                     </form>
+
+                    <p class="text-center mb-3"><a href="/recuperar-senha">Esqueci minha senha</a></p>
                 </div>
             </div>
         </div>

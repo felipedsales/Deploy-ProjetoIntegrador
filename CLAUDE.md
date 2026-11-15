@@ -97,8 +97,8 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 
 | Tabela | Colunas | Chaves e restrições |
 |---|---|---|
-| **candidatos** | `id`, `nome`, `email`, `senha`, `telefone`, `cpf`, `data_nascimento`, `endereco`, `status`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cpf`; `status` = conta ativa ou suspensa (RN18) |
-| **empresas** | `id`, `nome`, `responsavel`, `email`, `senha`, `cnpj`, `telefone`, `endereco`, `descricao`, `setor`, `website`, `status`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cnpj`; `status` = conta ativa ou suspensa (RN18) |
+| **candidatos** | `id`, `nome`, `email`, `senha`, `telefone`, `cpf`, `data_nascimento`, `endereco`, `endereco_campos`, `status`, `email_confirmado`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cpf`; `status` = conta ativa ou suspensa (RN18); `email_confirmado` (RN22) |
+| **empresas** | `id`, `nome`, `responsavel`, `email`, `senha`, `cnpj`, `telefone`, `endereco`, `descricao`, `endereco_campos`, `setor`, `website`, `status`, `email_confirmado`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email`; **UNIQUE** `cnpj`; `status` = conta ativa ou suspensa (RN18); `email_confirmado` (RN22) |
 | **vagas** | `id`, `empresa_id`, `titulo`, `descricao`, `requisitos`, `salario`, `tipo_contrato`, `modalidade`, `localizacao`, `categoria_id`, `nivel_experiencia`, `beneficios`, `status`, `data_expiracao`, `visualizacoes`, `created_at`, `updated_at` | PK `id`; **FK** `empresa_id` → `empresas(id)` `ON DELETE CASCADE`; **FK** `categoria_id` → `categorias(id)` (sem `ON DELETE`: categoria em uso não é excluída — UC13); índices em `empresa_id`, `status` e `data_expiracao`; **`data_expiracao` implementa a RN14** |
 | **candidaturas** | `id`, `vaga_id`, `candidato_id`, `status`, `data_candidatura`, `observacoes` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **`UNIQUE (vaga_id, candidato_id)` → implementa a RN04** (um candidato não se candidata duas vezes à mesma vaga) |
 | **sessoes** | `id`, `usuario_id`, `tipo_usuario`, `token`, `expira_em`, `created_at` | PK `id`; **UNIQUE** `token`; guarda o **token Bearer** da API; índices em `token` e `expira_em` |
@@ -112,6 +112,7 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 | **mensagens** | `id`, `candidatura_id`, `remetente`, `texto`, `created_at` | PK `id`; **FK** `candidatura_id` → `candidaturas(id)` `CASCADE` (RF24) |
 | **avaliacoes** | `id`, `candidatura_id`, `autor`, `nota`, `comentario`, `created_at` | PK `id`; **FK** `candidatura_id` → `candidaturas(id)` `CASCADE`; **UNIQUE** `(candidatura_id, autor)` (RF15) |
 | **tickets_suporte** | `id`, `tipo_usuario`, `usuario_id`, `assunto`, `mensagem`, `status`, `resposta`, `administrador_id`, `respondido_em`, `created_at` | PK `id`; **FK** `administrador_id` → `administradores(id)` `SET NULL` (RF17, RN15) |
+| **tokens_email** | `id`, `tipo_usuario`, `usuario_id`, `finalidade`, `token_hash`, `tentativas`, `expira_em`, `usado_em`, `created_at` | PK `id`; índices em `token_hash` e `(tipo_usuario, usuario_id, finalidade)`; guarda só o hash do código (RN22, RF05, RNF09) |
 | **administradores** | `id`, `nome`, `email`, `senha`, `created_at`, `updated_at` | PK `id`; **UNIQUE** `email` (RF03, RF16) |
 | **favoritos** | `id`, `candidato_id`, `vaga_id`, `created_at` | PK `id`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **`UNIQUE (candidato_id, vaga_id)`** (RF19) |
 | **entrevistas** | `id`, `vaga_id`, `candidato_id`, `data_hora`, `local`, `status`, `created_at`, `updated_at` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; índice em `(candidato_id, data_hora)` (RF26) |
@@ -157,12 +158,9 @@ Lacunas que continuam abertas:
 | Lacuna | Atende |
 |---|---|
 | **MER e Diagrama de Classe não refletem o `schema.sql`** (usam `Usuário` como supertipo e `Notificação` como entidade, a entidade `Currículo` tem atributos diferentes da tabela `curriculos`, e não têm `favoritos` nem `logs_auditoria`) | Regra nº 1 |
-| `candidatos.email_confirmado` / `empresas.email_confirmado` | RN17, RN22 — *Futuro* |
 | colunas `provider` / `provider_id` em `candidatos` (usadas em `SocialAuth.php`) | RF20 — *Futuro*; rotas e botões de login externo estão desligados na v1 |
 | tabela `push_tokens` | RF14 — *Futuro* |
-| tabela de avaliações / feedback | RF15, RN08 — *Futuro* |
-| tabela de mensagens internas | RF24 — *Futuro* |
-| tabela de tickets de suporte | RF17, RN15 — *Futuro* |
+| multifator por app autenticador e para candidato / empresa | RNF09 — *Futuro* (hoje: código por e-mail, só administrador) |
 
 > **Regra para fechar cada lacuna:** a **migration**, a atualização do **MER** e a do
 > **Diagrama de Classe** são **a mesma tarefa** — não se faz uma sem as outras. Depois,
@@ -207,11 +205,16 @@ Regras com **reflexo direto no banco**, que quem mexe em persistência precisa t
   Mensagens só com candidatura `Aprovada` ou `Contratada`; avaliação só pós-processo.
 - **RN18 — suspensão de contas:** só o administrador muda `candidatos.status` /
   `empresas.status`; conta `Suspensa` não faz login.
+- **RN22 / RN17 / RF05 / RNF09 — acesso por e-mail** (`App\Models\Acesso`, `TokenEmail`,
+  `Email`)**:** conta de candidato e empresa só entra com `email_confirmado = 1`; link de
+  recuperação vale 15 minutos; o administrador entra com senha + código de 6 dígitos. O
+  envio é pela API HTTP do Brevo (`BREVO_API_KEY`, `BREVO_REMETENTE_EMAIL`). **Sem essas
+  variáveis nada disso é exigido**: a conta nasce confirmada e o administrador entra só com
+  a senha. `tokens_email` guarda só o hash do código.
 - **RN21 — permissões por perfil:** todo controller de área restrita começa com
   `requirePerfil('candidato' | 'empresa' | 'administrador')`.
 
-Regras **fora da v1** — RN17/RN22 (e-mail verificado para candidatar-se / ativar conta),
-entre outras: ver **Escopo da v1 e lacunas conhecidas**.
+Regras ainda não implementadas: ver **Escopo da v1 e lacunas conhecidas**.
 
 ---
 

@@ -104,6 +104,11 @@ class VagaController extends Controller
             $this->redirect('/vagas?error=vaga_indisponivel');
         }
 
+        // RN17: a candidatura exige e-mail verificado.
+        if (!(new \App\Models\Acesso())->emailConfirmado('candidato', $candidatoId)) {
+            $this->redirect("/vagas/{$vagaId}?error=email_nao_confirmado");
+        }
+
         // RF13: a candidatura envia o currículo do perfil; sem ele, não há candidatura.
         if (!$this->candidatoModel->temCurriculo($candidatoId)) {
             $this->redirect('/perfil?error=curriculo_obrigatorio');
