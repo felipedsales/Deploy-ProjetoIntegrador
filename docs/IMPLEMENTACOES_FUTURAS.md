@@ -20,8 +20,13 @@ lotes, e o MER e o Diagrama de Classe são refeitos ao final. Cada lote é um pu
 | **2** | RF14 (notificações na plataforma), RF24 (mensagens internas), RF15 (feedback e avaliação), RF17 (suporte por formulário), RF16 (relatório de logs), RF23 (exportação LGPD) | — | ✅ Implementado |
 | **3** | RN17 / RN22 (confirmação de e-mail), RF05 (recuperação de senha), RNF09 e RF03 (multifator) | Serviço de e-mail: **Brevo** (decidido em 2026-11-15); chave em `BREVO_API_KEY` | ✅ Implementado — multifator só por código de e-mail e só para o administrador |
 | **4** | RF25 (ranqueamento de currículos e sugestão de vagas **por regras**, sem IA) | — | ✅ Implementado |
-| **5** | API REST `/api/v1` | Lotes 1 a 3 | A fazer |
-| **6** | App mobile (React Native / Expo) | Lote 5 | A fazer |
+| **5** | API REST `/api/v1` | Lotes 1 a 3 | Adiado (decisão de 2026-11-16) |
+| **6** | App mobile (React Native / Expo) | Lote 5 | Adiado (decisão de 2026-11-16) |
+
+**Decisão de 2026-11-16:** os lotes 5 e 6 ficam como implementação futura, porque o app
+mobile não é critério da apresentação. O trabalho passa a ser o refinamento de UX/UI da
+plataforma web e a conferência geral para a apresentação; depois, a revisão do MER e do
+Diagrama de Classe.
 
 **Pendências do lote 3** (RNF09): o multifator por **app autenticador** e o segundo fator
 opcional para candidato e empresa não foram implementados; hoje o segundo fator é o código
