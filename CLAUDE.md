@@ -103,11 +103,11 @@ Conecta candidatos que moram na região a empresas locais que estão contratando
 | **candidaturas** | `id`, `vaga_id`, `candidato_id`, `status`, `data_candidatura`, `observacoes` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **`UNIQUE (vaga_id, candidato_id)` → implementa a RN04** (um candidato não se candidata duas vezes à mesma vaga) |
 | **sessoes** | `id`, `usuario_id`, `tipo_usuario`, `token`, `expira_em`, `created_at` | PK `id`; **UNIQUE** `token`; guarda o **token Bearer** da API; índices em `token` e `expira_em` |
 | **denuncias** | `id`, `vaga_id`, `candidato_id`, `motivo`, `descricao`, `status`, `created_at` | PK `id`; **FK** `vaga_id` → `vagas(id)` `ON DELETE SET NULL`; **FK** `candidato_id` → `candidatos(id)` `ON DELETE SET NULL` |
-| **curriculos** | `id`, `candidato_id`, `nome_arquivo`, `tipo`, `tamanho`, `conteudo`, `data_envio` | PK `id`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **UNIQUE** `candidato_id` (um currículo por candidato); `conteudo` guarda o arquivo (RF08, RN02) |
+| **curriculos** | `id`, `candidato_id`, `nome_arquivo`, `tipo`, `tamanho`, `conteudo`, `texto`, `data_envio` | PK `id`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **UNIQUE** `candidato_id` (um currículo por candidato); `conteudo` guarda o arquivo (RF08, RN02) |
 | **logos_empresas** | `id`, `empresa_id`, `tipo`, `tamanho`, `conteudo`, `data_envio` | PK `id`; **FK** `empresa_id` → `empresas(id)` `CASCADE`; **UNIQUE** `empresa_id` (um logo por empresa); `conteudo` guarda a imagem (RF07) |
 | **categorias** | `id`, `nome`, `created_at` | PK `id`; **UNIQUE** `nome` (RF12, UC13) |
 | **vagas_historico** | `id`, `vaga_id`, `alteracoes`, `created_at` | PK `id`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; `alteracoes` é JSON `{campo: {de, para}}` (RF11) |
-| **cartas_apresentacao** | `id`, `candidato_id`, `vaga_id`, `nome_arquivo`, `tipo`, `tamanho`, `conteudo`, `data_envio` | PK `id`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; `vaga_id` nulo = carta padrão do perfil (RF09) |
+| **cartas_apresentacao** | `id`, `candidato_id`, `vaga_id`, `nome_arquivo`, `tipo`, `tamanho`, `conteudo`, `texto`, `data_envio` | PK `id`; **FK** `candidato_id` → `candidatos(id)` `CASCADE`; **FK** `vaga_id` → `vagas(id)` `CASCADE`; `vaga_id` nulo = carta padrão do perfil (RF09) |
 | **notificacoes** | `id`, `tipo_usuario`, `usuario_id`, `titulo`, `mensagem`, `link`, `lida`, `created_at` | PK `id`; índice em `(tipo_usuario, usuario_id, lida)` (RF14) |
 | **mensagens** | `id`, `candidatura_id`, `remetente`, `texto`, `created_at` | PK `id`; **FK** `candidatura_id` → `candidaturas(id)` `CASCADE` (RF24) |
 | **avaliacoes** | `id`, `candidatura_id`, `autor`, `nota`, `comentario`, `created_at` | PK `id`; **FK** `candidatura_id` → `candidaturas(id)` `CASCADE`; **UNIQUE** `(candidatura_id, autor)` (RF15) |
@@ -211,6 +211,12 @@ Regras com **reflexo direto no banco**, que quem mexe em persistência precisa t
   envio é pela API HTTP do Brevo (`BREVO_API_KEY`, `BREVO_REMETENTE_EMAIL`). **Sem essas
   variáveis nada disso é exigido**: a conta nasce confirmada e o administrador entra só com
   a senha. `tokens_email` guarda só o hash do código.
+- **RF25 / RN13 — ranqueamento por regras** (`App\Models\Ranqueamento`, `ExtratorTexto`)**:**
+  o texto do currículo e da carta é extraído no envio e guardado em `curriculos.texto` /
+  `cartas_apresentacao.texto` (nulo = ainda não extraído; vazio = sem texto legível). A
+  aderência compara só os requisitos da vaga com esse texto — **nenhum dado pessoal entra
+  na conta** — e nunca muda o status de uma candidatura. PDF depende do `pdftotext`
+  (pacote `poppler-utils` no `Dockerfile`).
 - **RN21 — permissões por perfil:** todo controller de área restrita começa com
   `requirePerfil('candidato' | 'empresa' | 'administrador')`.
 

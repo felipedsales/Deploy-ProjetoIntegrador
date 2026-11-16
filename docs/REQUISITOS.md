@@ -4,7 +4,7 @@
 > card do Trello e commit deve referenciar os códigos definidos aqui.
 >
 > Consolidado a partir de `Projeto_Integrador_-_FATEC_2024.docx` (base) e `RFRNFRN.xlsx`
-> (complementos). Versão 1.3 (2026-11-15) — v1 entregue; itens futuros em implementação por lotes (ver também `IMPLEMENTACOES_FUTURAS.md`) e estrutura de banco da v1 criada; pendente de validação com o orientador.
+> (complementos). Versão 1.4 (2026-11-16) — v1 entregue; itens futuros em implementação por lotes (ver também `IMPLEMENTACOES_FUTURAS.md`) e estrutura de banco da v1 criada; pendente de validação com o orientador.
 
 ---
 
@@ -55,7 +55,7 @@ Requisitos Funcionais.
   entrega completa da plataforma web. Na v1 o candidato usa a web.
 - RF05 (recuperação de senha — ✅ lote 3), RF09 (carta de apresentação), RF14 (notificações),
   RF15 (feedback), RF17 (suporte), RF20 (login externo), RF22 (APIs externas),
-  RF23 (exportação LGPD), RF24 (mensagens internas), RF25 (IA de currículos).
+  RF23 (exportação LGPD), RF24 (mensagens internas), RF25 (IA de currículos — ✅ lote 4, por regras e sem IA).
 - RNF09 (multifator — ✅ lote 3, por código de e-mail para o administrador), RNF04 (microsserviços). *(RN19 / R18, métricas da empresa: ✅ entregue no lote 1.)*
 
 **RNs e RNFs:** acompanham o RF a que estão ligadas na matriz de rastreabilidade, com
@@ -99,12 +99,14 @@ O que ficou fora está detalhado em **`IMPLEMENTACOES_FUTURAS.md`**.
 | RF22 | Integração com APIs Externas | Ex.: Receita Federal, validação LGPD. | Futuro |
 | RF23 | Exportação de Dados (LGPD) | Feita pelo próprio usuário. | ✅ Entregue (lote 2) — arquivo JSON |
 | RF24 | Mensagens Internas | Comunicação entre empresa e candidato após candidatura aceita. | ✅ Entregue (lote 2) |
-| RF25 | IA para Currículos *(opcional)* | Análise automática de currículos para sugestão de vagas e ranqueamento. | Futuro |
+| RF25 | IA para Currículos *(opcional)* | Análise automática de currículos para sugestão de vagas e ranqueamento. | ✅ Entregue (lote 4) — ranqueamento e sugestão **por regras**, sem IA; análise por IA fica como futuro (`ANALISE_CUSTOS_IA.md`) |
 | RF26 | Agendamento de Entrevistas | Ferramenta para agendamento entre empresa e candidato. | **v1** |
 
 > ⚠️ **RF25 e RF26 estavam ausentes da planilha.** O RF26 é essencial: sustenta o caso de
 > uso "Agendar Entrevista" do diagrama mobile e o UC-E06. O RF25 permanece como opcional e
-> está declarado **fora do escopo da v1** no Documento de Visão.
+> está declarado **fora do escopo da v1** no Documento de Visão. Foi entregue no lote 4 em
+> forma de ranqueamento por regras: compara os requisitos da vaga com o texto do currículo
+> e da carta, sem usar dado pessoal (RN13).
 
 ---
 
@@ -233,9 +235,7 @@ ser atualizados** para refletir essas tabelas. Os itens *Futuro* continuam sem s
 | Tabela `mensagens` | RF24 | ✅ Criada (lote 2) |
 | Tabela `avaliacoes` | RF15, RN08 | ✅ Criada (lote 2) |
 | Tabela `tickets_suporte` | RF17, RN15 | ✅ Criada (lote 2) |
-| Tabela de avaliações/feedback | RF15, RN08 | Futuro |
-| Tabela de mensagens internas | RF24 | Futuro |
-| Tabela de tickets de suporte | RF17, RN15 | Futuro |
+| `curriculos.texto` / `cartas_apresentacao.texto` (texto extraído do arquivo) | RF25, RN13 | ✅ Criada (lote 4) |
 
 ---
 
@@ -251,7 +251,8 @@ ser atualizados** para refletir essas tabelas. Os itens *Futuro* continuam sem s
 3. **Planilha RN08 (carta = +30%)** — confirmar o descarte ou reescrever como regra
    verificável.
 4. **RF25 / RN13 (IA de currículos)** — ~~permanecem como opcionais e fora da v1?~~
-   **Resolvido em 2026-11-12:** fora da v1 (Futuro).
+   **Resolvido em 2026-11-12:** fora da v1 (Futuro). **Atualizado em 2026-11-15:** entregue
+   por regras no lote 4; a versão com IA continua como futuro.
 5. **Banco de dados** — ~~MySQL (documentação) × PostgreSQL (código atual)~~.
    **Resolvido em 2026-08-29:** padronizado em **MySQL 8** (Projeto Integrador e
    Documento de Visão). `database/schema.sql` convertido para o dialeto MySQL,

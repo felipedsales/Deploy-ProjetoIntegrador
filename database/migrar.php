@@ -17,7 +17,7 @@
  *     php database/migrar.php
  *
  * Atende: RN14, RF03, RF16, RN07, RN18, RF19, RF21, RF26, RF08, RF07, RF02,
- * RF09, RF11, RF12, RN19, RN22.
+ * RF09, RF11, RF12, RN19, RN22, RF25.
  */
 
 if (PHP_SAPI !== 'cli') {
@@ -186,7 +186,15 @@ foreach (['candidatos', 'empresas'] as $tabela) {
     }
 }
 
-// 11) UC13 — o sistema não pode ficar sem categorias: lista inicial, que o
+// 11) RF25 — texto extraído de currículos e cartas, para o ranqueamento por regras.
+//     Os arquivos que já existem ficam com texto nulo e são lidos na primeira consulta.
+foreach (['curriculos', 'cartas_apresentacao'] as $tabela) {
+    if (!$coluna($tabela, 'texto')) {
+        $aplicar("coluna {$tabela}.texto", "ALTER TABLE {$tabela} ADD COLUMN texto MEDIUMTEXT NULL AFTER conteudo");
+    }
+}
+
+// 12) UC13 — o sistema não pode ficar sem categorias: lista inicial, que o
 //     administrador ajusta depois em /admin/categorias.
 if ((int) $db->fetch('SELECT COUNT(*) AS total FROM categorias')['total'] === 0) {
     $iniciais = [

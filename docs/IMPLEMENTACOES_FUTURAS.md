@@ -19,7 +19,7 @@ lotes, e o MER e o Diagrama de Classe são refeitos ao final. Cada lote é um pu
 | **1** | RF02 (responsável), RF09 (carta de apresentação), RF11 (histórico de alterações), RF12 (área e experiência) + UC13 (categorias), RF19 (alerta de expiração), RN19 + UC02 (relatório de vagas) | — | ✅ Implementado |
 | **2** | RF14 (notificações na plataforma), RF24 (mensagens internas), RF15 (feedback e avaliação), RF17 (suporte por formulário), RF16 (relatório de logs), RF23 (exportação LGPD) | — | ✅ Implementado |
 | **3** | RN17 / RN22 (confirmação de e-mail), RF05 (recuperação de senha), RNF09 e RF03 (multifator) | Serviço de e-mail: **Brevo** (decidido em 2026-11-15); chave em `BREVO_API_KEY` | ✅ Implementado — multifator só por código de e-mail e só para o administrador |
-| **4** | RF25 (ranqueamento de currículos **por regras**, sem IA) | — | A fazer |
+| **4** | RF25 (ranqueamento de currículos e sugestão de vagas **por regras**, sem IA) | — | ✅ Implementado |
 | **5** | API REST `/api/v1` | Lotes 1 a 3 | A fazer |
 | **6** | App mobile (React Native / Expo) | Lote 5 | A fazer |
 
@@ -75,7 +75,7 @@ Em ordem sugerida de prioridade.
 | 9 | **RF15** — Feedback e avaliação | Feedback pós-processo e avaliações de candidatos e empresas (RN08). | Tabela de avaliações; telas de avaliar e de exibir. | — |
 | 10 | **RF23** — Exportação de dados (LGPD) | O próprio usuário exporta seus dados (RN20). | Geração do arquivo com os dados do usuário. | — |
 | 11 | **RF22** — Integração com APIs externas | Validação de CNPJ e CPF em bases oficiais, como a Receita Federal (RN10). | Escolha do serviço de consulta e tratamento de indisponibilidade. | Acesso a serviço externo |
-| 12 | **RF25** — IA para currículos *(opcional)* | Análise automática para sugerir vagas e ranquear candidatos (RN13). | Definição de critérios objetivos e não discriminatórios antes de qualquer código. | RF08 e RF12 maduros |
+| 12 | **RF25** — IA para currículos *(opcional)*  ✅ *entregue por regras no lote 4; IA continua futura* | Análise automática para sugerir vagas e ranquear candidatos (RN13). | Definição de critérios objetivos e não discriminatórios antes de qualquer código. | RF08 e RF12 maduros |
 
 > **Atenção ao RF20:** o repositório tem código de login com Google e LinkedIn
 > (`SocialAuth.php` e métodos em `AuthController`), mas as colunas que ele usa não existem

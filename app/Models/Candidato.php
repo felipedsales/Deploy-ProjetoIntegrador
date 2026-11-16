@@ -124,11 +124,15 @@ class Candidato extends Model
             return 'Não foi possível receber o arquivo. Tente novamente.';
         }
 
-        $sql = "INSERT INTO curriculos (candidato_id, nome_arquivo, tipo, tamanho, conteudo)
-                VALUES (?, ?, ?, ?, ?)
+        // RF25: o texto do arquivo é extraído uma vez, no envio, para o ranqueamento por regras.
+        $texto = ExtratorTexto::extrair($conteudo, $validado['nome']);
+
+        $sql = "INSERT INTO curriculos (candidato_id, nome_arquivo, tipo, tamanho, conteudo, texto)
+                VALUES (?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE nome_arquivo = VALUES(nome_arquivo), tipo = VALUES(tipo),
-                    tamanho = VALUES(tamanho), conteudo = VALUES(conteudo), data_envio = CURRENT_TIMESTAMP";
-        $this->db->query($sql, [$candidatoId, $validado['nome'], $validado['tipo'], $validado['tamanho'], $conteudo]);
+                    tamanho = VALUES(tamanho), conteudo = VALUES(conteudo), texto = VALUES(texto),
+                    data_envio = CURRENT_TIMESTAMP";
+        $this->db->query($sql, [$candidatoId, $validado['nome'], $validado['tipo'], $validado['tamanho'], $conteudo, $texto]);
 
         return null;
     }
@@ -173,9 +177,12 @@ class Candidato extends Model
         }
 
         $this->removerCarta($candidatoId, $vagaId);
-        $sql = "INSERT INTO cartas_apresentacao (candidato_id, vaga_id, nome_arquivo, tipo, tamanho, conteudo)
-                VALUES (?, ?, ?, ?, ?, ?)";
-        $this->db->query($sql, [$candidatoId, $vagaId, $validado['nome'], $validado['tipo'], $validado['tamanho'], $conteudo]);
+        $sql = "INSERT INTO cartas_apresentacao (candidato_id, vaga_id, nome_arquivo, tipo, tamanho, conteudo, texto)
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $this->db->query($sql, [
+            $candidatoId, $vagaId, $validado['nome'], $validado['tipo'], $validado['tamanho'], $conteudo,
+            ExtratorTexto::extrair($conteudo, $validado['nome']), // RF25
+        ]);
 
         return null;
     }

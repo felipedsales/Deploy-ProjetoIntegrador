@@ -55,6 +55,29 @@ $title = 'Candidatos - ' . htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz 
     <?php endif; ?>
 
     <?php if (!empty($candidatos)): ?>
+        <?php // RF25 / RN13 — ranqueamento por regras: critério explicado e ordenação opcional. ?>
+        <?php if ($ranqueamento !== null): ?>
+            <div class="alert alert-info d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <i class="fas fa-list-ol"></i>
+                    <strong>Aderência aos requisitos.</strong>
+                    Mostra quantos requisitos desta vaga aparecem no currículo de cada candidato
+                    (requisito encontrado só na carta de apresentação vale metade).
+                    Nenhum dado pessoal entra na conta, e a decisão continua sendo sua.
+                </div>
+                <?php if ($ordem === 'aderencia'): ?>
+                    <a href="/empresa/vagas/<?= $vaga['id'] ?>/candidatos" class="btn btn-outline-primary btn-sm">Ordenar por data</a>
+                <?php else: ?>
+                    <a href="/empresa/vagas/<?= $vaga['id'] ?>/candidatos?ordem=aderencia" class="btn btn-primary btn-sm">Ordenar por aderência</a>
+                <?php endif; ?>
+            </div>
+        <?php else: ?>
+            <div class="alert alert-secondary">
+                <i class="fas fa-info-circle"></i>
+                Esta vaga não tem requisitos preenchidos, então não há como calcular a aderência dos candidatos.
+            </div>
+        <?php endif; ?>
+
         <div class="cards-container">
             <?php foreach ($candidatos as $candidato): ?>
                 <div class="card">
@@ -65,6 +88,30 @@ $title = 'Candidatos - ' . htmlspecialchars($vaga['titulo'] ?? '') . ' - Ferraz 
                                 <?= htmlspecialchars($candidato['status'] ?? 'Pendente') ?>
                             </span>
                         </div>
+
+                        <?php $aderencia = $ranqueamento[$candidato['id']] ?? null; ?>
+                        <?php if ($aderencia && $aderencia['situacao'] === 'calculada'): ?>
+                            <div class="mb-3">
+                                <strong>Aderência aos requisitos: <?= (int) $aderencia['pontuacao'] ?>%</strong>
+                                <div class="progress" style="height: 8px;" role="progressbar"
+                                     aria-label="Aderência aos requisitos" aria-valuenow="<?= (int) $aderencia['pontuacao'] ?>" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="progress-bar" style="width: <?= (int) $aderencia['pontuacao'] ?>%"></div>
+                                </div>
+                                <?php if ($aderencia['atendidos']): ?>
+                                    <small class="d-block mt-1"><strong>No currículo:</strong> <?= htmlspecialchars(implode(', ', $aderencia['atendidos'])) ?></small>
+                                <?php endif; ?>
+                                <?php if ($aderencia['pela_carta']): ?>
+                                    <small class="d-block"><strong>Só na carta:</strong> <?= htmlspecialchars(implode(', ', $aderencia['pela_carta'])) ?></small>
+                                <?php endif; ?>
+                                <?php if ($aderencia['nao_encontrados']): ?>
+                                    <small class="d-block text-muted"><strong>Não encontrados:</strong> <?= htmlspecialchars(implode(', ', $aderencia['nao_encontrados'])) ?></small>
+                                <?php endif; ?>
+                            </div>
+                        <?php elseif ($aderencia && $aderencia['situacao'] === 'sem_texto'): ?>
+                            <p class="text-muted"><small>Aderência não calculada: o currículo não tem texto legível (arquivo .doc ou PDF digitalizado). Baixe o arquivo para avaliar.</small></p>
+                        <?php elseif ($aderencia && $aderencia['situacao'] === 'pendente'): ?>
+                            <p class="text-muted"><small>Aderência ainda em cálculo: recarregue a página.</small></p>
+                        <?php endif; ?>
 
                         <ul class="details">
                             <li><strong>Email:</strong> <?= htmlspecialchars($candidato['email']) ?></li>
