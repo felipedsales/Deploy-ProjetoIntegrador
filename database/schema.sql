@@ -226,6 +226,9 @@ CREATE TABLE IF NOT EXISTS curriculos (
     tipo VARCHAR(100) NOT NULL,
     tamanho INT NOT NULL,
     conteudo MEDIUMBLOB NOT NULL,
+    -- RF25: texto extraído do arquivo, usado no ranqueamento por regras. Nulo =
+    -- ainda não extraído; vazio = arquivo sem texto legível (.doc ou PDF de imagem).
+    texto MEDIUMTEXT,
     data_envio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uq_curriculos_candidato (candidato_id),
     CONSTRAINT fk_curriculos_candidato
@@ -272,6 +275,8 @@ CREATE TABLE IF NOT EXISTS cartas_apresentacao (
     tipo VARCHAR(100) NOT NULL,
     tamanho INT NOT NULL,
     conteudo MEDIUMBLOB NOT NULL,
+    -- RF25: texto extraído do arquivo (ver curriculos.texto).
+    texto MEDIUMTEXT,
     data_envio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_cartas_candidato_vaga (candidato_id, vaga_id),
     KEY idx_cartas_vaga (vaga_id),

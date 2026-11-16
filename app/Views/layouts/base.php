@@ -103,6 +103,7 @@
                                     <li><a class="dropdown-item" href="/perfil">Meu Perfil</a></li>
                                     <li><a class="dropdown-item" href="/minhas-candidaturas">Minhas Candidaturas</a></li>
                                     <li><a class="dropdown-item" href="/vagas-favoritas">Vagas Favoritas</a></li>
+                                    <li><a class="dropdown-item" href="/vagas-recomendadas">Vagas Recomendadas</a></li>
                                     <li><a class="dropdown-item" href="/notificacoes">Notificações</a></li>
                                     <li><a class="dropdown-item" href="/suporte">Suporte</a></li>
                                     <li><a class="dropdown-item" href="/meus-dados/exportar">Exportar meus dados</a></li>

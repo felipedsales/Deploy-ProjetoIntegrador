@@ -91,6 +91,8 @@ $router->post('/vagas/{id}/excluir', 'VagaController@delete');
 // Rotas de candidatos
 $router->get('/minhas-candidaturas', 'CandidatoController@minhasCandidaturas');
 $router->get('/vagas-favoritas', 'CandidatoController@vagasFavoritas');
+// RF25 — sugestão de vagas por regras
+$router->get('/vagas-recomendadas', 'CandidatoController@vagasRecomendadas');
 // Conta — recursos comuns a candidato e empresa (RF14, RF15, RF17, RF23, RF24)
 $router->get('/notificacoes', 'ContaController@notificacoes');
 $router->get('/candidaturas/{id}/conversa', 'ContaController@conversa');

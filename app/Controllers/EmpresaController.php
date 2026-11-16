@@ -208,9 +208,20 @@ class EmpresaController extends Controller
 
     private function renderCandidatosVaga($vaga, $empresaId, $extra = [])
     {
+        // RF25: aderência de cada candidato aos requisitos da vaga, por regras (RN13).
+        $ranqueador = new \App\Models\Ranqueamento();
+        $candidatos = $this->empresaModel->getCandidatosPorVaga($vaga['id'], $empresaId);
+        $ranqueamento = $ranqueador->ranquearCandidatos($vaga, $empresaId);
+        $ordem = $this->getQuery('ordem') === 'aderencia' && $ranqueamento !== null ? 'aderencia' : 'data';
+        if ($ordem === 'aderencia') {
+            $candidatos = $ranqueador->ordenarPorAderencia($candidatos, $ranqueamento);
+        }
+
         return $this->render('empresa/candidatos_vaga', array_merge([
             'vaga' => $vaga,
-            'candidatos' => $this->empresaModel->getCandidatosPorVaga($vaga['id'], $empresaId),
+            'candidatos' => $candidatos,
+            'ranqueamento' => $ranqueamento,
+            'ordem' => $ordem,
             'entrevistas' => $this->entrevistaModel->getPorVaga($vaga['id'], $empresaId),
         ], $extra));
     }

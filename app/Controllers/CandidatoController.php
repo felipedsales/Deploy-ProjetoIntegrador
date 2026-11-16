@@ -43,6 +43,16 @@ class CandidatoController extends Controller
         ]);
     }
 
+    /** RF25 — vagas abertas mais aderentes ao currículo do candidato, por regras (RN13). */
+    public function vagasRecomendadas()
+    {
+        $this->requirePerfil('candidato');
+
+        return $this->render('candidato/vagas_recomendadas', [
+            'vagas' => (new \App\Models\Ranqueamento())->sugerirVagas($this->getSession('user_id'))
+        ]);
+    }
+
     public function perfil()
     {
         $this->requirePerfil('candidato');
