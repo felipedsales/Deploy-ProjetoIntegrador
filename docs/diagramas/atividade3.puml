@@ -1,0 +1,50 @@
+@startuml
+!include estilo.iuml
+|Candidato|
+start
+:Abre a vaga, anexa a carta de
+apresentação (opcional) e
+aciona Candidatar-se;
+|Sistema|
+if (Logado como candidato?) then (Não)
+  :Solicita o login;
+  |Candidato|
+  :Faz o login;
+  |Sistema|
+else (Sim)
+endif
+if (Vaga ativa e no prazo?\n(RN14)) then (Não)
+  :Informa que a vaga
+  está indisponível;
+  stop
+else (Sim)
+endif
+if (E-mail confirmado?\n(RN17)) then (Não)
+  :Solicita a confirmação
+  do e-mail;
+  stop
+else (Sim)
+endif
+if (Currículo no perfil?\n(RF13)) then (Não)
+  :Leva ao perfil para
+  enviar o currículo;
+  stop
+else (Sim)
+endif
+if (Já se candidatou?\n(RN04)) then (Sim)
+  :Bloqueia a candidatura
+  duplicada;
+  stop
+else (Não)
+endif
+:Registra a candidatura como
+Pendente, com data e hora (RN12),
+o currículo do perfil e a carta;
+|Funcionário da Empresa|
+:Recebe a notificação da
+nova candidatura (RF14);
+|Candidato|
+:Vê a confirmação em
+Minhas Candidaturas;
+stop
+@enduml

@@ -9,6 +9,36 @@
 
 ---
 
+## Prioridades — comentários da banca (2026-11-16)
+
+Comentários da professora na apresentação de 2026-11-16. Vêm **antes** de qualquer outro
+item deste documento.
+
+| # | Comentário | O que fazer | Situação |
+|---|---|---|---|
+| 1 | "Rankear por requisitos obrigatórios para a vaga" | Hoje a vaga tem um único campo de requisitos e todos pesam igual no ranqueamento (RF25). Separar na vaga os **requisitos obrigatórios** dos **desejáveis** e ordenar os candidatos primeiro por obrigatórios atendidos (quem atende a todos vem antes), depois pelos desejáveis; o mesmo critério nas Vagas Recomendadas. Impacto: nova coluna em `vagas` (`schema.sql` + `migrar.php`), formulários de cadastro e edição da vaga, histórico (RF11), `Ranqueamento`, telas de candidatos e de recomendadas; atualizar RF25 e RN13 no `REQUISITOS.md`, no MER e no Diagrama de Classe. | **A fazer — prioridade 1** |
+| 2 | "Atividade do negócio dentro do padrão (raias, atores, branching, merge)" | Diagramas de atividades com uma raia por participante, nó de decisão em cada escolha e nó de junção onde os caminhos se encontram. | Documento *Atividades do Negócio* refeito em 2026-11-16 (fontes em `docs/diagramas/atividade*.puml`). **Falta:** trocar os diagramas nos slides. |
+| 3 | "Diagrama geral de caso de uso e diagrama de sequência geral — alguns casos de uso são métodos de um caso principal" | Tirar dos diagramas os casos que são passos de outro (Validar Login, Verificar Sessão, Filtrar Vagas, Exibir Detalhes, Visualizar Candidaturas, Aprovar/Reprovar) e unificar os duplicados. | Documento *Casos de Uso* e diagrama geral refeitos em 2026-11-16 (fonte em `docs/diagramas/casos_de_uso.puml`). **Falta:** refazer o diagrama de sequência geral (slides 17 a 20) com os mesmos casos principais e atualizar os comentários `UC-xxx` do código para a numeração nova (tabela abaixo). |
+
+**Comentários do código a renumerar** (numeração da Especificação de Casos de Uso de
+2026-11-16):
+
+| No código hoje | Onde | Caso correto |
+|---|---|---|
+| `UC-E01` (cadastro da empresa) | `Empresa.php` | E10 Manter Empresa |
+| `UC-E04` (perfil da empresa) | `EmpresaController.php` | E10 Manter Empresa |
+| `UC-C05` (envio do currículo) | `CandidatoController.php` | C01 Manter Candidato |
+| `UC-C06` (pedido de suporte do usuário) | `ContaController.php` | E09 Solicitar Suporte |
+| `UC-E09` (resposta do administrador) | `AdminController.php`, `Administrador.php` | C06 Prestar Suporte |
+| `UC-C10` (moderação) | `AdminController.php`, `Administrador.php` | E14 Moderar Conteúdo |
+| `UC02` / `UC13` | vários | `UC-E02` / `UC-E13` (mesmo caso, padronizar a grafia) |
+
+Os casos E01, E03, E07, E08, E11, E12, C10, C11 e C12 deixaram de existir: foram
+incorporados a outros casos ou unificados (ver a tabela "Caso anterior" no documento de
+Casos de Uso).
+
+---
+
 ## Plano de execução
 
 **Decisão de 2026-11-13:** os itens deste documento passam a ser implementados agora, em

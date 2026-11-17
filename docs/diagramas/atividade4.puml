@@ -1,0 +1,48 @@
+@startuml
+!include estilo.iuml
+|Funcionário da Empresa|
+start
+:Abre os candidatos da vaga;
+|Sistema|
+:Confere se a vaga é
+da empresa (RN21);
+:Ordena os candidatos pela
+aderência do currículo aos
+requisitos (RF25, RN13);
+|Funcionário da Empresa|
+:Analisa aderência, currículo
+e carta de apresentação;
+if (Perfil compatível?) then (Não)
+  :Rejeita o candidato;
+else (Sim)
+  repeat
+    :Informa data, hora
+    e local da entrevista;
+    |Sistema|
+    :Confere data futura e
+    conflito de 60 min (RF26);
+  repeat while (Há conflito?) is (Sim: informa) not (Não)
+  :Registra a entrevista
+  e avisa o candidato;
+  |Candidato|
+  :Recebe o aviso
+  da entrevista;
+  |Funcionário da Empresa|
+  :Realiza a entrevista;
+  if (Aprovado?) then (Sim)
+    :Aprova o candidato;
+  else (Não)
+    :Rejeita o candidato;
+  endif
+endif
+|Sistema|
+:Atualiza o status, registra
+data e hora (RN12) e
+notifica o candidato (RF14);
+:Se aprovada, libera as
+mensagens (RF24);
+|Candidato|
+:Recebe o resultado e pode
+avaliar o processo (RF15);
+stop
+@enduml

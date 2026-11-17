@@ -1,0 +1,23 @@
+@startuml
+!include estilo.iuml
+|Funcionário da Empresa|
+start
+:Acessa o painel da empresa
+e seleciona Nova Vaga;
+repeat
+  :Preenche título, descrição, requisitos,
+  área, nível de experiência, tipo de contrato,
+  modalidade, local, salário, benefícios
+  e prazo de candidatura;
+  |Sistema|
+  :Valida campos obrigatórios (RN03)
+  e prazo mínimo de 7 dias (RN14);
+repeat while (Há erros?) is (Sim: exibe os erros) not (Não)
+:Grava a vaga com status Ativa;
+:Notifica os candidatos interessados
+na mesma área (RN06);
+|Funcionário da Empresa|
+:Visualiza a vaga publicada
+e disponível aos candidatos;
+stop
+@enduml
