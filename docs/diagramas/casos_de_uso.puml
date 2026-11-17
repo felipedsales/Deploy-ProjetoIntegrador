@@ -1,0 +1,104 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam dpi 200
+skinparam ArrowColor #333333
+skinparam usecase {
+  BackgroundColor #FFF6D5
+  BorderColor #333333
+}
+skinparam actorBorderColor #333333
+skinparam packageStyle rectangle
+skinparam rectangle {
+  BorderColor #555555
+}
+left to right direction
+
+actor "Candidato" as CAND
+actor "Funcionário\nda Empresa" as EMP
+actor "Administrador\nda Prefeitura" as ADM
+actor "Serviço de E-mail\n(Brevo)" as MAIL
+
+rectangle "Ferraz Conecta" {
+  rectangle "Acesso" {
+    usecase "C01 Manter Candidato" as C01
+    usecase "E10 Manter Empresa" as E10
+    usecase "C02 Realizar Login" as C02
+    usecase "C16 Recuperar Senha" as C16
+  }
+  rectangle "Candidato" {
+    usecase "C03 Buscar Vagas" as C03
+    usecase "C04 Candidatar-se à Vaga" as C04
+    usecase "C05 Acompanhar Candidaturas" as C05
+    usecase "C08 Favoritar Vagas" as C08
+    usecase "C09 Realizar Denúncia" as C09
+    usecase "C07 Receber Notificações" as C07
+    usecase "C13 Exportar Meus Dados" as C13
+  }
+  rectangle "Comuns a Candidato e Empresa" {
+    usecase "C14 Trocar Mensagens" as C14
+    usecase "C15 Avaliar Processo Seletivo" as C15
+    usecase "E09 Solicitar Suporte" as E09
+  }
+  rectangle "Empresa" {
+    usecase "E05 Manter Vagas" as E05
+    usecase "E04 Gerenciar Candidaturas" as E04
+    usecase "E06 Agendar Entrevista" as E06
+    usecase "E02 Gerar Relatório de\nEstatísticas de Vagas" as E02
+  }
+  rectangle "Administração" {
+    usecase "E14 Moderar Conteúdo" as E14
+    usecase "C06 Prestar Suporte" as C06
+    usecase "E13 Gerenciar Categorias\nde Vagas" as E13
+    usecase "E15 Gerar Relatório de Logs" as E15
+    usecase "E16 Gerenciar Administradores" as E16
+  }
+}
+
+CAND -- C01
+CAND -- C02
+CAND -- C03
+CAND -- C04
+CAND -- C05
+CAND -- C08
+CAND -- C09
+CAND -- C07
+CAND -- C13
+CAND -- C14
+CAND -- C15
+CAND -- E09
+
+C03 -[hidden]-> E05
+C04 -[hidden]-> E04
+C05 -[hidden]-> E06
+C08 -[hidden]-> E02
+C09 -[hidden]-> E14
+C07 -[hidden]-> C06
+C13 -[hidden]-> E13
+C14 -[hidden]-> E15
+C15 -[hidden]-> E16
+
+E10 -- EMP
+C02 -- EMP
+E05 -- EMP
+E04 -- EMP
+E02 -- EMP
+C14 -- EMP
+C15 -- EMP
+E09 -- EMP
+
+C16 .> C02 : <<extend>>
+E04 <. E06 : <<extend>>
+
+E14 -- ADM
+C06 -- ADM
+E13 -- ADM
+E15 -- ADM
+E16 -- ADM
+C02 -- ADM
+
+C01 -- MAIL
+E10 -- MAIL
+C16 -- MAIL
+@enduml

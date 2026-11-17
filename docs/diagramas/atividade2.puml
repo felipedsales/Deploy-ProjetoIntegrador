@@ -1,0 +1,41 @@
+@startuml
+!include estilo.iuml
+|Candidato|
+start
+:Acessa a lista de vagas;
+|Sistema|
+:Exibe as vagas ativas
+e dentro do prazo (RN14);
+repeat
+  |Candidato|
+  :Informa palavra-chave e filtros
+  (área, local, tipo de contrato,
+  modalidade, experiência);
+  |Sistema|
+  :Aplica os filtros combinados (RN05);
+  if (Há vagas que atendem?) then (Sim)
+    :Exibe a lista de vagas;
+  else (Não)
+    :Informa que nenhuma
+    vaga foi encontrada;
+  endif
+  |Candidato|
+repeat while (Refinar a busca?) is (Sim) not (Não)
+if (Encontrou vaga de interesse?) then (Sim)
+  :Abre os detalhes da vaga;
+  |Sistema|
+  :Exibe descrição, requisitos,
+  benefícios e empresa;
+  |Candidato|
+  if (Salvar para depois?) then (Sim)
+    |Sistema|
+    :Salva a vaga nos favoritos (RF19);
+  else (Não)
+  endif
+  |Candidato|
+  :Segue para a candidatura
+  (Atividade 3);
+else (Não)
+endif
+stop
+@enduml
