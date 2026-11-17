@@ -33,11 +33,11 @@ rectangle "Ferraz Conecta" {
     usecase "C05 Acompanhar Candidaturas" as C05
     usecase "C08 Favoritar Vagas" as C08
     usecase "C09 Realizar Denúncia" as C09
-    usecase "C07 Receber Notificações" as C07
-    usecase "C13 Exportar Meus Dados" as C13
   }
   rectangle "Comuns a Candidato e Empresa" {
     usecase "C14 Trocar Mensagens" as C14
+    usecase "C07 Receber Notificações" as C07
+    usecase "C13 Exportar Meus Dados" as C13
     usecase "C15 Avaliar Processo Seletivo" as C15
     usecase "E09 Solicitar Suporte" as E09
   }
@@ -74,8 +74,6 @@ C04 -[hidden]-> E04
 C05 -[hidden]-> E06
 C08 -[hidden]-> E02
 C09 -[hidden]-> E14
-C07 -[hidden]-> C06
-C13 -[hidden]-> E13
 C14 -[hidden]-> E15
 C15 -[hidden]-> E16
 
@@ -85,6 +83,8 @@ E05 -- EMP
 E04 -- EMP
 E02 -- EMP
 C14 -- EMP
+C07 -- EMP
+C13 -- EMP
 C15 -- EMP
 E09 -- EMP
 
